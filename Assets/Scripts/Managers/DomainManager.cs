@@ -116,13 +116,12 @@ public class DomainManager : MonoBehaviour
 
     private void Reboot()
     {
-        Debug.Log($"[DomainManager] Reboot() called. RemainingEnemy was {RemainingEnemy}, resetting to 0.");
-        isGameRunning = false;
+        Time.timeScale = 1f;
         isNewWave = false;
         RemainingEnemy = 0;
         Killed = 0;
         CurrentWave = 0;
-        StartTheGame();
+        PreparingTime = 5f;
     }
 
     public void StartTheGame()

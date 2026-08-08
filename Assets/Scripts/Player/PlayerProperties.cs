@@ -36,7 +36,7 @@ public class PlayerProperties : MonoBehaviour
 
     private void Refresh()
     {
-        GetPoint();
+        Up_Point = 3;
         Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = 0f;
         UpdateStatus();
     }
@@ -49,7 +49,7 @@ public class PlayerProperties : MonoBehaviour
         a.ATK_Ampl.FlatBonus += Up_ATK - atk;
         a.DEF_Ampl.FlatBonus += Up_DEF - def;
         a.SPEED_Ampl.FlatBonus += Up_SPEED - speed;
-        a.SIGHT_Ampl.FlatBonus += Up_SIGHT - sight;//
+        a.SIGHT_Ampl.FlatBonus += Up_SIGHT - sight;
 
         hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED; sight = Up_SIGHT;
 
