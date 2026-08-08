@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags: []
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Zom
+  - Human
+  - VFX
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Ground
+    uniqueID: 3864319933
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Shadow
+    uniqueID: 3830258187
+    locked: 0
+  - name: Unit
+    uniqueID: 1010793597
+    locked: 0
+  - name: VFX
+    uniqueID: 1699877607
+    locked: 0

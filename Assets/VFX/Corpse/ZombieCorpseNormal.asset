@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b5ddd8998121f84fb66304ccc79d46a, type: 3}
+  m_Name: ZombieCorpseNormal
+  m_EditorClassIdentifier: 
+  sprites:
+  - {fileID: 21300000, guid: 3c6967a5967349642a987789e6d623d1, type: 3}
+  - {fileID: 21300000, guid: 36f8de8a675b8d945beb6700472c12a1, type: 3}
+  - {fileID: 21300000, guid: 47b3ac931b738054c9cc59c678610b40, type: 3}

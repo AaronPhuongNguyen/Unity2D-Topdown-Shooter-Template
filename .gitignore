@@ -1,0 +1,35 @@
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+
+# Visual Studio
+.vs/
+
+# Build output
+[Bb]uild/
+[Bb]uilds/
+
+# IDE / Rider
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Visual Studio / C# generated files
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Unity generated solution files
+*.pidb.meta
+*.pdb
+*.mdb

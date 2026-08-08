@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ecefc1d5d6426a4ebf8081e385d4e02, type: 3}
+  m_Name: ZomAudio
+  m_EditorClassIdentifier: 
+  AttackSounds:
+  - {fileID: 8300000, guid: de634015f7fe39e418c7250c3a0bb7ff, type: 3}
+  - {fileID: 8300000, guid: c4110637ae8154044bfdcf6be2e5b13b, type: 3}
+  HitSounds:
+  - {fileID: 8300000, guid: 92b2c8a31f62a94418d0e316a3460fb2, type: 3}
+  - {fileID: 8300000, guid: 4d10feb0b27898c4e8d2a6de10024f80, type: 3}
+  - {fileID: 8300000, guid: 87580a35387d7f24e95fb9415bcf1933, type: 3}
+  - {fileID: 8300000, guid: 78fb69a6dccf12f418f834305dcf5b6f, type: 3}
+  - {fileID: 8300000, guid: 949c6ff5285d30a4c8ee2a71cbfe8299, type: 3}
+  - {fileID: 8300000, guid: 2940e6be639554b4d86892519144d550, type: 3}
+  - {fileID: 8300000, guid: d5738fbd13c537f4aa0a1500f7bd7c6c, type: 3}
+  - {fileID: 8300000, guid: fced0ab604fa5ac4081ec697698a9d51, type: 3}
+  - {fileID: 8300000, guid: b69403a897ab8b844b26543bb103b3a7, type: 3}
+  - {fileID: 8300000, guid: 0e2da6e81fcd64349934deb40f078b9c, type: 3}
+  - {fileID: 8300000, guid: 549a47207f4c0974b86b0ae3f33eee41, type: 3}
+  - {fileID: 8300000, guid: e7e100915d862a4419069a03ba8452dd, type: 3}
+  - {fileID: 8300000, guid: fef6b9374236d0d4c8bcc1ec5ac30b34, type: 3}
+  - {fileID: 8300000, guid: f2aae74372a77374ab561a800b773e00, type: 3}
+  - {fileID: 8300000, guid: 27314059a555c9d47bd46934dc14c21d, type: 3}
+  - {fileID: 8300000, guid: 4a6962574aa162c479040a7362589d91, type: 3}
+  - {fileID: 8300000, guid: 692405c67ff76c04bb71822945c930dd, type: 3}
+  - {fileID: 8300000, guid: 0219ece8a026e1a43ba79569a3ef91be, type: 3}
+  - {fileID: 8300000, guid: 7a32aa98da32cd54b9b7578e265f1a0f, type: 3}
+  - {fileID: 8300000, guid: 28d4b3a9848dffd459a183b12bc12a6a, type: 3}
+  DeathSounds:
+  - {fileID: 8300000, guid: 832b4cc3dca8ee84d8f02e2739da88db, type: 3}
+  - {fileID: 8300000, guid: 3b6ac2d5847fdf74b9e45e227a330cea, type: 3}
+  - {fileID: 8300000, guid: 49de2c3f4579fc14f9c39375902770c6, type: 3}
+  - {fileID: 8300000, guid: 1be629c378215214ca92751de2efa63a, type: 3}
+  - {fileID: 8300000, guid: de634015f7fe39e418c7250c3a0bb7ff, type: 3}
+  - {fileID: 8300000, guid: c4110637ae8154044bfdcf6be2e5b13b, type: 3}
+  MiscSounds:
+  - {fileID: 8300000, guid: 3b6ac2d5847fdf74b9e45e227a330cea, type: 3}
+  - {fileID: 8300000, guid: 49de2c3f4579fc14f9c39375902770c6, type: 3}
+  - {fileID: 8300000, guid: 832b4cc3dca8ee84d8f02e2739da88db, type: 3}
+  - {fileID: 8300000, guid: 1be629c378215214ca92751de2efa63a, type: 3}

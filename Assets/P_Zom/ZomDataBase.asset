@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34c229397f51cd04ead7053ad8bf2a4a, type: 3}
+  m_Name: ZomDataBase
+  m_EditorClassIdentifier: 
+  packages:
+  - {fileID: 11400000, guid: 6a3a4e7f3842db147b61623e515db68d, type: 2}
+  - {fileID: 11400000, guid: 11d41e398343d9a4d8224050f3854ee7, type: 2}
+  - {fileID: 11400000, guid: e0bdf6f99fe2e4249a5b6c51f613d427, type: 2}

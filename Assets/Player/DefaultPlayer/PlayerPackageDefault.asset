@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e56d6068c8beec4dbc4c78c6c1495bb, type: 3}
+  m_Name: PlayerPackageDefault
+  m_EditorClassIdentifier: 
+  packName: Player
+  packID: Default_Player
+  prefab: {fileID: 9179845207231992246, guid: 494a7cbbd8919e544b1ad959d3e5473d, type: 3}
+  attribute:
+    template: {fileID: 11400000, guid: 0de660415fe183144912c9d7fcfc3716, type: 2}
+    HP_Current: 0
+    HP_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ATK_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SPEED_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DEF_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ASPD_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+  Media: {fileID: 11400000, guid: 35fc646ddf6b08b46bb4108cd8b66b8e, type: 2}
+  ShootAccuracy: 0.95
