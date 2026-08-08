@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e56d6068c8beec4dbc4c78c6c1495bb, type: 3}
-  m_Name: PlayerPackageDefault
+  m_Script: {fileID: 11500000, guid: c39ff060531d69640a818fa6b2cce8ca, type: 3}
+  m_Name: AlphaJumperP
   m_EditorClassIdentifier: 
-  packName: Player
-  packID: Hero_01
-  prefab: {fileID: 9179845207231992246, guid: 494a7cbbd8919e544b1ad959d3e5473d, type: 3}
+  packName: Alpha Jumper
+  packID: AJ_0019192012
+  prefab: {fileID: 1191015796755749475, guid: 1e5a59c96c39bd9469573e05f11aef34, type: 3}
   attribute:
-    template: {fileID: 11400000, guid: 0de660415fe183144912c9d7fcfc3716, type: 2}
+    template: {fileID: 11400000, guid: 708bcdae669b570479b32e2f67067560, type: 2}
     HP_Current: 0
     HP_Ampl:
       FlatBonus: 0
@@ -42,5 +42,8 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
-  Media: {fileID: 11400000, guid: 35fc646ddf6b08b46bb4108cd8b66b8e, type: 2}
-  ShootAccuracy: 0.975
+  Media: {fileID: 11400000, guid: e2889cbc5f9e62b4292541a9aa4e3667, type: 2}
+  AppearFromWave: 8
+  CountPerSpawner: 1
+  _rateToAppear: 0.01
+  _biteAccuracy: 0.5

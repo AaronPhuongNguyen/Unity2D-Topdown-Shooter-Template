@@ -5,7 +5,8 @@ using UnityEngine;
 public class ZomPackage:UnitPackage
 {
     public int AppearFromWave = 0;
-    public float _rateToAppear = 0.75f;
-    public float _biteAccuracy = 0.75f;
+    public float CountPerSpawner = 2f;
+    public float _rateToAppear = 0.5f;
+    public float _biteAccuracy = 0.5f;
     public float BiteAccuracy => Mathf.Clamp01(_biteAccuracy);
 }

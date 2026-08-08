@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   packages:
   - {fileID: 11400000, guid: 6a3a4e7f3842db147b61623e515db68d, type: 2}
+  - {fileID: 11400000, guid: d19d9e1516d4cd14cad7f00f5624831a, type: 2}
+  - {fileID: 11400000, guid: 1a02776e5feef4b4cba5d43dc33a0758, type: 2}
   - {fileID: 11400000, guid: 11d41e398343d9a4d8224050f3854ee7, type: 2}
+  - {fileID: 11400000, guid: f7e7f4d16e8982f478e506bcf45fa8bb, type: 2}
+  - {fileID: 11400000, guid: 3538504e67acaf94ba60404a2dc06a85, type: 2}
   - {fileID: 11400000, guid: e0bdf6f99fe2e4249a5b6c51f613d427, type: 2}

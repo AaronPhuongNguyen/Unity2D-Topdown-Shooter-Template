@@ -39,7 +39,7 @@ public class Spawner : MonoBehaviour
 
         foreach (ZomPackage package in selected)
         {
-            int spawnCount = RNG.GetInt(2, 5 * Mathf.Max(1, wave / 2));
+            int spawnCount = GetSpawnCount(package);
             Spawn(package, transform.position, spawnCount, isRandom: true, SpawnRadius);
         }
     }
@@ -57,6 +57,16 @@ public class Spawner : MonoBehaviour
         }
 
         return result;
+    }
+    private int GetSpawnCount(ZomPackage package)
+    {
+        float difficultyMult = Mathf.Max(1f, dm.CurrentDifficulty);
+        float raw = package.CountPerSpawner * difficultyMult;
+
+        // small random spread so spawns aren't perfectly deterministic
+        float jittered = RNG.GetFloat(raw * 0.5f, raw * 1.5f);
+
+        return Mathf.Max(1, Mathf.RoundToInt(jittered));
     }
 
     private List<ZomPackage> GetRandomPackages(List<ZomPackage> eligible)

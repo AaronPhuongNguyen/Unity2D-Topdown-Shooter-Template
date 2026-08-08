@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(600)]
-public class Corpse : MonoBehaviour
+public class Corpse : MonoBehaviour, ITick
 {
     #region Settings
     [Header("Corpse Fall")]
@@ -17,6 +17,10 @@ public class Corpse : MonoBehaviour
     [SerializeField] private int bloodSplatCount = 8;
     [SerializeField] private float bloodScatterRadius = 1f;
     [SerializeField] private Vector2 bloodScaleRange = new Vector2(0.5f, 1.2f);
+
+    // Fade only actually changes anything in the last this-many seconds of
+    // life (see UpdateFade's alpha calc) - matches the 2f divisor there.
+    private const float FadeWindow = 2f;
     #endregion
 
     #region Cache
@@ -60,6 +64,11 @@ public class Corpse : MonoBehaviour
 
         SpawnCorpseSprite(corpse);
         SpawnBloodSprites(blood);
+
+        // Register with the central ticker instead of running our own
+        // Update() - see CorpseTicker for why. Safe to call every spawn:
+        // Register() no-ops if already present (e.g. pooled reuse edge case).
+        if (CorpseTicker.instance != null) CorpseTicker.instance.Register(this);
     }
 
     #region Spawning
@@ -120,18 +129,30 @@ public class Corpse : MonoBehaviour
     #endregion
 
     #region Lifecycle
-    private void Update()
+    // Driven by CorpseTicker instead of Unity's own Update() dispatch -
+    // same reasoning as Zombrain/HiveBrain: one central loop over all
+    // active corpses is cheaper on mobile than N separate MonoBehaviour
+    // Update() calls, especially since corpses can pile up with a 120s
+    // default lifetime.
+    public void Tick(float dt)
     {
         if (!isCreated) return;
 
-        if (isFalling) UpdateFall();
+        if (isFalling) UpdateFall(dt);
 
-        UpdateSlide();
+        UpdateSlide(dt);
 
         if (life > 0)
         {
-            life -= Time.deltaTime;
-            UpdateFade();
+            life -= dt;
+
+            // Skip the fade loop entirely until we're actually inside the
+            // fade window - UpdateFade's alpha calc clamps to 1 the whole
+            // time before that anyway, so running it every frame for a
+            // corpse's full 120s lifetime was pure wasted work (a loop
+            // over every blood-splat renderer, per corpse, per frame, for
+            // most of its life, doing nothing visible).
+            if (life <= FadeWindow) UpdateFade();
         }
         else
         {
@@ -140,9 +161,9 @@ public class Corpse : MonoBehaviour
     }
 
     /// <summary>Tilts the corpse toward its death-facing direction, easing in over fallDuration.</summary>
-    private void UpdateFall()
+    private void UpdateFall(float dt)
     {
-        fallTimer += Time.deltaTime;
+        fallTimer += dt;
         float t = Mathf.Clamp01(fallTimer / fallDuration);
         float eased = 1f - Mathf.Pow(1f - t, 2f); // ease-out
 
@@ -156,20 +177,20 @@ public class Corpse : MonoBehaviour
     }
 
     /// <summary>Manually decays slide velocity and moves the corpse, giving a short "skid to a stop" feel.</summary>
-    private void UpdateSlide()
+    private void UpdateSlide(float dt)
     {
         if (slideVelocity.sqrMagnitude < 0.0001f) return;
 
-        transform.position += (Vector3)(slideVelocity * Time.deltaTime);
+        transform.position += (Vector3)(slideVelocity * dt);
 
-        slideVelocity = Vector2.Lerp(slideVelocity, Vector2.zero, slideDrag * Time.deltaTime);
+        slideVelocity = Vector2.Lerp(slideVelocity, Vector2.zero, slideDrag * dt);
 
         if (slideVelocity.sqrMagnitude < 0.01f) slideVelocity = Vector2.zero;
     }
 
     private void UpdateFade()
     {
-        float alpha = Mathf.Clamp01(life / 2f); // fades over the last ~2 seconds of life
+        float alpha = Mathf.Clamp01(life / FadeWindow);
 
         if (corpseRenderer != null)
         {
@@ -178,8 +199,9 @@ public class Corpse : MonoBehaviour
             corpseRenderer.color = c;
         }
 
-        foreach (var sr in bloodRenderers)
+        for (int i = 0; i < bloodRenderers.Count; i++)
         {
+            var sr = bloodRenderers[i];
             if (!sr.gameObject.activeSelf) continue;
             Color c = sr.color;
             c.a = alpha;
@@ -197,6 +219,7 @@ public class Corpse : MonoBehaviour
 
         if (corpseRenderer != null) corpseRenderer.gameObject.SetActive(false);
         foreach (var sr in bloodRenderers) sr.gameObject.SetActive(false);
+        if (CorpseTicker.instance != null) CorpseTicker.instance.Unregister(this);
 
         PoolingSystem.instance.RemoveToPool(this.gameObject);
     }

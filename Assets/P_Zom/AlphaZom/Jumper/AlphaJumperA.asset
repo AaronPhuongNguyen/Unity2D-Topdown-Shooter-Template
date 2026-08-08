@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
-  m_Name: Hazom
+  m_Name: AlphaJumperA
   m_EditorClassIdentifier: 
-  HP_Base: 300
-  ATK_Base: 40
-  SPEED_Base: 7
-  DEF_Base: 250
-  ASPD_Base: 4
-  SIGHT_Base: 2
+  HP_Base: 160
+  ATK_Base: 60
+  SPEED_Base: 14
+  DEF_Base: 200
+  ASPD_Base: 1.5
+  SIGHT_Base: 3

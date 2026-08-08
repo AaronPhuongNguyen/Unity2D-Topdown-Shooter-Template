@@ -7,11 +7,13 @@ public class AttackDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    public const float SkillCooldown = 120f;
-    public float ASPDValue = -0.5f;
-    public float ATKValue = 0.8f;
-    public float SpeedValue = 0.3f;
-    public float BuffDuration = 12f;
+    private const float SkillCooldown = 120f;
+    private const float ASPDValue = -0.4f;
+    private const float ATKValue = 0.6f;
+    private const float SpeedValue = 0.1f;
+    private const float ArmourPenValue = 0.8f;
+    private const float BuffDuration = 12f;
+    private const float ShootAcc = 0.25f;
     public Image UI;
 
     private float CD;
@@ -26,20 +28,22 @@ public class AttackDemo:MonoBehaviour
         CD = SkillCooldown;
         buffDuration = BuffDuration;
 
-        pm.attribute.ATK_Ampl.TotalBonus += ATKValue;
+        pm.attribute.DealtDamage_Extra += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus += ASPDValue;
-        pm.clonedPack.ShootAccuracy += 0.5f;
+        pm.attribute.ArmourPenetration_Perc += ArmourPenValue;
+        pm.clonedPack.ShootAccuracy += ShootAcc;
 
         isExpired = false;
         if (UI != null) UI.fillAmount = 0;
     }
     public void Remove()
     {
-        pm.attribute.ATK_Ampl.TotalBonus -= ATKValue;
+        pm.attribute.DealtDamage_Extra -= ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus -= SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus -= ASPDValue;
-        pm.clonedPack.ShootAccuracy -= 0.5f;
+        pm.attribute.ArmourPenetration_Perc -= ArmourPenValue;
+        pm.clonedPack.ShootAccuracy -= ShootAcc;
 
     }
     private void Update()

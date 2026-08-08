@@ -43,6 +43,6 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 42d92c1089cfa864aa205fd18b4c7e78, type: 2}
-  AppearFromWave: 5
-  _rateToAppear: 0.05
+  AppearFromWave: 8
+  _rateToAppear: 0.1
   _biteAccuracy: 0.5

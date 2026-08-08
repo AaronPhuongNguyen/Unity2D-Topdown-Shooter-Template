@@ -81,8 +81,11 @@ namespace Server
         }
         public static float HandleDamage(float damage,UnitAttribute a, UnitAttribute v)
         {
-            if (v.DEF_Current <= 0) return damage;
-            return damage * (500 / (v.DEF_Current + 500));
+            float effectiveDamage = damage * (1 + a.DealtDamage_Extra);
+            float effectiveArmour = v.DEF_Current * (1 - a.ArmourPenetration_Perc);
+
+            if (effectiveArmour <= 0) return effectiveDamage;
+            return damage * (500 / (effectiveArmour + 500));
         }
     }
 

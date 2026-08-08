@@ -1,4 +1,5 @@
 using Server;
+using System;
 using UnityEngine;
 
 public class Zombrain : HurtBox, ITick
@@ -17,12 +18,12 @@ public class Zombrain : HurtBox, ITick
 
     public bool CanAttack = true;
     public bool CanMove = true;
-    public bool isAttacking => attackStagger > Time.time;
+    public bool isAttacking => attackStagger > _now;
     public bool isMoving => Target != null && Direction != Vector2.zero;
 
     [SerializeField] protected float DistanceToTarget;
     [SerializeField] protected float SpeedHelper;
-     #endregion
+    #endregion
 
     #region Cache
     protected CorpseEmitter ce;
@@ -47,11 +48,39 @@ public class Zombrain : HurtBox, ITick
 
     private static readonly int AttackHash = Animator.StringToHash("IsAttacking");
     private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
+
+    private float lastHPBonus, lastATKBonus, lastDEFBonus, lastSPEEDBonus;
+
+    // Tracks the chase-speed boost separately from lastSPEEDBonus (the
+    // spawn-time random bonus) - Move() adds/removes only its own delta
+    // instead of overwriting FlatBonus wholesale, which used to erase
+    // lastSPEEDBonus's contribution.
+    private float appliedChaseBonus;
+
+    // --- Perf caches -----------------------------------------------------
+    // Cached once per Tick() so we don't hit Time.time (a property call)
+    // repeatedly across the same frame's worth of sub-methods.
+    private float _now;
+
+    // Cached squared sight radius, refreshed only when rotateInterval
+    // refreshes (every 0.1-0.3s) instead of every single TryAttack() call.
+    // Lets TargetInRange() avoid a sqrt via Vector2.Distance.
+    private float _sqrSight;
+
+    // Cached transform to avoid repeated native transform property hops.
+    protected Transform _t;
     #endregion
 
     #region Lifecycle
+    protected virtual void Awake()
+    {
+        _t = transform;
+    }
+
     public virtual void Tick(float dt)
     {
+        _now = Time.time;
+
         FindPrey();
         DefineDirection();
         Move();
@@ -85,7 +114,20 @@ public class Zombrain : HurtBox, ITick
 
         package.attribute = attribute;
 
+        GetBonus();
+        ApplyBonus();
+
         Target = pm.Controlling == null ? null : pm.Controlling.transform;
+
+        // Reset perf caches on respawn so pooled instances don't reuse stale state.
+        rotateInterval = 0f;
+        attackInterval = 0f;
+        attackStagger = 0f;
+        findPreyInterval = 0f;
+        separationInterval = 0f;
+        _sqrSight = attribute.SIGHT_Current * attribute.SIGHT_Current;
+        appliedChaseBonus = 0f;
+        SpeedHelper = 0f;
 
         if (dm != null) dm.RemainingEnemy++;
         if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
@@ -97,40 +139,49 @@ public class Zombrain : HurtBox, ITick
         return true;
     }
 
-    // Normal death: plays FX/sound, spawns a corpse, counts as a kill.
     protected virtual void Despawn()
     {
         if (!Unsubscribe()) return;
 
         PlayDeathSound();
-        ce?.SpawnCorpse(transform.position, Direction);
+        ce?.SpawnCorpse(_t.position, Direction);
 
         if (dm != null)
         {
             dm.RemainingEnemy--;
             dm.Killed++;
         }
-
+        RemoveBonus();
         CleanUpAndReturnToHive();
     }
+    protected virtual void GetBonus()
+    {
+        lastHPBonus = 0.5f * RNG.GetFloat(0, dm.CurrentDifficulty);
+        lastATKBonus = 0.2f * RNG.GetFloat(0, dm.CurrentDifficulty);
+        lastDEFBonus = 20 * RNG.GetFloat(0, dm.CurrentDifficulty);
+        lastSPEEDBonus = RNG.GetFloat(-3, 3);
+    }
+    protected virtual void ApplyBonus()
+    {
+        attribute.HP_Ampl.TotalBonus += lastHPBonus;
+        attribute.ATK_Ampl.TotalBonus += lastATKBonus;
+        attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
+        attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
+    }
+    protected virtual void RemoveBonus()
+    {
+        attribute.HP_Ampl.TotalBonus -= lastHPBonus;
+        attribute.ATK_Ampl.TotalBonus -= lastATKBonus;
+        attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
+        attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
 
-    /// <summary>
-    /// Called directly by HiveBrain.Reboot() during its bulk game-restart
-    /// clear - not self-subscribed to EventBus.OnGameRestart anymore, so
-    /// HiveBrain is the single owner of "clear everything on restart"
-    /// instead of every zombie racing to remove itself independently.
-    /// Unlike Despawn(): no death FX/sound, no kill credit, and it does NOT
-    /// call hb.DespawnZom itself - the caller (HiveBrain) owns pooling and
-    /// clearing its own `zoms` list as part of the same bulk operation.
-    ///
-    /// Deliberately does NOT touch dm.RemainingEnemy: DomainManager.Reboot()
-    /// already resets it to 0 as part of the same restart sequence, so
-    /// decrementing here too would double-count leftover zombies and drive
-    /// the counter negative (which then silently resurfaces as an
-    /// artificially low RemainingEnemy once the next wave spawns on top of
-    /// it). Counter resets belong to DomainManager alone; this only tears
-    /// down this instance's own subscriptions/state.
-    /// </summary>
+        if (appliedChaseBonus != 0f)
+        {
+            attribute.SPEED_Ampl.FlatBonus -= appliedChaseBonus;
+            appliedChaseBonus = 0f;
+        }
+    }
+
     public virtual void Reboot()
     {
         if (!Unsubscribe()) return;
@@ -141,8 +192,6 @@ public class Zombrain : HurtBox, ITick
         ce = null;
     }
 
-    // Unsubscribes everything and returns false if this instance was
-    // already inactive, so callers can bail out instead of double-cleaning.
     private bool Unsubscribe()
     {
         if (!isActive) return false;
@@ -187,6 +236,8 @@ public class Zombrain : HurtBox, ITick
         rb.bodyType = RigidbodyType2D.Kinematic;
         rb.constraints = RigidbodyConstraints2D.FreezePosition;
         rb.freezeRotation = true;
+        if (anim != null)
+            anim.cullingMode = AnimatorCullingMode.CullCompletely;
     }
     #endregion
 
@@ -194,27 +245,27 @@ public class Zombrain : HurtBox, ITick
     protected virtual void DefineDirection()
     {
         if (Target == null) return;
-        if (Time.time < rotateInterval) return;
+        if (_now < rotateInterval) return;
 
-        Direction = (Target.position - transform.position).normalized;
+        Direction = ((Vector2)Target.position - (Vector2)_t.position).normalized;
         Rotate();
+        DefineDistance();
 
-        rotateInterval = Time.time + RNG.GetFloat(0.1f, 0.3f);
+        rotateInterval = _now + RNG.GetFloat(0.1f, 0.3f);
+        _sqrSight = attribute.SIGHT_Current * attribute.SIGHT_Current;
     }
 
-    protected virtual float DefineDistance()
+    protected virtual void DefineDistance()
     {
-        if (Target == null) return 0f;
-
-        DistanceToTarget = Vector2.Distance(Target.position, transform.position);
-        return DistanceToTarget;
+        if (Target == null) return;
+        Vector2 delta = (Vector2)Target.position - (Vector2)_t.position;
+        DistanceToTarget = Mathf.Sqrt(delta.sqrMagnitude);
     }
 
     protected virtual void Rotate()
     {
         if (Direction == Vector2.zero) return;
         if (isAttacking) return;
-        if (Time.time < rotateInterval) return;
 
         UnitMotion.RotateThisObject(gameObject, Direction);
     }
@@ -226,22 +277,23 @@ public class Zombrain : HurtBox, ITick
         if (Direction == Vector2.zero) return;
         if (isAttacking) return;
 
-        if (Time.time >= separationInterval)
+        if (_now >= separationInterval)
         {
             cachedSeparation = UnitMotion.GetSeparationForce(
-                transform.position,
+                _t.position,
                 hb.GetNearbyZoms(this, separationRadius),
                 separationRadius,
                 separationStrength
             );
-            separationInterval = Time.time + 0.2f;
+            separationInterval = _now + 0.2f;
+        }
+        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 2f) ? 50f : 0f;
+        if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
+        {
+            attribute.SPEED_Ampl.FlatBonus += SpeedHelper - appliedChaseBonus;
+            appliedChaseBonus = SpeedHelper;
         }
 
-        if (DistanceToTarget > pm.attribute.SIGHT_Current * 2f)
-            SpeedHelper = 20f;
-        else SpeedHelper = 0f;
-        attribute.SPEED_Ampl.FlatBonus = SpeedHelper;
-        
         Vector2 finalDir = (Direction + cachedSeparation).normalized;
         UnitMotion.MoveThisObject(attribute, gameObject, finalDir);
     }
@@ -256,18 +308,18 @@ public class Zombrain : HurtBox, ITick
     #region Combat
     protected virtual bool TargetInRange()
     {
-        return DefineDistance() <= attribute.SIGHT_Current;
+        return DistanceToTarget * DistanceToTarget <= _sqrSight;
     }
 
     protected virtual void TryAttack()
     {
         if (Target == null) return;
         if (!CanAttack) return;
-        if (Time.time < attackInterval) return;
+        if (_now < attackInterval) return;
 
-        attackInterval = Time.time + RNG.GetFloat(attribute.ASPD_Current, 1f);
+        attackInterval = _now + RNG.GetFloat(attribute.ASPD_Current, 1f);
 
-        if (Time.time < attackStagger) return;
+        if (_now < attackStagger) return;
         if (!TargetInRange()) return;
 
         PerformAttack();
@@ -279,12 +331,12 @@ public class Zombrain : HurtBox, ITick
 
         PlayAttackSound();
 
-        if (RNG.GetFloat(0, 1f) < package.BiteAccuracy)
+        if (RNG.GetPercent() < package.BiteAccuracy)
             Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
 
-        if (anim != null) anim.SetBool(AttackHash,CanAttack && isAttacking);
+        if (anim != null) anim.SetBool(AttackHash, CanAttack && isAttacking);
 
-        attackStagger = Time.time + RNG.GetFloat(attribute.ASPD_Current, 2f);
+        attackStagger = _now + RNG.GetFloat(attribute.ASPD_Current, 2f);
     }
 
     protected virtual void OnHit(float damage)
@@ -297,8 +349,8 @@ public class Zombrain : HurtBox, ITick
     protected virtual void FindPrey()
     {
         if (Target != null) return;
-        if (Time.time < findPreyInterval) return;
-        findPreyInterval = Time.time + RNG.GetFloat(0.3f, 1f);
+        if (_now < findPreyInterval) return;
+        findPreyInterval = _now + RNG.GetFloat(0.3f, 1f);
 
         if (pm.Controlling == null) return;
         Target = pm.Controlling.transform;
@@ -307,25 +359,25 @@ public class Zombrain : HurtBox, ITick
     protected virtual void PlayAttackSound()
     {
         if (AudioManager.instance == null || package == null) return;
-        AudioManager.instance.PlayAudio(package.Media.Audio.GetAttackSound(), transform.position);
+        AudioManager.instance.PlayAudio(package.Media.Audio.GetAttackSound(), _t.position);
     }
 
     protected virtual void PlayHitSound()
     {
         if (AudioManager.instance == null || package == null) return;
-        AudioManager.instance.PlayAudio(package.Media.Audio.GetHitSound(), transform.position);
+        AudioManager.instance.PlayAudio(package.Media.Audio.GetHitSound(), _t.position);
     }
 
     protected virtual void PlayDeathSound()
     {
         if (AudioManager.instance == null || package == null) return;
-        AudioManager.instance.PlayAudio(package.Media.Audio.GetDeathSound(), transform.position);
+        AudioManager.instance.PlayAudio(package.Media.Audio.GetDeathSound(), _t.position);
     }
 
     protected virtual void PlayMiscSound()
     {
         if (AudioManager.instance == null || package == null) return;
-        AudioManager.instance.PlayAudio(package.Media.Audio.GetMiscSound(), transform.position);
+        AudioManager.instance.PlayAudio(package.Media.Audio.GetMiscSound(), _t.position);
     }
     #endregion
 }

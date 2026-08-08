@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
-  m_Name: Hazom
+  m_Name: AlphaNZ
   m_EditorClassIdentifier: 
-  HP_Base: 300
+  HP_Base: 240
   ATK_Base: 40
-  SPEED_Base: 7
-  DEF_Base: 250
-  ASPD_Base: 4
-  SIGHT_Base: 2
+  SPEED_Base: 12
+  DEF_Base: 100
+  ASPD_Base: 0.5
+  SIGHT_Base: 3

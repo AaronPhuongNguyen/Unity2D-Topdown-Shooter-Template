@@ -6,23 +6,22 @@ using UnityEngine;
 [DefaultExecutionOrder(999)]
 public class PlayerProperties : MonoBehaviour
 {
+    [SerializeField] private PropertiesVisual pv;
     UnitAttribute a => PlayerManager.instance.attribute;
 
     private void Awake()
     {
+        Up_Point = DefaultPoint;
         EventBus.OnGameRestart += Refresh;
         EventBus.OnWaveCleared += GetPoint;
+
+        if (pv != null) pv.pp = this;
     }
     private void OnDestroy()
     {
         EventBus.OnGameRestart -= Refresh;
         EventBus.OnWaveCleared -= GetPoint;
     }
-    private void OnEnable()
-    {
-        UpdateStatus();
-    }
-
     #region Visual
     [Header("Point")]
     public TextMeshProUGUI UpgradePoint;
@@ -36,12 +35,13 @@ public class PlayerProperties : MonoBehaviour
 
     private void Refresh()
     {
-        Up_Point = 3;
+        Up_Point = DefaultPoint;
         Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = 0f;
-        UpdateStatus();
+        hp = atk = def = speed = sight = 0f;
+        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = 0;
     }
 
-    private void UpdateStatus()
+    public void UpdateStatus()
     {
         if (a == null) return;
 
@@ -68,7 +68,9 @@ public class PlayerProperties : MonoBehaviour
     #endregion
 
     #region Upgrader
-    public int Up_Point=3;
+    private const int DefaultPoint = 5;
+
+    private int Up_Point;
     private float Up_HP;
     private float Up_ATK;
     private float Up_DEF;
@@ -76,52 +78,74 @@ public class PlayerProperties : MonoBehaviour
     private float Up_SIGHT;
 
     private float hp, atk, def, speed, sight;
+    private int pity;
+    private float interval=6;
 
     private void GetPoint()
     {
-        float luck = RNG.GetPercent();
-        int reward=0;
+        if (interval > Time.time) return;
+        interval = Time.time + 6f;
 
-        if (luck < 0.05f) reward = 4;
-        else if (luck < 0.15f) reward = 3;
-        else if (luck < 0.35f) reward = 2;
-        else reward = 1;
+        int reward = RollReward();
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty);
+        int finalReward = Mathf.Min(10, Mathf.FloorToInt(multiplier));
 
-        Up_Point += reward;
+        Up_Point += finalReward;
         UpdateStatus();
     }
+
+    private int RollReward()
+    {
+        float luck = RNG.GetPercent();
+
+        if (luck < 0.025f || pity >= 10)
+        {
+            pity = 0;
+            return 5;
+        }
+
+        pity++;
+
+        if (luck < 0.075f) return 4;
+        if (luck < 0.2f) return 3;
+        if (luck < 0.7f) return 2;
+        return 1;
+    }
+
     public void UpgradeHP()
     {
         if (Up_Point <= 0) return;
-        Up_HP+=20;
+        Up_HP+=20f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeATK()
     {
         if (Up_Point <= 0) return;
-        Up_ATK+=2;
+        Up_ATK+=1.2f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeDEF()
     {
         if (Up_Point <= 0) return;
-        Up_DEF+=50;
+        Up_DEF+=40f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSPEED()
     {
         if (Up_Point <= 0) return;
-        Up_SPEED+=0.25f;
+        if (Up_SPEED >= 5) return;
+        Up_SPEED+=0.5f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSIGHT()
     {
         if (Up_Point <= 0) return;
-        Up_SIGHT+=1;
+        if (Up_SIGHT >= 10) return;
+        Up_SIGHT+=0.5f;
         Up_Point--;
         UpdateStatus();
     }

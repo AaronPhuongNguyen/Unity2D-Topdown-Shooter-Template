@@ -39,6 +39,28 @@ public class UnitAttribute
     public float SIGHT_Current => Server.Calculation.FinalValue(template.SIGHT_Base, SIGHT_Ampl);
     #endregion
 
+    #region Misc Status
+    protected float armourPem_Perc=0;
+    protected float dealtDamage_Extra = 0f;
+    protected float damageReduction_Extra = 0f;
+
+    public float ArmourPenetration_Perc
+    {
+        get => Mathf.Clamp01(armourPem_Perc);
+        set => armourPem_Perc = value;
+    }
+    public float DealtDamage_Extra
+    {
+        get => Mathf.Clamp01(dealtDamage_Extra);
+        set => dealtDamage_Extra = value;
+    }
+    public float DamageReduction_Extra
+    {
+        get => Mathf.Clamp01(damageReduction_Extra);
+        set => damageReduction_Extra = value;
+    }
+    #endregion
+
     #region Amplifier
     public Amplification HP_Ampl;
     public Amplification ATK_Ampl;
@@ -87,7 +109,7 @@ public class UnitAttribute
     #region Combat
     public void TakeDamage(float damage)
     {
-        HP_Current -= damage;
+        HP_Current -= damage * (1 - DamageReduction_Extra);
         DeathHandler();
     }
 

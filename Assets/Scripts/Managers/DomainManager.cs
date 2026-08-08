@@ -92,6 +92,7 @@ public class DomainManager : MonoBehaviour
     public int RemainingEnemy;
     public int Killed;
     public int CurrentWave = 0;
+    public float CurrentDifficulty=0;
     public const float WaveDuration = 90f;
 
     [Header("Runtime debug")]
@@ -99,7 +100,7 @@ public class DomainManager : MonoBehaviour
     public float PreparingTime;
 
     private bool isGameRunning;
-    private bool isNewWave = true;
+    private bool isNewWave = false;
 
     private void PrepareTheMatch()
     {
@@ -122,13 +123,15 @@ public class DomainManager : MonoBehaviour
         Killed = 0;
         CurrentWave = 0;
         PreparingTime = 5f;
+        SecondBeforeNextWave = 0f;
+        CurrentDifficulty = 0f;
     }
 
     public void StartTheGame()
     {
         Time.timeScale = 1f;
         isGameRunning = true;
-        isNewWave = true;
+        PreparingTime = 5f;
     }
 
     private void NextWave()
@@ -146,8 +149,9 @@ public class DomainManager : MonoBehaviour
 
         SecondBeforeNextWave = WaveDuration;
         CurrentWave++;
-        EventBus.RaiseNewWave(CurrentWave);
+        CurrentDifficulty = CurrentWave / 4f;
         isNewWave = true;
+        EventBus.RaiseNewWave(CurrentWave);
     }
 
     private void RunGame()

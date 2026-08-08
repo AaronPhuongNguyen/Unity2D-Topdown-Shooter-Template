@@ -44,5 +44,6 @@ MonoBehaviour:
       TotalBonus: 1
   Media: {fileID: 11400000, guid: e2889cbc5f9e62b4292541a9aa4e3667, type: 2}
   AppearFromWave: 0
+  CountPerSpawner: 3
   _rateToAppear: 1
   _biteAccuracy: 0.5
