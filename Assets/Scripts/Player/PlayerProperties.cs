@@ -8,6 +8,7 @@ public class PlayerProperties : MonoBehaviour
 {
     [SerializeField] private PropertiesVisual pv;
     UnitAttribute a => PlayerManager.instance.attribute;
+    DomainManager dm => DomainManager.instance;
 
     private void Awake()
     {
@@ -69,6 +70,11 @@ public class PlayerProperties : MonoBehaviour
 
     #region Upgrader
     private const int DefaultPoint = 5;
+    private const float Growth_HP = 15;
+    private const float Growth_ATK = 1.25f;
+    private const float Growth_DEF = 30f;
+    private const float Growth_SPEED = 0.6f;
+    private const float Growth_SIGHT = 0.75f;
 
     private int Up_Point;
     private float Up_HP;
@@ -115,21 +121,28 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeHP()
     {
         if (Up_Point <= 0) return;
-        Up_HP+=15f;
-        Up_Point--;
+
+        if (dm.CurrentDifficulty >= 10) Up_HP += Growth_HP * Mathf.Max(2.5f, dm.CurrentDifficulty / 5);
+        else Up_HP += Growth_HP;
+
+            Up_Point--;
         UpdateStatus();
     }
     public void UpgradeATK()
     {
         if (Up_Point <= 0) return;
-        Up_ATK+=1.21f;
-        Up_Point--;
+
+        if (dm.CurrentDifficulty >= 10) Up_ATK += Growth_ATK * Mathf.Max(2.5f, dm.CurrentDifficulty / 5);
+        else Up_ATK += Growth_ATK;
+
+            Up_Point--;
         UpdateStatus();
     }
     public void UpgradeDEF()
     {
         if (Up_Point <= 0) return;
-        Up_DEF+=25f;
+        if (Up_DEF >= 300 * dm.CurrentDifficulty) return;
+        Up_DEF+=Growth_DEF;
         Up_Point--;
         UpdateStatus();
     }
@@ -137,15 +150,15 @@ public class PlayerProperties : MonoBehaviour
     {
         if (Up_Point <= 0) return;
         if (Up_SPEED >= 6) return;
-        Up_SPEED+=0.6f;
+        Up_SPEED+=Growth_SPEED;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSIGHT()
     {
         if (Up_Point <= 0) return;
-        if (Up_SIGHT >= 14) return;
-        Up_SIGHT+=0.7f;
+        if (Up_SIGHT >= 15) return;
+        Up_SIGHT+=Growth_SIGHT;
         Up_Point--;
         UpdateStatus();
     }

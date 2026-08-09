@@ -43,6 +43,7 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
   Media: {fileID: 11400000, guid: e2889cbc5f9e62b4292541a9aa4e3667, type: 2}
+  CurrencyAtKill: 10
   AppearFromWave: 3
   CountPerSpawner: 2
   _rateToAppear: 0.1

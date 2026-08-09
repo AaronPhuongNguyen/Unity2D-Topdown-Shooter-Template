@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: JumperAttribute
   m_EditorClassIdentifier: 
-  HP_Base: 80
-  ATK_Base: 35
+  HP_Base: 50
+  ATK_Base: 20
   SPEED_Base: 13
-  DEF_Base: 50
+  DEF_Base: 100
   ASPD_Base: 2
   SIGHT_Base: 2

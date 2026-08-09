@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: BetaNZ
   m_EditorClassIdentifier: 
-  HP_Base: 180
+  HP_Base: 200
   ATK_Base: 30
   SPEED_Base: 11
-  DEF_Base: 75
+  DEF_Base: 160
   ASPD_Base: 0.75
   SIGHT_Base: 2.5

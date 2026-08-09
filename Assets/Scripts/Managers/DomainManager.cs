@@ -1,4 +1,5 @@
 using Server;
+using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(-5)]
@@ -27,8 +28,16 @@ public class DomainManager : MonoBehaviour
     #region Init
     private void Start() => StartTheGame();
 
-    private void OnEnable() => EventBus.OnPlayerRespawn += Reboot;
-    private void OnDisable() => EventBus.OnPlayerRespawn -= Reboot;
+    private void OnEnable()
+    {
+        EventBus.OnGameRestart += Reboot;
+        EventBus.OnGameOver += StopDomain;
+    }
+    private void OnDisable()
+    {
+        EventBus.OnGameRestart -= Reboot;
+        EventBus.OnGameOver -= StopDomain;
+    }
     #endregion
 
     #region Cycle
@@ -63,6 +72,105 @@ public class DomainManager : MonoBehaviour
         pos.y = Mathf.Clamp(pos.y, min.y, max.y);
         return pos;
     }
+
+    public Vector2 WalkableMin => Vector2.Lerp(mapCenter, MapMin, walkablePercent);
+    public Vector2 WalkableMax => Vector2.Lerp(mapCenter, MapMax, walkablePercent);
+    #endregion
+
+    #region Border
+    [Header("Border")]
+    [Tooltip("Prefab with a SpriteRenderer using a plain 1x1 unit sprite (e.g. white square). Color/alpha (black, 50%) should be set on the prefab itself.")]
+    [SerializeField] private SpriteRenderer borderPrefab;
+    [Tooltip("Optional parent to keep spawned borders organized in the hierarchy.")]
+    [SerializeField] private Transform borderContainer;
+
+    private readonly List<SpriteRenderer> spawnedBorders = new List<SpriteRenderer>();
+
+    /// <summary>
+    /// Spawns 4 border strips covering the gap between the walkable area and the
+    /// full map bounds — top, bottom, left, right — so the out-of-bounds zone reads
+    /// as visually walled off. Assumes borderPrefab's sprite is exactly 1x1 unit,
+    /// since strips are sized purely via transform.localScale.
+    /// </summary>
+    private void SpawnBorders()
+    {
+        if (borderPrefab == null)
+        {
+            Debug.LogWarning("DomainManager: No border prefab assigned — skipping border spawn.");
+            return;
+        }
+
+        ClearBorders();
+
+        Vector2 mapMin = MapMin;
+        Vector2 mapMax = MapMax;
+        Vector2 walkMin = WalkableMin;
+        Vector2 walkMax = WalkableMax;
+
+        float leftWidth = walkMin.x - mapMin.x;
+        float rightWidth = mapMax.x - walkMax.x;
+        float topHeight = mapMax.y - walkMax.y;
+        float bottomHeight = walkMin.y - mapMin.y;
+
+        // Left strip: spans full map height, sits between mapMin.x and walkMin.x
+        SpawnBorderStrip(
+            center: new Vector2(mapMin.x + leftWidth * 0.5f, mapCenter.y),
+            size: new Vector2(leftWidth, mapSize.y));
+
+        // Right strip: spans full map height, sits between walkMax.x and mapMax.x
+        SpawnBorderStrip(
+            center: new Vector2(mapMax.x - rightWidth * 0.5f, mapCenter.y),
+            size: new Vector2(rightWidth, mapSize.y));
+
+        // Top strip: spans full map width, sits between walkMax.y and mapMax.y
+        SpawnBorderStrip(
+            center: new Vector2(mapCenter.x, mapMax.y - topHeight * 0.5f),
+            size: new Vector2(mapSize.x, topHeight));
+
+        // Bottom strip: spans full map width, sits between mapMin.y and walkMin.y
+        SpawnBorderStrip(
+            center: new Vector2(mapCenter.x, mapMin.y + bottomHeight * 0.5f),
+            size: new Vector2(mapSize.x, bottomHeight));
+    }
+
+    private void SpawnBorderStrip(Vector2 center, Vector2 size)
+    {
+        if (size.x <= 0f || size.y <= 0f) return; // walkablePercent == 1 means no border gap to fill
+
+        SpriteRenderer border = Instantiate(borderPrefab, borderContainer);
+        border.transform.position = new Vector3(center.x, center.y, border.transform.position.z);
+
+        // Don't assume the sprite is 1x1 world unit — compute the actual native size
+        // from the sprite's bounds (in local/unscaled space) so this works regardless
+        // of the sprite's Pixels Per Unit import setting. This is what was causing
+        // borders to appear huge and centered: a mismatched PPU made the "1x1 unit"
+        // assumption wrong, sometimes by 100x or more.
+        Vector2 nativeSize = border.sprite != null ? (Vector2)border.sprite.bounds.size : Vector2.one;
+        if (nativeSize.x <= 0f) nativeSize.x = 1f;
+        if (nativeSize.y <= 0f) nativeSize.y = 1f;
+
+        // Also account for any scale already baked into the parent container, since
+        // localScale multiplies with the parent's scale to produce the final world size.
+        Vector3 parentScale = borderContainer != null ? borderContainer.lossyScale : Vector3.one;
+        if (parentScale.x == 0f) parentScale.x = 1f;
+        if (parentScale.y == 0f) parentScale.y = 1f;
+
+        border.transform.localScale = new Vector3(
+            (size.x / nativeSize.x) / parentScale.x,
+            (size.y / nativeSize.y) / parentScale.y,
+            1f);
+
+        spawnedBorders.Add(border);
+    }
+
+    private void ClearBorders()
+    {
+        for (int i = spawnedBorders.Count - 1; i >= 0; i--)
+        {
+            if (spawnedBorders[i] != null) Destroy(spawnedBorders[i].gameObject);
+        }
+        spawnedBorders.Clear();
+    }
     #endregion
 
     #region Seed Settings
@@ -93,7 +201,7 @@ public class DomainManager : MonoBehaviour
     public int Killed;
     public int Currency;
     public int CurrentWave = 0;
-    public float CurrentDifficulty=0;
+    public float CurrentDifficulty = 0;
     public const float WaveDuration = 90f;
     public const float PreparingTimeDefault = 5f;
 
@@ -115,6 +223,13 @@ public class DomainManager : MonoBehaviour
             return;
         }
         generator.Generate();
+
+        SpawnBorders();
+    }
+    private void StopDomain()
+    {
+        isGameRunning = false;
+        Time.timeScale = 0;
     }
     private void Reboot()
     {
@@ -123,6 +238,7 @@ public class DomainManager : MonoBehaviour
         RemainingEnemy = 0;
         Killed = 0;
         CurrentWave = 0;
+        Currency = 0;
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
         CurrentDifficulty = 0f;
@@ -151,7 +267,7 @@ public class DomainManager : MonoBehaviour
         {
             PreparingTime = PreparingTimeDefault;
             SecondBeforeNextWave = 0f;
-            Currency += Killed;
+            Currency += Mathf.FloorToInt(Killed * RNG.GetFloat(0.25f,4f));
             EventBus.RaiseWaveCleared();
             isNewWave = false;
             return;
