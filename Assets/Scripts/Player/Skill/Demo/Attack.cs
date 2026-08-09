@@ -7,11 +7,11 @@ public class AttackDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    private const float SkillCooldown = 120f;
+    private const float SkillCooldown = 90f;
     private const float ASPDValue = -0.4f;
     private const float ATKValue = 0.6f;
     private const float SpeedValue = 0.1f;
-    private const float ArmourPenValue = 0.8f;
+    private const float ArmourPenValue = 0.55f;
     private const float BuffDuration = 12f;
     private const float ShootAcc = 0.25f;
     public Image UI;

@@ -691,7 +691,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetSceneName: Map_0
-  useAsync: 0
+  useAsync: 1
   delayBeforeLoad: 0
 --- !u!1 &2032904589
 GameObject:

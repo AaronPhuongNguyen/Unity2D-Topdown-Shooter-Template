@@ -7,9 +7,9 @@ public class HealDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    public float SkillCooldown = 30f;
-    public float HealValue = 50f;
-    public float HealDuration = 5f;
+    public const float SkillCooldown = 30f;
+    public const float HealValue = 60f;
+    public const float HealDuration = 5f;
     public Image UI;
 
     private float CD;

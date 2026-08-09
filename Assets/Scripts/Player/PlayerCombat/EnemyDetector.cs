@@ -1,14 +1,13 @@
 using UnityEngine;
 
-public class Detector : MonoBehaviour,ITick
+public class Detector : MonoBehaviour, ITick
 {
     #region Cache
     private PlayerManager pm => PlayerManager.instance;
-    private Collider2D[] targets = new Collider2D[10];
-
+    private readonly Collider2D[] targets = new Collider2D[10];
     private Transform currentTarget;
-
     private int foundTarget;
+    private float searchInterval;
     #endregion
 
     #region Tick
@@ -19,7 +18,6 @@ public class Detector : MonoBehaviour,ITick
     #endregion
 
     #region Functions
-    float searchInterval;
     private void PerformSearch()
     {
         if (Time.time < searchInterval) return;
@@ -28,26 +26,38 @@ public class Detector : MonoBehaviour,ITick
         SearchTarget();
         pm.Target = FindNearestTarget();
     }
-    private void SearchTarget() =>
-        foundTarget = Physics2D.OverlapCircleNonAlloc(pm.Controlling.transform.position, pm.attribute.SIGHT_Current, targets, pm.EnemyMask);
+
+    private void SearchTarget()
+    {
+        foundTarget = Physics2D.OverlapCircleNonAlloc(
+            pm.Controlling.transform.position,
+            pm.attribute.SIGHT_Current,
+            targets,
+            pm.EnemyMask);
+    }
+
     private Transform FindNearestTarget()
     {
-        if(targets == null || foundTarget ==0) return null;
+        if (foundTarget <= 0) return null;
 
-        float nearest=999;
-        int nearestAtIndex=0;
-        for(int i = foundTarget-1;i>=0 ; i--)
+        Vector2 originPos = pm.Controlling.transform.position;
+        float nearestSqr = float.MaxValue;
+        Transform nearestTransform = null;
+
+        for (int i = 0; i < foundTarget; i++)
         {
-            if (targets[i] == null) continue;
-            float dist = Vector2.Distance(targets[i].transform.position,pm.Controlling.transform.position);
-            if (dist < nearest)
+            Collider2D col = targets[i];
+            if (col == null) continue;
+
+            float distSqr = ((Vector2)col.transform.position - originPos).sqrMagnitude;
+            if (distSqr < nearestSqr)
             {
-                nearest = dist;
-                nearestAtIndex = i;
+                nearestSqr = distSqr;
+                nearestTransform = col.transform;
             }
-            else continue;
         }
-        currentTarget = targets[nearestAtIndex].transform;
+
+        currentTarget = nearestTransform;
         return currentTarget;
     }
     #endregion

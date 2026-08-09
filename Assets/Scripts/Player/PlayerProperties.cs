@@ -88,7 +88,7 @@ public class PlayerProperties : MonoBehaviour
 
         int reward = RollReward();
         float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty);
-        int finalReward = Mathf.Min(10, Mathf.FloorToInt(multiplier));
+        int finalReward = Mathf.Min(12, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
         UpdateStatus();
@@ -98,7 +98,7 @@ public class PlayerProperties : MonoBehaviour
     {
         float luck = RNG.GetPercent();
 
-        if (luck < 0.025f || pity >= 10)
+        if (luck < 0.05f || pity >= 10)
         {
             pity = 0;
             return 5;
@@ -106,46 +106,46 @@ public class PlayerProperties : MonoBehaviour
 
         pity++;
 
-        if (luck < 0.075f) return 4;
-        if (luck < 0.2f) return 3;
-        if (luck < 0.7f) return 2;
+        if (luck < 0.015f) return 4;
+        if (luck < 0.35f) return 3;
+        if (luck < 0.75f) return 2;
         return 1;
     }
 
     public void UpgradeHP()
     {
         if (Up_Point <= 0) return;
-        Up_HP+=20f;
+        Up_HP+=15f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeATK()
     {
         if (Up_Point <= 0) return;
-        Up_ATK+=1.2f;
+        Up_ATK+=1.21f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeDEF()
     {
         if (Up_Point <= 0) return;
-        Up_DEF+=40f;
+        Up_DEF+=25f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSPEED()
     {
         if (Up_Point <= 0) return;
-        if (Up_SPEED >= 5) return;
-        Up_SPEED+=0.5f;
+        if (Up_SPEED >= 6) return;
+        Up_SPEED+=0.6f;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSIGHT()
     {
         if (Up_Point <= 0) return;
-        if (Up_SIGHT >= 10) return;
-        Up_SIGHT+=0.5f;
+        if (Up_SIGHT >= 14) return;
+        Up_SIGHT+=0.7f;
         Up_Point--;
         UpdateStatus();
     }

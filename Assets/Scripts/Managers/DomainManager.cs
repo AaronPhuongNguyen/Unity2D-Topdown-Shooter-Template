@@ -91,9 +91,11 @@ public class DomainManager : MonoBehaviour
     [Header("Wave")]
     public int RemainingEnemy;
     public int Killed;
+    public int Currency;
     public int CurrentWave = 0;
     public float CurrentDifficulty=0;
     public const float WaveDuration = 90f;
+    public const float PreparingTimeDefault = 5f;
 
     [Header("Runtime debug")]
     public float SecondBeforeNextWave;
@@ -114,7 +116,6 @@ public class DomainManager : MonoBehaviour
         }
         generator.Generate();
     }
-
     private void Reboot()
     {
         Time.timeScale = 1f;
@@ -122,24 +123,35 @@ public class DomainManager : MonoBehaviour
         RemainingEnemy = 0;
         Killed = 0;
         CurrentWave = 0;
-        PreparingTime = 5f;
+        PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
         CurrentDifficulty = 0f;
     }
 
+    public void HandleSpawn(ZomPackage p)
+    {
+        RemainingEnemy++;
+    }
+    public void HandleKill(ZomPackage p)
+    {
+        RemainingEnemy--;
+        Killed++;
+        Currency += p.CurrencyAtKill;
+    }
     public void StartTheGame()
     {
         Time.timeScale = 1f;
         isGameRunning = true;
-        PreparingTime = 5f;
+        PreparingTime = PreparingTimeDefault;
     }
 
     private void NextWave()
     {
         if (isNewWave)
         {
-            PreparingTime = 5f;
+            PreparingTime = PreparingTimeDefault;
             SecondBeforeNextWave = 0f;
+            Currency += Killed;
             EventBus.RaiseWaveCleared();
             isNewWave = false;
             return;

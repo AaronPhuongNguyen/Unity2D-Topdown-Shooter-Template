@@ -129,7 +129,7 @@ public class Zombrain : HurtBox, ITick
         appliedChaseBonus = 0f;
         SpeedHelper = 0f;
 
-        if (dm != null) dm.RemainingEnemy++;
+        if (dm != null) dm.HandleSpawn(package);
         if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
         {
             ce = cet;
@@ -146,20 +146,25 @@ public class Zombrain : HurtBox, ITick
         PlayDeathSound();
         ce?.SpawnCorpse(_t.position, Direction);
 
-        if (dm != null)
-        {
-            dm.RemainingEnemy--;
-            dm.Killed++;
-        }
+        if (dm != null) dm.HandleKill(package);
+
         RemoveBonus();
         CleanUpAndReturnToHive();
     }
     protected virtual void GetBonus()
     {
-        lastHPBonus = 0.5f * RNG.GetFloat(0, dm.CurrentDifficulty);
-        lastATKBonus = 0.2f * RNG.GetFloat(0, dm.CurrentDifficulty);
-        lastDEFBonus = 20 * RNG.GetFloat(0, dm.CurrentDifficulty);
-        lastSPEEDBonus = RNG.GetFloat(-3, 3);
+        if (RNG.GetPercent() < 0.5f) lastHPBonus = 0.6f * dm.CurrentDifficulty;
+        else lastHPBonus = 0.2f * dm.CurrentDifficulty;
+
+        if (RNG.GetPercent() < 0.5f) lastATKBonus = 0.3f * dm.CurrentDifficulty;
+        else lastATKBonus = 0.1f * dm.CurrentDifficulty;
+
+        if (RNG.GetPercent() < 0.5f) lastDEFBonus = 30f * RNG.GetInt(0, 3) * dm.CurrentDifficulty;
+        else lastDEFBonus = 10 * RNG.GetFloat(0, 3) * dm.CurrentDifficulty;
+        lastDEFBonus = Mathf.Min(lastDEFBonus,1000);
+
+        if (RNG.GetPercent() < 0.5f) lastSPEEDBonus = 2f * RNG.GetInt(-2, 4);
+        lastSPEEDBonus = Mathf.Min(lastSPEEDBonus,pm.attribute.SPEED_Current + 2);
     }
     protected virtual void ApplyBonus()
     {

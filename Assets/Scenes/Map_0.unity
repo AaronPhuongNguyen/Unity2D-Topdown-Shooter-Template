@@ -8395,11 +8395,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapCenter: {x: 0, y: 0}
   mapSize: {x: 1200, y: 1200}
-  walkablePercent: 0.5
+  walkablePercent: 0.65
   useRandomSeed: 0
   seed: 1062008
   RemainingEnemy: 0
   Killed: 0
+  Currency: 0
   CurrentWave: 0
   CurrentDifficulty: 0
   SecondBeforeNextWave: 0
