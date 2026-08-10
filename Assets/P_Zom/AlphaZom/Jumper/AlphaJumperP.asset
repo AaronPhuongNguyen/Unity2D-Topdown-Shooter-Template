@@ -19,7 +19,7 @@ MonoBehaviour:
     template: {fileID: 11400000, guid: 708bcdae669b570479b32e2f67067560, type: 2}
     HP_Current: 0
     HP_Ampl:
-      FlatBonus: 0
+      FlatBonus: 50
       PercBonus: 1
       TotalBonus: 1
     ATK_Ampl:

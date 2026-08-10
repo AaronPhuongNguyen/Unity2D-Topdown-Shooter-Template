@@ -8,8 +8,8 @@ public class WaveCount : MonoBehaviour
     public TextMeshProUGUI diff;
 
     private DomainManager dm => DomainManager.instance;
-    private int waveCount = 1;
-    private float diffs = 1;
+    private int waveCount = 0;
+    private float diffs = 0;
 
     private void Update()
     {

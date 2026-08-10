@@ -44,9 +44,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c5c042e111367843a297c2f8c6cc021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fallTiltAngle: 75
-  fallDuration: 0.3
-  slideDrag: 4
-  bloodSplatCount: 4
-  bloodScatterRadius: 0.5
-  bloodScaleRange: {x: 0.5, y: 1.2}
+  fallTiltAngle: 45
+  fallDuration: 0.45
+  slideDrag: 6
+  bloodSplatCount: 6
+  bloodScatterRadius: 1
+  bloodScaleRange: {x: 0.75, y: 1.5}

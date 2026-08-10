@@ -1,10 +1,12 @@
 using Server;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(500)]
 public class PlayerHP : MonoBehaviour
 {
+    public TextMeshProUGUI hp;
     public Slider red;
     public Slider yellow;
     public Slider green;
@@ -16,6 +18,8 @@ public class PlayerHP : MonoBehaviour
     private void Update()
     {
         Checker();
+
+        UpdateHP();
         BlueLerp();
         RedLerp();
         YellowLerp();
@@ -31,6 +35,13 @@ public class PlayerHP : MonoBehaviour
         if (green.maxValue != lastMaxHP) green.maxValue = lastMaxHP;
 
         if (lastHp != pm.attribute.HP_Current) lastHp = pm.attribute.HP_Current;
+    }
+    private void UpdateHP()
+    {
+        if (hp == null) return;
+        if (pm == null) return;
+
+        hp.text = $"{pm.attribute.HP_Current.ToString("F0")} / {pm.attribute.HP_Max.ToString("F0")}";
     }
     private void BlueLerp()
     {

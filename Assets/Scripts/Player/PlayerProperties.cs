@@ -37,9 +37,9 @@ public class PlayerProperties : MonoBehaviour
     private void Refresh()
     {
         Up_Point = DefaultPoint;
-        Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = 0f;
-        hp = atk = def = speed = sight = 0f;
-        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = 0;
+        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = a.ArmourPenetration_Perc = 0;
+        Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = Up_AP = 0f;
+        hp = atk = def = speed = sight = ap = 0f;
     }
 
     public void UpdateStatus()
@@ -51,8 +51,9 @@ public class PlayerProperties : MonoBehaviour
         a.DEF_Ampl.FlatBonus += Up_DEF - def;
         a.SPEED_Ampl.FlatBonus += Up_SPEED - speed;
         a.SIGHT_Ampl.FlatBonus += Up_SIGHT - sight;
+        a.ArmourPenetration_Perc += Up_AP - ap;
 
-        hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED; sight = Up_SIGHT;
+        hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED; sight = Up_SIGHT; ap = Up_AP;
 
         UpdateVisual();
     }
@@ -71,10 +72,11 @@ public class PlayerProperties : MonoBehaviour
     #region Upgrader
     private const int DefaultPoint = 5;
     private const float Growth_HP = 15;
-    private const float Growth_ATK = 1.25f;
+    private const float Growth_ATK = 1.5f;
     private const float Growth_DEF = 30f;
-    private const float Growth_SPEED = 0.6f;
-    private const float Growth_SIGHT = 0.75f;
+    private const float Growth_SPEED = 0.5f;
+    private const float Growth_SIGHT = 0.5f;
+    private const float Growth_AP = 0.003f;
 
     private int Up_Point;
     private float Up_HP;
@@ -82,8 +84,9 @@ public class PlayerProperties : MonoBehaviour
     private float Up_DEF;
     private float Up_SPEED;
     private float Up_SIGHT;
+    private float Up_AP;
 
-    private float hp, atk, def, speed, sight;
+    private float hp, atk, def, speed, sight,ap;
     private int pity;
     private float interval=6;
 
@@ -93,7 +96,7 @@ public class PlayerProperties : MonoBehaviour
         interval = Time.time + 6f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty);
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty/2);
         int finalReward = Mathf.Min(12, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
@@ -103,45 +106,33 @@ public class PlayerProperties : MonoBehaviour
     private int RollReward()
     {
         float luck = RNG.GetPercent();
-
-        if (luck < 0.05f || pity >= 10)
-        {
-            pity = 0;
-            return 5;
-        }
+        if (pity >= 10) { pity = 0; return 5; }
 
         pity++;
-
-        if (luck < 0.015f) return 4;
-        if (luck < 0.35f) return 3;
-        if (luck < 0.75f) return 2;
-        return 1;
+        if (luck < 0.05f) { pity = 0; return 5; }
+        if (luck < 0.20f) return 4;                  
+        if (luck < 0.5f) return 3;
+        return 2;
     }
 
     public void UpgradeHP()
     {
         if (Up_Point <= 0) return;
-
-        if (dm.CurrentDifficulty >= 10) Up_HP += Growth_HP * Mathf.Max(2.5f, dm.CurrentDifficulty / 5);
-        else Up_HP += Growth_HP;
-
-            Up_Point--;
+        Up_HP += Growth_HP * Mathf.Max(1, Mathf.Pow(dm.CurrentDifficulty,1.3f));
+        Up_Point--;
         UpdateStatus();
     }
     public void UpgradeATK()
     {
         if (Up_Point <= 0) return;
-
-        if (dm.CurrentDifficulty >= 10) Up_ATK += Growth_ATK * Mathf.Max(2.5f, dm.CurrentDifficulty / 5);
-        else Up_ATK += Growth_ATK;
-
-            Up_Point--;
+        Up_ATK += Growth_ATK * Mathf.Max(1, Mathf.Pow(dm.CurrentDifficulty, 1.3f));
+        Up_AP += Growth_AP;
+        Up_Point--;
         UpdateStatus();
     }
     public void UpgradeDEF()
     {
         if (Up_Point <= 0) return;
-        if (Up_DEF >= 300 * dm.CurrentDifficulty) return;
         Up_DEF+=Growth_DEF;
         Up_Point--;
         UpdateStatus();
@@ -149,7 +140,7 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeSPEED()
     {
         if (Up_Point <= 0) return;
-        if (Up_SPEED >= 6) return;
+        if (Up_SPEED >= 5) return;
         Up_SPEED+=Growth_SPEED;
         Up_Point--;
         UpdateStatus();
@@ -157,7 +148,7 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeSIGHT()
     {
         if (Up_Point <= 0) return;
-        if (Up_SIGHT >= 15) return;
+        if (Up_SIGHT >= 10) return;
         Up_SIGHT+=Growth_SIGHT;
         Up_Point--;
         UpdateStatus();

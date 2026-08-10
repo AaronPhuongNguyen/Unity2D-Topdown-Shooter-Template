@@ -4,7 +4,7 @@ public class Detector : MonoBehaviour, ITick
 {
     #region Cache
     private PlayerManager pm => PlayerManager.instance;
-    private readonly Collider2D[] targets = new Collider2D[10];
+    private Collider2D[] targets = new Collider2D[16];
     private Transform currentTarget;
     private int foundTarget;
     private float searchInterval;
@@ -29,11 +29,18 @@ public class Detector : MonoBehaviour, ITick
 
     private void SearchTarget()
     {
-        foundTarget = Physics2D.OverlapCircleNonAlloc(
+        foundTarget = Physics2D.OverlapCircleNonAlloc
+        (
             pm.Controlling.transform.position,
             pm.attribute.SIGHT_Current,
             targets,
-            pm.EnemyMask);
+            pm.EnemyMask
+        );
+        if(foundTarget > targets.Length)
+        {
+            targets = new Collider2D[foundTarget * 2];
+            SearchTarget();
+        }
     }
 
     private Transform FindNearestTarget()

@@ -37,7 +37,7 @@ public class CamManager : MonoBehaviour
 
     private Camera cam;
     private PlayerManager pm => PlayerManager.instance;
-    private Vector2 ZoomLimit => new Vector2(4f, pm.attribute.SIGHT_Current/1.5f);
+    private Vector2 ZoomLimit => new Vector2(4f, pm.attribute.SIGHT_Current/2f);
 
 
 

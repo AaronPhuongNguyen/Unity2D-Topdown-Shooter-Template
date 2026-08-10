@@ -8,8 +8,8 @@ public class VisualZomCount : MonoBehaviour
     public TextMeshProUGUI tmp2;
 
     private DomainManager dm => DomainManager.instance;
-    private int zomcount=1;
-    private int zomkilled = 1;
+    private int zomcount=9999;
+    private int zomkilled = 9999;
 
     private void Update()
     {

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AudioPackPlayer
   m_EditorClassIdentifier: 
   AttackSounds:
-  - {fileID: 8300000, guid: ecbf1f2ca44ba454c939a34232b8ed15, type: 3}
+  - {fileID: 8300000, guid: d0a88e91a4e38924c8d65fa2a3ba4e6a, type: 3}
   HitSounds:
   - {fileID: 8300000, guid: 1b9d174fc346f614a954bf9d8ab91e26, type: 3}
   - {fileID: 8300000, guid: cfa8fcf4f3cce914c8c33a31b7b5ce79, type: 3}
@@ -29,4 +29,3 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ccd3ad5c5459e714ca60e34327498738, type: 3}
   - {fileID: 8300000, guid: 15b9a405affd7e94b840ad04b15cad27, type: 3}
   - {fileID: 8300000, guid: ec91d48e30305bd409d5bd665703f65f, type: 3}
-  - {fileID: 8300000, guid: 61574c8d89cca604f92c1c7dd19ccb65, type: 3}

@@ -150,7 +150,6 @@ public class PlayerManager : MonoBehaviour
         attribute.OnTakeDamage += OnHit;
         attribute.OnDeath += PlayDeathSound;
         attribute.OnDeath += AfterDeath;
-        attribute.ArmourPenetration_Perc += 0.15f;
 
         EventBus.RaisePlayerRespawn();
     }
@@ -189,7 +188,6 @@ public class PlayerManager : MonoBehaviour
         attribute.OnDeath -= PlayDeathSound;
         attribute.OnTakeDamage -= SetCombat;
         attribute.OnTakeDamage -= OnHit;
-        attribute.ArmourPenetration_Perc -= 0.15f;
 
         PoolingSystem.instance.DestroyObject(Controlling); // End game instantly, no need to pool
 

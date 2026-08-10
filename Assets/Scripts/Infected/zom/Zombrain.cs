@@ -153,18 +153,19 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        if (RNG.GetPercent() < 0.3f) lastHPBonus = 0.6f * dm.CurrentDifficulty;
-        else lastHPBonus = RNG.GetFloat(0.05f,0.2f) * dm.CurrentDifficulty;
+        if (RNG.GetPercent() < 0.25f) lastHPBonus = 0.8f * Mathf.Pow(dm.CurrentDifficulty,1.6f);
+        else lastHPBonus = 0.4f * Mathf.Pow(dm.CurrentDifficulty,1.4f);
 
-        if (RNG.GetPercent() < 0.3f) lastATKBonus = 0.6f * dm.CurrentDifficulty;
-        else lastATKBonus = RNG.GetFloat(0.05f, 0.2f) * dm.CurrentDifficulty;
+        if (RNG.GetPercent() < 0.25f) lastATKBonus = 0.8f * Mathf.Pow(dm.CurrentDifficulty, 1.5f);
+        else lastATKBonus = 0.4f * Mathf.Pow(dm.CurrentDifficulty, 1.35f);
 
-        if (RNG.GetPercent() < 0.3f) lastDEFBonus = 25f * RNG.GetInt(0, 3) * dm.CurrentDifficulty;
-        else lastDEFBonus = 12.5f * RNG.GetFloat(0, 3) * dm.CurrentDifficulty;
-        lastDEFBonus = Mathf.Min(lastDEFBonus,750);
+        if (RNG.GetPercent() < 0.25f) lastDEFBonus = 75f * RNG.GetInt(1, 3) * dm.CurrentDifficulty;
+        else lastDEFBonus = 50f * RNG.GetInt(1, 3) * dm.CurrentDifficulty;
+        lastDEFBonus = lastDEFBonus >= 2000 ? 2000 : lastDEFBonus;
 
-        if (RNG.GetPercent() < 0.3f) lastSPEEDBonus = 2f * RNG.GetInt(-2, 4);
-        else lastSPEEDBonus = 0f;
+        lastSPEEDBonus = RNG.GetPercent() < 0.25f
+    ?   3f * RNG.GetInt(-1, 4)
+        : 2f * RNG.GetInt(-2, 3);
         lastSPEEDBonus = Mathf.Min(lastSPEEDBonus, pm.attribute.SPEED_Current + 2);
     }
     protected virtual void ApplyBonus()

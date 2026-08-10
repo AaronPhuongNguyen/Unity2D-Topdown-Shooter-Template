@@ -64,7 +64,7 @@ public class Spawner : MonoBehaviour
         float raw = package.CountPerSpawner * difficultyMult;
 
         // small random spread so spawns aren't perfectly deterministic
-        float jittered = RNG.GetFloat(raw * 0.5f, raw * 2f);
+        float jittered = RNG.GetFloat(raw * 0.25f, raw * 4f);
 
         return Mathf.Max(1, Mathf.RoundToInt(jittered));
     }
@@ -99,6 +99,7 @@ public class Spawner : MonoBehaviour
 
     public GameObject Spawn(ZomPackage package, Vector2 pos)
     {
+        if (dm.RemainingEnemy >= dm.MaxEnemyPerWave) return null;
         if (package == null || package.prefab == null) return null;
 
         GameObject o = hb.SpawnZom(package.prefab, package);
@@ -110,6 +111,7 @@ public class Spawner : MonoBehaviour
 
     public List<GameObject> Spawn(ZomPackage package, Vector2 pos, int count)
     {
+        if (dm.RemainingEnemy >= dm.MaxEnemyPerWave) return null;
         List<GameObject> results = new List<GameObject>(Mathf.Max(0, count));
         if (count <= 0) return results;
 
@@ -123,6 +125,7 @@ public class Spawner : MonoBehaviour
 
     public List<GameObject> Spawn(ZomPackage package, Vector2 pos, int count, bool isRandom, float radius = 2f)
     {
+        if (dm.RemainingEnemy >= dm.MaxEnemyPerWave) return null;
         if (!isRandom) return Spawn(package, pos, count);
 
         List<GameObject> results = new List<GameObject>(Mathf.Max(0, count));

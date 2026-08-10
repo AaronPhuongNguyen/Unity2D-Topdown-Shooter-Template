@@ -6,7 +6,7 @@ public class CurrencyCounter : MonoBehaviour
     public TextMeshProUGUI currencyShower;
     private DomainManager dm => DomainManager.instance;
 
-    private float currency;
+    private float currency=1;
 
     private void Update()
     {
@@ -16,7 +16,7 @@ public class CurrencyCounter : MonoBehaviour
     {
         if (currencyShower == null) return;
         if (dm.Currency == currency) return;
-        currency = Mathf.Lerp(currency,dm.Currency,10*Time.deltaTime);
+        currency = Mathf.Lerp(currency,dm.Currency,2*Time.deltaTime);
 
         currencyShower.text = currency.ToString("F0");
     }

@@ -201,6 +201,7 @@ public class DomainManager : MonoBehaviour
     public int Killed;
     public int Currency;
     public int CurrentWave = 0;
+    public int MaxEnemyPerWave = 500;
     public float CurrentDifficulty = 0;
     public const float WaveDuration = 90f;
     public const float PreparingTimeDefault = 5f;
@@ -233,6 +234,7 @@ public class DomainManager : MonoBehaviour
     }
     private void Reboot()
     {
+        isGameRunning = true;
         Time.timeScale = 1f;
         isNewWave = false;
         RemainingEnemy = 0;
@@ -252,32 +254,39 @@ public class DomainManager : MonoBehaviour
     {
         RemainingEnemy--;
         Killed++;
-        Currency += p.CurrencyAtKill;
+        Currency += Mathf.FloorToInt(p.CurrencyAtKill * Mathf.Max(1,CurrentDifficulty));
     }
     public void StartTheGame()
     {
         Time.timeScale = 1f;
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
+        HandleWave();
     }
 
+    private void HandleWave()
+    {
+        CurrentWave++;
+        CurrentDifficulty = CurrentWave / 4f;
+        isNewWave = false;
+    }
     private void NextWave()
     {
         if (isNewWave)
         {
             PreparingTime = PreparingTimeDefault;
             SecondBeforeNextWave = 0f;
-            Currency += Mathf.FloorToInt(Killed * RNG.GetFloat(0.25f,4f));
+
+            Currency += Mathf.FloorToInt(Killed * RNG.GetFloat(0.75f,5f));
+            HandleWave();
+
             EventBus.RaiseWaveCleared();
-            isNewWave = false;
             return;
         }
 
         if (PreparingTime > 0) return;
 
         SecondBeforeNextWave = WaveDuration;
-        CurrentWave++;
-        CurrentDifficulty = CurrentWave / 4f;
         isNewWave = true;
         EventBus.RaiseNewWave(CurrentWave);
     }
