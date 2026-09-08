@@ -18,6 +18,10 @@ MonoBehaviour:
   attribute:
     template: {fileID: 11400000, guid: 0de660415fe183144912c9d7fcfc3716, type: 2}
     HP_Current: 0
+    ArmourPenetration_Perc: 0
+    DamageReduction_Extra: 0
+    CooldownReduction_Extra: 0
+    DealtDamage_Extra: 0
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -43,6 +47,6 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 35fc646ddf6b08b46bb4108cd8b66b8e, type: 2}
-  ShootAccuracy: 0.8
+  ShootAccuracy: 0.9
   MaxMagazine: 30
   Reloadtime: 3

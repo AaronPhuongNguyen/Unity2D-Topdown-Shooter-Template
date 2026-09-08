@@ -5,8 +5,7 @@ public class SoundPlayer : MonoBehaviour
     [SerializeField] private AudioClip clip;
     public void Play()
     {
-        if (clip == null || AudioManager.instance == null) return;
-        AudioManager.instance.PlayAudio(clip);
+        PlayClip(clip);
     }
     public void PlayClip(AudioClip overrideClip)
     {

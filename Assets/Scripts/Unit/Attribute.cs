@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 [Serializable]
 public class Amplification
@@ -45,7 +44,7 @@ public class UnitAttribute
     public float ArmourPenetration_Perc = 0f;
     public float DamageReduction_Extra = 0f;
     public float CooldownReduction_Extra = 0f;
-    public float DealtDamage_Extra = 0f;
+    public float DealtDamage_Extra = 1f;
     #endregion
 
     #region Amplifier

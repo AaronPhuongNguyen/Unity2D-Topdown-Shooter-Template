@@ -83,7 +83,7 @@ public class PlayerProperties : MonoBehaviour
     private const float Growth_SIGHT = 0.5f;
     private const float Growth_AP = 0.03f;
     private const float Growth_HPP = 0.03f;
-    private const float Growth_CDR = 0.03f;
+    private const float Growth_CDR = 0.02f;
 
     private int Up_Point;
     private float Up_HP;
@@ -105,8 +105,8 @@ public class PlayerProperties : MonoBehaviour
         interval = Time.time + 3f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty / 2);
-        int finalReward = Mathf.Min(12, Mathf.FloorToInt(multiplier));
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty * RNG.GetInt(1,3));
+        int finalReward = Mathf.Min(20, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
         UpdateStatus();
@@ -115,13 +115,13 @@ public class PlayerProperties : MonoBehaviour
     private int RollReward()
     {
         float luck = RNG.GetPercent();
-        if (pity >= 10) { pity = 0; return 5; }
+        if (pity >= 6) { pity = 0; return 6; }
 
         pity++;
-        if (luck < 0.05f) { pity = 0; return 5; }
-        if (luck < 0.20f) return 4;
-        if (luck < 0.5f) return 3;
-        return 2;
+        if (luck < 0.05f) { pity = 0; return 6; }
+        if (luck < 0.20f) return 5;
+        if (luck < 0.5f) return 4;
+        return 3;
     }
 
     public void UpgradeHP()

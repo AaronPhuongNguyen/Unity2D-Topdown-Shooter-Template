@@ -153,20 +153,19 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        if (RNG.GetPercent() < 0.25f) lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2.75f);
-        else lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2.35f);
+        if (RNG.GetPercent() < 0.25f) lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2.5f);
+        else lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2f);
 
         if (RNG.GetPercent() < 0.25f) lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 2.0f);
-        else lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 1.8f);
+        else lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 1.5f);
 
         lastAPBonus = RNG.GetPercent();
 
-        lastDEFBonus = 500 * RNG.GetPercent();
+        lastDEFBonus = 600 * RNG.GetPercent();
 
         lastSPEEDBonus = RNG.GetPercent() < 0.25f
-    ? 5f * RNG.GetInt(-1, 4)
-        : 2.5f * RNG.GetInt(-2, 3);
-        lastSPEEDBonus = Mathf.Min(lastSPEEDBonus, pm.attribute.SPEED_Current + 3f);
+    ? 4f * RNG.GetInt(-2, 2)
+        : 2f * RNG.GetInt(-2, 2);
     }
     protected virtual void ApplyBonus()
     {
@@ -296,7 +295,7 @@ public class Zombrain : HurtBox, ITick
             );
             separationInterval = _now + 0.2f;
         }
-        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 2f) ? 50f : 0f;
+        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 3f) ? 60f : 0f;
         if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
         {
             attribute.SPEED_Ampl.FlatBonus += SpeedHelper - appliedChaseBonus;
@@ -380,6 +379,9 @@ public class Zombrain : HurtBox, ITick
     protected virtual void PlayDeathSound()
     {
         if (AudioManager.instance == null || package == null) return;
+        PlayHitSound();
+        PlayMiscSound();
+        PlayAttackSound();
         AudioManager.instance.PlayAudio(package.Media.Audio.GetDeathSound(), _t.position);
     }
 

@@ -9,6 +9,7 @@ public class CorpseEmitter : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float corpseLifetime = 120f;
     [SerializeField] private float defaultSlideForce = 3f;
+    [SerializeField] private Vector3 corpseSize = Vector3.one;
     #endregion
 
     #region Cache
@@ -40,6 +41,7 @@ public class CorpseEmitter : MonoBehaviour
         if (instance == null) return;
 
         instance.transform.position = position;
+        instance.transform.localScale = corpseSize;
 
         if (!instance.TryGetComponent<Corpse>(out Corpse c))
         {

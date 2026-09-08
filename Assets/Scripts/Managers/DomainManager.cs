@@ -278,7 +278,7 @@ public class DomainManager : MonoBehaviour
             PreparingTime = PreparingTimeDefault;
             SecondBeforeNextWave = 0f;
 
-            Currency += Mathf.FloorToInt(Killed * RNG.GetInt(1,5));
+            Currency += Mathf.FloorToInt(Killed * Mathf.Max(1,CurrentDifficulty));
             HandleWave();
 
             EventBus.RaiseWaveCleared();

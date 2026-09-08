@@ -8,9 +8,9 @@ public class AttackDemo:MonoBehaviour
     PlayerManager pm => PlayerManager.instance;
 
     private const float SkillCooldown = 90f;
-    private const float ASPDValue = -0.4f;
+    private const float ASPDValue = -0.25f;
     private const float SpeedValue = 0.1f;
-    private const float ArmourPenValue = 0.5f;
+    private const float ArmourPenValue = 0.4f;
     private const float BuffDuration = 12f;
     private const float ShootAcc = 0.25f;
     private const float Protecting = 0.4f;
@@ -28,7 +28,7 @@ public class AttackDemo:MonoBehaviour
 
         CD = SkillCooldown * (1- Mathf.Clamp01(pm.attribute.CooldownReduction_Extra));
         buffDuration = BuffDuration;
-        ATKValue = 10 + DomainManager.instance.Killed * 0.0075f;
+        ATKValue = 10 + DomainManager.instance.Killed * 0.005f;
 
         pm.attribute.DealtDamage_Extra += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;

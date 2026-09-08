@@ -18,6 +18,10 @@ MonoBehaviour:
   attribute:
     template: {fileID: 11400000, guid: 7a399b368f65e214fbcc8d5bd3645c39, type: 2}
     HP_Current: 0
+    ArmourPenetration_Perc: 0
+    DamageReduction_Extra: 0
+    CooldownReduction_Extra: 0
+    DealtDamage_Extra: 0
     HP_Ampl:
       FlatBonus: 50
       PercBonus: 1
@@ -46,5 +50,5 @@ MonoBehaviour:
   CurrencyAtKill: 20
   AppearFromWave: 5
   CountPerSpawner: 1
-  _rateToAppear: 0.02
+  _rateToAppear: 0.1
   _biteAccuracy: 0.5

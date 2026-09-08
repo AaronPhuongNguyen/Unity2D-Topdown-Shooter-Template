@@ -12,11 +12,12 @@ public class Weapon : MonoBehaviour, ITick
     [Header("Weapon Type")]
     public WeaponType Type = WeaponType.Rifle;
 
-    [SerializeField] private float fireRateMultiplier = 1f;
-    [SerializeField] private int pelletCount = 1;
-    [SerializeField] private float baseMaxSpreadAngle = 12f;
-    [SerializeField] private float spreadMultiplier = 1f;
-    [SerializeField] private float damageMultiply = 0.75f;
+    private float fireRateMultiplier = 1f;
+    private int pelletCount = 1;
+    private float baseMaxSpreadAngle = 10f;
+    private float spreadMultiplier = 1f;
+    private float damageMultiply = 1f;
+    private float rangeMyltiplier = 1f;
 
     [Header("Effects")]
     public Transform muzzle;
@@ -32,7 +33,6 @@ public class Weapon : MonoBehaviour, ITick
     public Vector3 normalScale => pm.IndicatorPrefab.transform.localScale;
     #region Cache
     private PlayerManager pm => PlayerManager.instance;
-    private float lastdd=0;
     #endregion
     #region Runtime
     private float ShootInterval;
@@ -62,15 +62,20 @@ public class Weapon : MonoBehaviour, ITick
             if (fireRateMultiplier < 8f) fireRateMultiplier = 8f;
             if (pelletCount < 12) pelletCount = 12;
             if (spreadMultiplier < 3f) spreadMultiplier = 3f;
-            pm.attribute.DealtDamage_Extra += (-damageMultiply);
+            if(damageMultiply != 0.25f) damageMultiply = -0.25f;
+            if (rangeMyltiplier != 0.25f) rangeMyltiplier = -0.25f;
+
         }
         else
         {
             if (fireRateMultiplier > 1f) fireRateMultiplier = 1f;
             pelletCount = 1;
             spreadMultiplier = 1f;
-            pm.attribute.DealtDamage_Extra += (damageMultiply);
+            damageMultiply = 1f;
+            rangeMyltiplier = 1f;
         }
+        pm.attribute.DealtDamage_Extra += damageMultiply;
+        pm.attribute.SIGHT_Ampl.TotalBonus += rangeMyltiplier;
     }
 
     #region Tick
