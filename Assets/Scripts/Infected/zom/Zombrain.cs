@@ -1,5 +1,4 @@
 using Server;
-using System;
 using UnityEngine;
 
 public class Zombrain : HurtBox, ITick
@@ -50,6 +49,8 @@ public class Zombrain : HurtBox, ITick
     private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
 
     private float lastHPBonus, lastATKBonus, lastDEFBonus, lastAPBonus, lastSPEEDBonus;
+    private float lastHPP, lastATKK;
+    private Vector3 lastScale, lastCachedScaled;
 
     // Tracks the chase-speed boost separately from lastSPEEDBonus (the
     // spawn-time random bonus) - Move() adds/removes only its own delta
@@ -144,7 +145,7 @@ public class Zombrain : HurtBox, ITick
         if (!Unsubscribe()) return;
 
         PlayDeathSound();
-        ce?.SpawnCorpse(_t.position, Direction);
+        ce?.SpawnCorpse(_t.position,lastCachedScaled, Direction);
 
         if (dm != null) dm.HandleKill(package);
 
@@ -153,36 +154,76 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        if (RNG.GetPercent() < 0.25f) lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2f);
-        else lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 1.5f);
+        bool isAlpha = RNG.GetPercent() < 0.2f * Mathf.Clamp01(dm.CurrentDifficulty);
 
-        if (RNG.GetPercent() < 0.25f) lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 2.0f);
-        else lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 1.5f);
+        if (isAlpha)
+        {
+            lastHPBonus = 1500 * dm.CurrentDifficulty * RNG.GetInt(2, 4);
+            lastHPP = RNG.GetInt(2, 4) * RNG.GetPercent() * dm.CurrentDifficulty;
+        }
+        else
+        {
+            lastHPBonus = 750 * dm.CurrentDifficulty * RNG.GetInt(1, 2);
+            lastHPP = RNG.GetInt(1, 2) * RNG.GetPercent() * dm.CurrentDifficulty;
+        }
 
-        lastAPBonus = RNG.GetPercent();
+        if (isAlpha)
+        {
+            lastATKBonus = 60 * dm.CurrentDifficulty * RNG.GetInt(2, 4);
+            lastATKK = RNG.GetInt(2, 4) * RNG.GetPercent() * dm.CurrentDifficulty;
+        }
+        else
+        {
+            lastATKBonus = 30 * dm.CurrentDifficulty * RNG.GetInt(1, 2);
+            lastATKK = RNG.GetInt(1, 2) * RNG.GetPercent() * dm.CurrentDifficulty;
+        }
 
-        lastDEFBonus = 300 * RNG.GetPercent();
+        if (isAlpha)
+            lastAPBonus = Mathf.Clamp01(0.4f + RNG.GetPercent()) * Mathf.Clamp01(dm.CurrentDifficulty);
+        else
+            lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
 
-        lastSPEEDBonus = RNG.GetPercent() < 0.25f
-    ? 4f * RNG.GetInt(0, 2)
-        : 2f * RNG.GetInt(-1, 2);
+        // DEF Bonus
+        if (isAlpha)
+            lastDEFBonus = 150 * RNG.GetPercent() * RNG.GetInt(2, 4) * Mathf.Clamp01(dm.CurrentDifficulty);
+        else
+            lastDEFBonus = 75 * RNG.GetPercent() * RNG.GetInt(1, 2) * Mathf.Clamp01(dm.CurrentDifficulty);
+
+        if (isAlpha)
+            lastSPEEDBonus = 6 * RNG.GetInt(2, 4) * RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
+        else
+            lastSPEEDBonus = 3 * RNG.GetInt(1, 2) * RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
+
+        if (isAlpha)
+            lastScale = transform.localScale * 0.5f * Mathf.Clamp(dm.CurrentDifficulty,1,2);
+        else
+            lastScale = Vector3.zero;
     }
     protected virtual void ApplyBonus()
     {
-        attribute.HP_Ampl.TotalBonus += lastHPBonus;
-        attribute.ATK_Ampl.TotalBonus += lastATKBonus;
+        attribute.HP_Ampl.FlatBonus += lastHPBonus;
+        attribute.HP_Ampl.TotalBonus += lastHPP;
+        attribute.ATK_Ampl.FlatBonus += lastATKBonus;
+        attribute.HP_Ampl.TotalBonus += lastATKK;
         attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus += lastAPBonus;
+
+        lastCachedScaled = transform.localScale;
+        transform.localScale += lastScale;
     }
     protected virtual void RemoveBonus()
     {
-        attribute.HP_Ampl.TotalBonus -= lastHPBonus;
-        attribute.ATK_Ampl.TotalBonus -= lastATKBonus;
+        attribute.HP_Ampl.FlatBonus -= lastHPBonus;
+        attribute.HP_Ampl.TotalBonus -= lastHPP;
+        attribute.ATK_Ampl.FlatBonus -= lastATKBonus;
+        attribute.HP_Ampl.TotalBonus -= lastATKK;
         attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
 
+        transform.localScale -= lastScale;
+        
         if (appliedChaseBonus != 0f)
         {
             attribute.SPEED_Ampl.FlatBonus -= appliedChaseBonus;

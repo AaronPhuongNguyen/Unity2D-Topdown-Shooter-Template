@@ -17,7 +17,7 @@ public class Weapon : MonoBehaviour, ITick
     private float baseMaxSpreadAngle = 10f;
     private float spreadMultiplier = 1f;
     private float damageMultiply = 1f;
-    private float rangeMyltiplier = 1f;
+    private float rangeMultiplier = 1f;
 
     [Header("Effects")]
     public Transform muzzle;
@@ -60,27 +60,32 @@ public class Weapon : MonoBehaviour, ITick
     private void ApplyDefaultsForType()
     {
         if (pm == null) return;
+        if (pm.attribute == null) return;
+
+        pm.attribute.DealtDamage_Ampl.TotalBonus -= lastDM;
+        pm.attribute.SIGHT_Ampl.TotalBonus -= lastRange;
+
         if (Type == WeaponType.Shotgun)
         {
             fireRateMultiplier = 7f;
             pelletCount = 14;
             spreadMultiplier = 8f;
-            damageMultiply = -0.25f - lastDM;
-            rangeMyltiplier = -0.3f - lastRange;
+            damageMultiply = -0.25f;
+            rangeMultiplier = -0.3f;
         }
         else
         {
             fireRateMultiplier = 1f;
             pelletCount = 1;
             spreadMultiplier = 1f;
-            damageMultiply = 0 - lastDM;
-            rangeMyltiplier = 0 - lastRange;
+            damageMultiply = 0;
+            rangeMultiplier = 0;
         }
         lastDM = damageMultiply;
-        lastRange = rangeMyltiplier;
+        lastRange = rangeMultiplier;
 
         pm.attribute.DealtDamage_Ampl.TotalBonus += damageMultiply;
-        pm.attribute.SIGHT_Ampl.TotalBonus += rangeMyltiplier;
+        pm.attribute.SIGHT_Ampl.TotalBonus += rangeMultiplier;
     }
 
     #region Tick

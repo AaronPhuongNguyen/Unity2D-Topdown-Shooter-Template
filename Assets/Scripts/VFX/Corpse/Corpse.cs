@@ -50,7 +50,7 @@ public class Corpse : MonoBehaviour, ITick
         if (life > 0) life = 0f;
         else Corrupt();
     }
-    public void StartCorrupt(float time, SpritePackage corpse, SpritePackage blood, Vector2? slideDirection = null, float slideForce = 0f)
+    public void StartCorrupt(float time, SpritePackage corpse, SpritePackage blood, Vector3 scale, Vector2? slideDirection = null, float slideForce = 0f)
     {
         isCreated = true;
         life = time;
@@ -62,12 +62,11 @@ public class Corpse : MonoBehaviour, ITick
 
         slideVelocity = dir * slideForce;
 
+        transform.localScale = scale;
+
         SpawnCorpseSprite(corpse);
         SpawnBloodSprites(blood);
 
-        // Register with the central ticker instead of running our own
-        // Update() - see CorpseTicker for why. Safe to call every spawn:
-        // Register() no-ops if already present (e.g. pooled reuse edge case).
         if (CorpseTicker.instance != null) CorpseTicker.instance.Register(this);
     }
 
@@ -129,11 +128,6 @@ public class Corpse : MonoBehaviour, ITick
     #endregion
 
     #region Lifecycle
-    // Driven by CorpseTicker instead of Unity's own Update() dispatch -
-    // same reasoning as Zombrain/HiveBrain: one central loop over all
-    // active corpses is cheaper on mobile than N separate MonoBehaviour
-    // Update() calls, especially since corpses can pile up with a 120s
-    // default lifetime.
     public void Tick(float dt)
     {
         if (!isCreated) return;

@@ -80,9 +80,9 @@ public class PlayerProperties : MonoBehaviour
     private const float Growth_ATK = 1.5f;
     private const float Growth_DEF = 30f;
     private const float Growth_SPEED = 0.5f;
-    private const float Growth_SIGHT = 0.5f;
-    private const float Growth_AP = 0.04f;
-    private const float Growth_HPP = 0.04f;
+    private const float Growth_SIGHT = 1f;
+    private const float Growth_AP = 0.03f;
+    private const float Growth_HPP = 0.03f;
     private const float Growth_CDR = 0.02f;
 
     private int Up_Point;
@@ -105,8 +105,8 @@ public class PlayerProperties : MonoBehaviour
         interval = Time.time + 3f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty * RNG.GetInt(1,3));
-        int finalReward = Mathf.Min(20, Mathf.FloorToInt(multiplier));
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty * RNG.GetInt(0,2));
+        int finalReward = Mathf.Min(15, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
         UpdateStatus();
@@ -150,7 +150,7 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeSPEED()
     {
         if (Up_Point <= 0) return;
-        if (Up_SPEED >= 5) return;
+        if (Up_SPEED >= 10) return;
         Up_SPEED += Growth_SPEED;
         Up_Point--;
         UpdateStatus();
@@ -158,7 +158,7 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeSIGHT()
     {
         if (Up_Point <= 0) return;
-        if (Up_SIGHT >= 10) return;
+        if (Up_SIGHT >= 20) return;
         Up_SIGHT += Growth_SIGHT;
         Up_Point--;
         UpdateStatus();

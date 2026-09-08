@@ -28,7 +28,7 @@ public class AttackDemo:MonoBehaviour
 
         CD = SkillCooldown * (1 - pm.attribute.CooldownReduction_Current);
         buffDuration = BuffDuration;
-        ATKValue = 0.5f + DomainManager.instance.Killed * 0.001f;
+        ATKValue = 0.25f + DomainManager.instance.Killed * 0.001f;
 
         pm.attribute.DealtDamage_Ampl.TotalBonus += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;

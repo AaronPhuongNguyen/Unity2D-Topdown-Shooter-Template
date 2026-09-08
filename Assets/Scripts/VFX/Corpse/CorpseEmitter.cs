@@ -9,7 +9,6 @@ public class CorpseEmitter : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private float corpseLifetime = 120f;
     [SerializeField] private float defaultSlideForce = 3f;
-    [SerializeField] private Vector3 corpseSize = Vector3.one;
     #endregion
 
     #region Cache
@@ -32,7 +31,7 @@ public class CorpseEmitter : MonoBehaviour
     }
 
     /// <summary>Spawns a corpse at the given position, sliding/tilting toward deathDirection.</summary>
-    public void SpawnCorpse(Vector2 position, Vector2 deathDirection = default, float slideForce = -1f)
+    public void SpawnCorpse(Vector2 position, Vector3 scale, Vector2 deathDirection = default, float slideForce = -1f)
     {
         if (!isCreated) return;
         if (prefab == null) return;
@@ -41,7 +40,6 @@ public class CorpseEmitter : MonoBehaviour
         if (instance == null) return;
 
         instance.transform.position = position;
-        instance.transform.localScale = corpseSize;
 
         if (!instance.TryGetComponent<Corpse>(out Corpse c))
         {
@@ -50,7 +48,7 @@ public class CorpseEmitter : MonoBehaviour
         }
 
         float force = slideForce >= 0f ? slideForce : defaultSlideForce;
-        c.StartCorrupt(corpseLifetime, owner.Access().Media.Corpse,owner.Access().Media.Blood, deathDirection, force);
+        c.StartCorrupt(corpseLifetime, owner.Access().Media.Corpse,owner.Access().Media.Blood,scale, deathDirection, force);
     }
     #endregion
 }

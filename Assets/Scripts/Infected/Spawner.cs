@@ -71,7 +71,7 @@ public class Spawner : MonoBehaviour
         float raw = package.CountPerSpawner * difficultyMult;
 
         // small random spread so spawns aren't perfectly deterministic
-        float jittered = RNG.GetFloat(raw * 0.25f, raw * 4f);
+        float jittered = RNG.GetFloat(raw * 0.5f, raw * 10f);
 
         return Mathf.Max(1, Mathf.RoundToInt(jittered));
     }
