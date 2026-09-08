@@ -7,34 +7,49 @@ public class HealDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    public const float SkillCooldown = 30f;
-    public const float HealValue = 60f;
-    public const float HealDuration = 5f;
+    public const float SkillCooldown = 24f;
+    public const float HealValue = 3f;
+    public const float HealDuration = 8f;
+    public const float Recovery = 0.01f;
     public Image UI;
 
     private float CD;
     private float healDuration;
+    private bool isExpired=true;
     
     public void Heal()
     {
         if (pm == null) return;
         if (CD > 0) return;
 
-        CD = SkillCooldown;
+        CD = SkillCooldown * (1 - Mathf.Clamp01(pm.attribute.CooldownReduction_Extra));
         healDuration = HealDuration;
+        isExpired = false;
+
+        pm.attribute.OnDealDamage += Lifesteal;
 
         if (UI != null) UI.fillAmount = 0;
+    }
+    private void RemoveEffect()
+    {
+        if (isExpired) return;
+        isExpired = healDuration<=0;
+
+        if (isExpired) pm.attribute.OnDealDamage -= Lifesteal;
+
     }
     private void Update()
     {
         if(CD > 0) CD -= Time.deltaTime;
         if (UI != null) UI.fillAmount = CD/SkillCooldown;
 
-        if(healDuration > 0)
+        if(healDuration > 0 && !isExpired)
         {
             pm.Heal( (HealValue/ HealDuration / 100) * pm.attribute.HP_Max * Time.deltaTime);
             healDuration -= Time.deltaTime;
+            RemoveEffect();
         }
+
     }
     private void Awake()
     {
@@ -48,5 +63,11 @@ public class HealDemo:MonoBehaviour
     {
         CD = 0;
         healDuration = 0f;
+        isExpired = true;
+    }
+    private void Lifesteal(float v)
+    {
+        if (healDuration <= 0f) return;
+        pm.Heal(v * Recovery + pm.attribute.HP_Current * Recovery);
     }
 }

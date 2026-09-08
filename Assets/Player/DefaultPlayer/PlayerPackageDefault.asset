@@ -43,4 +43,6 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 35fc646ddf6b08b46bb4108cd8b66b8e, type: 2}
-  ShootAccuracy: 0.975
+  ShootAccuracy: 0.8
+  MaxMagazine: 30
+  Reloadtime: 3

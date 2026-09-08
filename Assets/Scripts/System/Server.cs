@@ -12,10 +12,10 @@ namespace Server
             float speed = a.SPEED_Current;
             Vector2 step = speed * dir * Time.deltaTime;
             o.transform.position += new Vector3(step.x, step.y, 0);
-            
+
         }
 
-        public static void RotateThisObject(GameObject o, Vector2 dir,float offset = 90)
+        public static void RotateThisObject(GameObject o, Vector2 dir, float offset = 90)
         {
             if (o == null) return;
 
@@ -26,19 +26,22 @@ namespace Server
         {
             Vector2 push = Vector2.zero;
             int count = 0;
+            float pushRadiusSqr = pushRadius * pushRadius;
 
-            foreach (var other in nearby)
+            for (int i = 0; i < nearby.Count; i++)
             {
+                Zombrain other = nearby[i];
                 if (other == null) continue;
+
                 Vector2 otherPos = other.transform.position;
                 Vector2 offset = selfPos - otherPos;
-                float dist = offset.magnitude;
+                float sqrDist = offset.sqrMagnitude;
 
-                if (dist > 0f && dist < pushRadius)
-                {
-                    push += offset.normalized * (1f - dist / pushRadius); // stronger push when closer
-                    count++;
-                }
+                if (sqrDist <= 0f || sqrDist >= pushRadiusSqr) continue;
+
+                float dist = Mathf.Sqrt(sqrDist);
+                push += (offset / dist) * (1f - dist / pushRadius); // stronger push when closer
+                count++;
             }
 
             if (count > 0) push /= count;
@@ -79,13 +82,13 @@ namespace Server
             victim.OnTakeDamage?.Invoke(damage);
             attacker.OnDealDamage?.Invoke(damage);
         }
-        public static float HandleDamage(float damage,UnitAttribute a, UnitAttribute v)
+        public static float HandleDamage(float damage, UnitAttribute a, UnitAttribute v)
         {
-            float effectiveDamage = damage * (1 + a.DealtDamage_Extra);
-            float effectiveArmour = v.DEF_Current * (1 - a.ArmourPenetration_Perc);
+            float effectiveDamage = damage * (1 + Mathf.Max(0,a.DealtDamage_Extra)) * (1 - Mathf.Clamp(v.DamageReduction_Extra,0,0.9f));
+            float effectiveArmour = v.DEF_Current * (1 - Mathf.Clamp01(a.ArmourPenetration_Perc));
 
             if (effectiveArmour <= 0) return effectiveDamage;
-            return damage * (500 / (effectiveArmour + 500));
+            return effectiveDamage * (500 / (effectiveArmour + 500));
         }
     }
 
@@ -107,7 +110,7 @@ namespace Server
 
         public static int GetInt(int min, int max) => _state.NextInt(min, max);
         public static float GetFloat(float min, float max) => _state.NextFloat(min, max);
-        public static float GetPercent() => GetFloat(0,100f) / 100f;
+        public static float GetPercent() => GetFloat(0, 10000f) / 10000f;
         public static Vector2 GetVector2(float min, float max) => _state.NextFloat2(min, max);
         public static Vector2 GetInsideCircle(float radius)
         {

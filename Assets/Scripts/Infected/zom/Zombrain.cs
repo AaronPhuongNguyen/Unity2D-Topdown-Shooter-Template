@@ -49,7 +49,7 @@ public class Zombrain : HurtBox, ITick
     private static readonly int AttackHash = Animator.StringToHash("IsAttacking");
     private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
 
-    private float lastHPBonus, lastATKBonus, lastDEFBonus, lastSPEEDBonus;
+    private float lastHPBonus, lastATKBonus, lastDEFBonus, lastAPBonus, lastSPEEDBonus;
 
     // Tracks the chase-speed boost separately from lastSPEEDBonus (the
     // spawn-time random bonus) - Move() adds/removes only its own delta
@@ -153,20 +153,20 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        if (RNG.GetPercent() < 0.25f) lastHPBonus = 0.8f * Mathf.Pow(dm.CurrentDifficulty,1.6f);
-        else lastHPBonus = 0.4f * Mathf.Pow(dm.CurrentDifficulty,1.4f);
+        if (RNG.GetPercent() < 0.25f) lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2.75f);
+        else lastHPBonus = Mathf.Pow(dm.CurrentDifficulty, 2.35f);
 
-        if (RNG.GetPercent() < 0.25f) lastATKBonus = 0.8f * Mathf.Pow(dm.CurrentDifficulty, 1.5f);
-        else lastATKBonus = 0.4f * Mathf.Pow(dm.CurrentDifficulty, 1.35f);
+        if (RNG.GetPercent() < 0.25f) lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 2.0f);
+        else lastATKBonus = Mathf.Pow(dm.CurrentDifficulty, 1.8f);
 
-        if (RNG.GetPercent() < 0.25f) lastDEFBonus = 75f * RNG.GetInt(1, 3) * dm.CurrentDifficulty;
-        else lastDEFBonus = 50f * RNG.GetInt(1, 3) * dm.CurrentDifficulty;
-        lastDEFBonus = lastDEFBonus >= 2000 ? 2000 : lastDEFBonus;
+        lastAPBonus = RNG.GetPercent();
+
+        lastDEFBonus = 500 * RNG.GetPercent();
 
         lastSPEEDBonus = RNG.GetPercent() < 0.25f
-    ?   3f * RNG.GetInt(-1, 4)
-        : 2f * RNG.GetInt(-2, 3);
-        lastSPEEDBonus = Mathf.Min(lastSPEEDBonus, pm.attribute.SPEED_Current + 2);
+    ? 5f * RNG.GetInt(-1, 4)
+        : 2.5f * RNG.GetInt(-2, 3);
+        lastSPEEDBonus = Mathf.Min(lastSPEEDBonus, pm.attribute.SPEED_Current + 3f);
     }
     protected virtual void ApplyBonus()
     {
@@ -174,6 +174,7 @@ public class Zombrain : HurtBox, ITick
         attribute.ATK_Ampl.TotalBonus += lastATKBonus;
         attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
+        attribute.ArmourPenetration_Perc += lastAPBonus;
     }
     protected virtual void RemoveBonus()
     {
@@ -181,6 +182,7 @@ public class Zombrain : HurtBox, ITick
         attribute.ATK_Ampl.TotalBonus -= lastATKBonus;
         attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
+        attribute.ArmourPenetration_Perc -= lastAPBonus;
 
         if (appliedChaseBonus != 0f)
         {

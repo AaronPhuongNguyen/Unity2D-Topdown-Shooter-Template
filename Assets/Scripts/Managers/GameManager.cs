@@ -16,30 +16,7 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
     #endregion
-    #region Setting Applier
-    void Start()
-    {
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 60;
-#if UNITY_ANDROID && !UNITY_EDITOR
-    try 
-    {
-        using (AndroidJavaClass activityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
-        using (AndroidJavaObject currentActivity = activityClass.GetStatic<AndroidJavaObject>("currentActivity"))
-        using (AndroidJavaObject window = currentActivity.Call<AndroidJavaObject>("getWindow"))
-        using (AndroidJavaObject layoutParams = window.Call<AndroidJavaObject>("getAttributes"))
-        {
-            layoutParams.Set("preferredRefreshRate", 60f);
-            window.Call("setAttributes", layoutParams);
-        }
-    }
-    catch (System.Exception e)
-    {
-        Debug.LogError("Failed to set preferred refresh rate: " + e.Message);
-    }
-#endif
-    }
-    #endregion
+
     #region State
     public enum GameState { MainMenu, Playing, Paused, GameOver }
     [Header("Runtime State")]

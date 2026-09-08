@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: ZomAttributeDefault
   m_EditorClassIdentifier: 
-  HP_Base: 100
+  HP_Base: 200
   ATK_Base: 10
   SPEED_Base: 10
   DEF_Base: 100

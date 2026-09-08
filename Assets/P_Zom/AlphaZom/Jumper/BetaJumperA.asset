@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: BetaJumperA
   m_EditorClassIdentifier: 
-  HP_Base: 120
+  HP_Base: 250
   ATK_Base: 45
   SPEED_Base: 13.5
-  DEF_Base: 180
+  DEF_Base: 150
   ASPD_Base: 1.75
   SIGHT_Base: 2.5

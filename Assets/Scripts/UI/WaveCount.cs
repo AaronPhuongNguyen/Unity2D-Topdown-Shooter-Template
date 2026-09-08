@@ -28,6 +28,6 @@ public class WaveCount : MonoBehaviour
         if (diff == null) return;
         if (diffs == dm.CurrentDifficulty) return;
         diffs = dm.CurrentDifficulty;
-        diff.text = diffs.ToString("F1");
+        diff.text = diffs.ToString("F2");
     }
 }

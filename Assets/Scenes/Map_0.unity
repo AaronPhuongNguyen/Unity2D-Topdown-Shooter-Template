@@ -3497,7 +3497,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.25
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -6014,7 +6014,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1237295608}
   - component: {fileID: 1237295609}
-  - component: {fileID: 1237295610}
   m_Layer: 0
   m_Name: Yellow
   m_TagString: Untagged
@@ -6093,23 +6092,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1237295610
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1237295607}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af163882879da6946b2a0fd12bff1874, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  text: {fileID: 928871241}
-  minAlpha: 0.5
-  maxAlpha: 1
-  speed: 5
-  useUnscaledTime: 0
 --- !u!1 &1255073432
 GameObject:
   m_ObjectHideFlags: 0
@@ -6553,15 +6535,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speaker: {fileID: 0}
   mixer: {fileID: 0}
-  volume: 0.75
+  volume: 1
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:
-  - {fileID: 8300000, guid: 891cdc52590d834419cf135b4e580e95, type: 3}
   - {fileID: 8300000, guid: e99ccad6a2e14a342bcc66503cef43db, type: 3}
   - {fileID: 8300000, guid: 042da6a9cd57add4384309fc0ea7159a, type: 3}
   - {fileID: 8300000, guid: 703942e67a478014b8384486341c7b65, type: 3}
-  shuffle: 1
+  - {fileID: 8300000, guid: 891cdc52590d834419cf135b4e580e95, type: 3}
+  shuffle: 0
   autoPlayMusicOnStart: 1
   musicVolume: 1
 --- !u!1 &1308626243
@@ -8294,7 +8276,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1728915660}
   - component: {fileID: 1728915661}
-  - component: {fileID: 1728915662}
   m_Layer: 0
   m_Name: Green
   m_TagString: Untagged
@@ -8373,23 +8354,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1728915662
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1728915659}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: af163882879da6946b2a0fd12bff1874, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  text: {fileID: 1913195975}
-  minAlpha: 0.75
-  maxAlpha: 1
-  speed: 20
-  useUnscaledTime: 0
 --- !u!1 &1730531656
 GameObject:
   m_ObjectHideFlags: 0

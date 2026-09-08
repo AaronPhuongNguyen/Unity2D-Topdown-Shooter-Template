@@ -9,29 +9,32 @@ public class AttackDemo:MonoBehaviour
 
     private const float SkillCooldown = 90f;
     private const float ASPDValue = -0.4f;
-    private const float ATKValue = 0.6f;
     private const float SpeedValue = 0.1f;
     private const float ArmourPenValue = 0.5f;
     private const float BuffDuration = 12f;
     private const float ShootAcc = 0.25f;
+    private const float Protecting = 0.4f;
     public Image UI;
 
     private float CD;
     private float buffDuration;
     private bool isExpired=true;
-    
+    private float ATKValue;
+
     public void Attack()
     {
         if (pm == null) return;
         if (CD > 0) return;
 
-        CD = SkillCooldown;
+        CD = SkillCooldown * (1- Mathf.Clamp01(pm.attribute.CooldownReduction_Extra));
         buffDuration = BuffDuration;
+        ATKValue = 10 + DomainManager.instance.Killed * 0.0075f;
 
         pm.attribute.DealtDamage_Extra += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus += ASPDValue;
         pm.attribute.ArmourPenetration_Perc += ArmourPenValue;
+        pm.attribute.DamageReduction_Extra += Protecting;
         pm.clonedPack.ShootAccuracy += ShootAcc;
 
         isExpired = false;
@@ -43,6 +46,7 @@ public class AttackDemo:MonoBehaviour
         pm.attribute.SPEED_Ampl.TotalBonus -= SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus -= ASPDValue;
         pm.attribute.ArmourPenetration_Perc -= ArmourPenValue;
+        pm.attribute.DamageReduction_Extra -= Protecting;
         pm.clonedPack.ShootAccuracy -= ShootAcc;
 
     }

@@ -1,4 +1,4 @@
-using Server;
+﻿using Server;
 using System;
 using TMPro;
 using UnityEngine;
@@ -33,13 +33,14 @@ public class PlayerProperties : MonoBehaviour
     public TextMeshProUGUI DEFShower;
     public TextMeshProUGUI SPEEDShower;
     public TextMeshProUGUI SIGHTShower;
+    public TextMeshProUGUI CDRShower;
 
     private void Refresh()
     {
         Up_Point = DefaultPoint;
-        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = a.ArmourPenetration_Perc = 0;
-        Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = Up_AP = 0f;
-        hp = atk = def = speed = sight = ap = 0f;
+        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = a.ArmourPenetration_Perc = a.CooldownReduction_Extra = 0;
+        Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = Up_AP = Up_HPP = Up_CDR = 0f;
+        hp = atk = def = speed = sight = ap = hpp = cdr = 0f;
     }
 
     public void UpdateStatus()
@@ -51,9 +52,12 @@ public class PlayerProperties : MonoBehaviour
         a.DEF_Ampl.FlatBonus += Up_DEF - def;
         a.SPEED_Ampl.FlatBonus += Up_SPEED - speed;
         a.SIGHT_Ampl.FlatBonus += Up_SIGHT - sight;
-        a.ArmourPenetration_Perc += Up_AP - ap;
+        a.ATK_Ampl.PercBonus += Up_AP - ap;
+        a.HP_Ampl.PercBonus += Up_HPP - hpp;
+        a.CooldownReduction_Extra += Up_CDR - cdr;
 
-        hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED; sight = Up_SIGHT; ap = Up_AP;
+        hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED;
+        sight = Up_SIGHT; ap = Up_AP; hpp = Up_HPP; cdr = Up_CDR;
 
         UpdateVisual();
     }
@@ -66,6 +70,7 @@ public class PlayerProperties : MonoBehaviour
         if (DEFShower != null) DEFShower.text = a.DEF_Current.ToString("F0");
         if (SPEEDShower != null) SPEEDShower.text = a.SPEED_Current.ToString("F0");
         if (SIGHTShower != null) SIGHTShower.text = a.SIGHT_Current.ToString("F0");
+        if (CDRShower != null) CDRShower.text = (a.CooldownReduction_Extra * 100).ToString("F0") + "%";
     }
     #endregion
 
@@ -76,7 +81,9 @@ public class PlayerProperties : MonoBehaviour
     private const float Growth_DEF = 30f;
     private const float Growth_SPEED = 0.5f;
     private const float Growth_SIGHT = 0.5f;
-    private const float Growth_AP = 0.003f;
+    private const float Growth_AP = 0.03f;
+    private const float Growth_HPP = 0.03f;
+    private const float Growth_CDR = 0.03f;
 
     private int Up_Point;
     private float Up_HP;
@@ -85,18 +92,20 @@ public class PlayerProperties : MonoBehaviour
     private float Up_SPEED;
     private float Up_SIGHT;
     private float Up_AP;
+    private float Up_HPP;
+    private float Up_CDR;
 
-    private float hp, atk, def, speed, sight,ap;
+    private float hp, atk, def, speed, sight, ap, hpp, cdr;
     private int pity;
-    private float interval=6;
+    private float interval = 3;
 
     private void GetPoint()
     {
         if (interval > Time.time) return;
-        interval = Time.time + 6f;
+        interval = Time.time + 3f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty/2);
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty / 2);
         int finalReward = Mathf.Min(12, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
@@ -110,7 +119,7 @@ public class PlayerProperties : MonoBehaviour
 
         pity++;
         if (luck < 0.05f) { pity = 0; return 5; }
-        if (luck < 0.20f) return 4;                  
+        if (luck < 0.20f) return 4;
         if (luck < 0.5f) return 3;
         return 2;
     }
@@ -118,14 +127,15 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeHP()
     {
         if (Up_Point <= 0) return;
-        Up_HP += Growth_HP * Mathf.Max(1, Mathf.Pow(dm.CurrentDifficulty,1.3f));
+        Up_HP += Growth_HP * Mathf.Max(1, dm.CurrentDifficulty);
+        Up_HPP += Growth_HPP;
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeATK()
     {
         if (Up_Point <= 0) return;
-        Up_ATK += Growth_ATK * Mathf.Max(1, Mathf.Pow(dm.CurrentDifficulty, 1.3f));
+        Up_ATK += Growth_ATK * Mathf.Max(1, dm.CurrentDifficulty);
         Up_AP += Growth_AP;
         Up_Point--;
         UpdateStatus();
@@ -133,7 +143,7 @@ public class PlayerProperties : MonoBehaviour
     public void UpgradeDEF()
     {
         if (Up_Point <= 0) return;
-        Up_DEF+=Growth_DEF;
+        Up_DEF += Growth_DEF;
         Up_Point--;
         UpdateStatus();
     }
@@ -141,7 +151,7 @@ public class PlayerProperties : MonoBehaviour
     {
         if (Up_Point <= 0) return;
         if (Up_SPEED >= 5) return;
-        Up_SPEED+=Growth_SPEED;
+        Up_SPEED += Growth_SPEED;
         Up_Point--;
         UpdateStatus();
     }
@@ -149,7 +159,16 @@ public class PlayerProperties : MonoBehaviour
     {
         if (Up_Point <= 0) return;
         if (Up_SIGHT >= 10) return;
-        Up_SIGHT+=Growth_SIGHT;
+        Up_SIGHT += Growth_SIGHT;
+        Up_Point--;
+        UpdateStatus();
+    }
+    public void UpgradeCooldownReduction()
+    {
+        if (Up_Point <= 0) return;
+        if (Up_CDR >= 0.6f) return;
+
+        Up_CDR += Growth_CDR;
         Up_Point--;
         UpdateStatus();
     }

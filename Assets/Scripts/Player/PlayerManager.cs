@@ -176,7 +176,7 @@ public class PlayerManager : MonoBehaviour
     [ContextMenu("Set Game Started")]
     public void SetGameStarted() => EventBus.RaiseGameStart();
 
-    public void SetCombat(float v) => combatDuration = 2f;
+    public void SetCombat(float v) => combatDuration = 0.5f;
 
     private void AfterDeath()
     {

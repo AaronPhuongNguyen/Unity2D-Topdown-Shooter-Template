@@ -64,9 +64,7 @@ public class PoolingSystem : MonoBehaviour
 
     private void Reboot()
     {
-        poolDict.Clear();
-        objNameMap.Clear();
-        inUseObjects.Clear();
+        Debug.Log("Pool reboot detected");
     }
 
     public GameObject GetFromPool(GameObject prefab)

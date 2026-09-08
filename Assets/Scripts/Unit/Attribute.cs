@@ -40,25 +40,12 @@ public class UnitAttribute
     #endregion
 
     #region Misc Status
-    protected float armourPem_Perc=0;
-    protected float dealtDamage_Extra = 0f;
-    protected float damageReduction_Extra = 0f;
 
-    public float ArmourPenetration_Perc
-    {
-        get => Mathf.Clamp01(armourPem_Perc);
-        set => armourPem_Perc = value;
-    }
-    public float DealtDamage_Extra
-    {
-        get => Mathf.Clamp01(dealtDamage_Extra);
-        set => dealtDamage_Extra = value;
-    }
-    public float DamageReduction_Extra
-    {
-        get => Mathf.Clamp01(damageReduction_Extra);
-        set => damageReduction_Extra = value;
-    }
+
+    public float ArmourPenetration_Perc = 0f;
+    public float DamageReduction_Extra = 0f;
+    public float CooldownReduction_Extra = 0f;
+    public float DealtDamage_Extra = 0f;
     #endregion
 
     #region Amplifier

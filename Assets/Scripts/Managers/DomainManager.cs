@@ -269,6 +269,7 @@ public class DomainManager : MonoBehaviour
         CurrentWave++;
         CurrentDifficulty = CurrentWave / 4f;
         isNewWave = false;
+        MaxEnemyPerWave = RNG.GetInt(500, 1000);
     }
     private void NextWave()
     {
@@ -277,7 +278,7 @@ public class DomainManager : MonoBehaviour
             PreparingTime = PreparingTimeDefault;
             SecondBeforeNextWave = 0f;
 
-            Currency += Mathf.FloorToInt(Killed * RNG.GetFloat(0.75f,5f));
+            Currency += Mathf.FloorToInt(Killed * RNG.GetInt(1,5));
             HandleWave();
 
             EventBus.RaiseWaveCleared();

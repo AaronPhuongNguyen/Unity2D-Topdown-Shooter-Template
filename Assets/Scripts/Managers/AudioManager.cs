@@ -50,7 +50,7 @@ public class AudioManager : MonoBehaviour
         EnableSpeaker(true);
         SetLoop(false);
         SetPlayOnAwake(false);
-        SetPriority(0);
+        SetPriority(16);
 
         SyncAttribute();
 
@@ -83,7 +83,7 @@ public class AudioManager : MonoBehaviour
 
         musicSpeaker.loop = false; // handled manually so we can advance the playlist
         musicSpeaker.playOnAwake = false;
-        musicSpeaker.priority = 32; // lower priority than SFX by default
+        musicSpeaker.priority = 0; // lower priority than SFX by default
     }
     #endregion
 

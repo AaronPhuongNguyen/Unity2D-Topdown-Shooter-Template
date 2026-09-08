@@ -132,6 +132,7 @@ MonoBehaviour:
   sr: {fileID: 7114147867588808702}
   shadow_sr: {fileID: 1661438844419098474}
   Offset: {x: 0.3, y: -0.1, z: 0}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
 --- !u!1 &873114648548800632
 GameObject:
   m_ObjectHideFlags: 0
@@ -316,6 +317,7 @@ MonoBehaviour:
   sr: {fileID: 2504365452446712089}
   shadow_sr: {fileID: 3133570911296462859}
   Offset: {x: 0.3, y: -0.1, z: 0}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
 --- !u!1 &2437655209947581218
 GameObject:
   m_ObjectHideFlags: 0
@@ -597,11 +599,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5465436ccab470c4c97209292b2d17fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Type: 0
+  fireRateMultiplier: 1
+  pelletCount: 1
+  rangeMultiplier: 1
   muzzle: {fileID: 3401477344332366387}
   BulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
   HitEffect: {fileID: 7097382205211673216, guid: 776a3e57ac07f26469243e1bbb92ea8f, type: 3}
-  rateToSpawn: 0.9
+  rateToSpawn: 1
   bulletSpeed: 120
   bulletLifetime: 1
   TargetScale: {x: 0.5, y: 0.5, z: 0}
