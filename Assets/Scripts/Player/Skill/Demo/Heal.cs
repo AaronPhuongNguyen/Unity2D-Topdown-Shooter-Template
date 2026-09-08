@@ -7,7 +7,7 @@ public class HealDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    public const float SkillCooldown = 24f;
+    public const float SkillCooldown = 40f;
     public const float HealValue = 3f;
     public const float HealDuration = 8f;
     public const float Recovery = 0.01f;
@@ -22,7 +22,7 @@ public class HealDemo:MonoBehaviour
         if (pm == null) return;
         if (CD > 0) return;
 
-        CD = SkillCooldown * (1 - Mathf.Clamp01(pm.attribute.CooldownReduction_Extra));
+        CD = SkillCooldown * (1 - pm.attribute.CooldownReduction_Current);
         healDuration = HealDuration;
         isExpired = false;
 
@@ -41,7 +41,7 @@ public class HealDemo:MonoBehaviour
     private void Update()
     {
         if(CD > 0) CD -= Time.deltaTime;
-        if (UI != null) UI.fillAmount = CD/SkillCooldown;
+        if (UI != null) UI.fillAmount = CD / (SkillCooldown * (1 - pm.attribute.CooldownReduction_Current));
 
         if(healDuration > 0 && !isExpired)
         {

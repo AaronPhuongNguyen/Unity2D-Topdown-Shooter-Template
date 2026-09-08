@@ -750,7 +750,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4cb3b547694ee1c4589a49036b10cbe3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 1a5e2a6e590d3c74e9bb1fbb88d0307c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -819,6 +819,9 @@ MonoBehaviour:
   musicMixer: {fileID: 0}
   musicList:
   - {fileID: 8300000, guid: 0b37bc28edb1bdb4ab799b740500653f, type: 3}
+  - {fileID: 8300000, guid: 50be7a944ae536a44928e5a71b8519ba, type: 3}
+  - {fileID: 8300000, guid: 5bc711c8397629b46a11a92c75993c6c, type: 3}
+  - {fileID: 8300000, guid: 3a7c969f2522dcf41b7e989c41b81344, type: 3}
   shuffle: 1
   autoPlayMusicOnStart: 1
   musicVolume: 1

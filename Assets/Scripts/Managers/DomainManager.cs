@@ -201,7 +201,7 @@ public class DomainManager : MonoBehaviour
     public int Killed;
     public int Currency;
     public int CurrentWave = 0;
-    public int MaxEnemyPerWave = 500;
+    public int MaxEnemyPerWave = 1000;
     public float CurrentDifficulty = 0;
     public const float WaveDuration = 90f;
     public const float PreparingTimeDefault = 5f;
@@ -269,7 +269,7 @@ public class DomainManager : MonoBehaviour
         CurrentWave++;
         CurrentDifficulty = CurrentWave / 4f;
         isNewWave = false;
-        MaxEnemyPerWave = RNG.GetInt(500, 1000);
+        MaxEnemyPerWave = RNG.GetInt(750, 1250);
     }
     private void NextWave()
     {

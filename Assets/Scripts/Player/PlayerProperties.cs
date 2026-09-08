@@ -38,7 +38,7 @@ public class PlayerProperties : MonoBehaviour
     private void Refresh()
     {
         Up_Point = DefaultPoint;
-        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = a.ArmourPenetration_Perc = a.CooldownReduction_Extra = 0;
+        a.HP_Ampl.FlatBonus = a.ATK_Ampl.FlatBonus = a.DEF_Ampl.FlatBonus = a.SPEED_Ampl.FlatBonus = a.SIGHT_Ampl.FlatBonus = a.CooldownReduction_Ampl.FlatBonus = 0;
         Up_HP = Up_ATK = Up_DEF = Up_SPEED = Up_SIGHT = Up_AP = Up_HPP = Up_CDR = 0f;
         hp = atk = def = speed = sight = ap = hpp = cdr = 0f;
     }
@@ -54,7 +54,7 @@ public class PlayerProperties : MonoBehaviour
         a.SIGHT_Ampl.FlatBonus += Up_SIGHT - sight;
         a.ATK_Ampl.PercBonus += Up_AP - ap;
         a.HP_Ampl.PercBonus += Up_HPP - hpp;
-        a.CooldownReduction_Extra += Up_CDR - cdr;
+        a.CooldownReduction_Ampl.FlatBonus += Up_CDR - cdr;
 
         hp = Up_HP; atk = Up_ATK; def = Up_DEF; speed = Up_SPEED;
         sight = Up_SIGHT; ap = Up_AP; hpp = Up_HPP; cdr = Up_CDR;
@@ -70,7 +70,7 @@ public class PlayerProperties : MonoBehaviour
         if (DEFShower != null) DEFShower.text = a.DEF_Current.ToString("F0");
         if (SPEEDShower != null) SPEEDShower.text = a.SPEED_Current.ToString("F0");
         if (SIGHTShower != null) SIGHTShower.text = a.SIGHT_Current.ToString("F0");
-        if (CDRShower != null) CDRShower.text = (a.CooldownReduction_Extra * 100).ToString("F0") + "%";
+        if (CDRShower != null) CDRShower.text = (a.CooldownReduction_Current * 100).ToString("F0") + "%";
     }
     #endregion
 
@@ -81,8 +81,8 @@ public class PlayerProperties : MonoBehaviour
     private const float Growth_DEF = 30f;
     private const float Growth_SPEED = 0.5f;
     private const float Growth_SIGHT = 0.5f;
-    private const float Growth_AP = 0.03f;
-    private const float Growth_HPP = 0.03f;
+    private const float Growth_AP = 0.04f;
+    private const float Growth_HPP = 0.04f;
     private const float Growth_CDR = 0.02f;
 
     private int Up_Point;

@@ -39,12 +39,10 @@ public class UnitAttribute
     #endregion
 
     #region Misc Status
-
-
-    public float ArmourPenetration_Perc = 0f;
-    public float DamageReduction_Extra = 0f;
-    public float CooldownReduction_Extra = 0f;
-    public float DealtDamage_Extra = 1f;
+    public float ArmourPenetration_Current => Server.Calculation.FinalValue(0f, ArmourPenetration_Ampl);
+    public float DamageReduction_Current => Server.Calculation.FinalValue(0f, DamageReduction_Ampl);
+    public float CooldownReduction_Current => Server.Calculation.FinalValue(0f, CooldownReduction_Ampl);
+    public float DealtDamage_Current => Server.Calculation.FinalValue(1f, DealtDamage_Ampl);
     #endregion
 
     #region Amplifier
@@ -54,12 +52,19 @@ public class UnitAttribute
     public Amplification DEF_Ampl;
     public Amplification ASPD_Ampl;
     public Amplification SIGHT_Ampl;
+
+    public Amplification ArmourPenetration_Ampl;
+    public Amplification DamageReduction_Ampl;
+    public Amplification CooldownReduction_Ampl;
+    public Amplification DealtDamage_Ampl;
     #endregion
 
     #region Flags
     public bool IsNewUnit =>
         HP_Ampl == null || ATK_Ampl == null || SPEED_Ampl == null ||
-        DEF_Ampl == null || ASPD_Ampl == null || SIGHT_Ampl == null;
+        DEF_Ampl == null || ASPD_Ampl == null || SIGHT_Ampl == null ||
+        ArmourPenetration_Ampl == null || DamageReduction_Ampl == null ||
+        CooldownReduction_Ampl == null || DealtDamage_Ampl == null;
 
     public bool IsDead => HP_Current <= 0;
     #endregion
@@ -84,7 +89,13 @@ public class UnitAttribute
         DEF_Ampl ??= new Amplification();
         ASPD_Ampl ??= new Amplification();
         SIGHT_Ampl ??= new Amplification();
+
+        ArmourPenetration_Ampl ??= new Amplification();
+        DamageReduction_Ampl ??= new Amplification();
+        CooldownReduction_Ampl ??= new Amplification();
+        DealtDamage_Ampl ??= new Amplification();
     }
+
     public void Respawn()
     {
         HP_Current = HP_Max;
@@ -95,7 +106,7 @@ public class UnitAttribute
     #region Combat
     public void TakeDamage(float damage)
     {
-        HP_Current -= damage * (1 - DamageReduction_Extra);
+        HP_Current -= damage * (1 - DamageReduction_Current);
         DeathHandler();
     }
 
@@ -119,6 +130,11 @@ public class UnitAttribute
             DEF_Ampl = DEF_Ampl?.Clone(),
             ASPD_Ampl = ASPD_Ampl?.Clone(),
             SIGHT_Ampl = SIGHT_Ampl?.Clone(),
+
+            ArmourPenetration_Ampl = ArmourPenetration_Ampl?.Clone(),
+            DamageReduction_Ampl = DamageReduction_Ampl?.Clone(),
+            CooldownReduction_Ampl = CooldownReduction_Ampl?.Clone(),
+            DealtDamage_Ampl = DealtDamage_Ampl?.Clone(),
         };
     }
     #endregion

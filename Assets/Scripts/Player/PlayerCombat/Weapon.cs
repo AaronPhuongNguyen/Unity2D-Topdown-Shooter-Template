@@ -33,6 +33,8 @@ public class Weapon : MonoBehaviour, ITick
     public Vector3 normalScale => pm.IndicatorPrefab.transform.localScale;
     #region Cache
     private PlayerManager pm => PlayerManager.instance;
+
+    private float lastDM, lastRange;
     #endregion
     #region Runtime
     private float ShootInterval;
@@ -57,24 +59,27 @@ public class Weapon : MonoBehaviour, ITick
 
     private void ApplyDefaultsForType()
     {
+        if (pm == null) return;
         if (Type == WeaponType.Shotgun)
         {
-            if (fireRateMultiplier < 8f) fireRateMultiplier = 8f;
-            if (pelletCount < 12) pelletCount = 12;
-            if (spreadMultiplier < 3f) spreadMultiplier = 3f;
-            if(damageMultiply != 0.25f) damageMultiply = -0.25f;
-            if (rangeMyltiplier != 0.25f) rangeMyltiplier = -0.25f;
-
+            fireRateMultiplier = 7f;
+            pelletCount = 14;
+            spreadMultiplier = 8f;
+            damageMultiply = -0.25f - lastDM;
+            rangeMyltiplier = -0.3f - lastRange;
         }
         else
         {
-            if (fireRateMultiplier > 1f) fireRateMultiplier = 1f;
+            fireRateMultiplier = 1f;
             pelletCount = 1;
             spreadMultiplier = 1f;
-            damageMultiply = 1f;
-            rangeMyltiplier = 1f;
+            damageMultiply = 0 - lastDM;
+            rangeMyltiplier = 0 - lastRange;
         }
-        pm.attribute.DealtDamage_Extra += damageMultiply;
+        lastDM = damageMultiply;
+        lastRange = rangeMyltiplier;
+
+        pm.attribute.DealtDamage_Ampl.TotalBonus += damageMultiply;
         pm.attribute.SIGHT_Ampl.TotalBonus += rangeMyltiplier;
     }
 

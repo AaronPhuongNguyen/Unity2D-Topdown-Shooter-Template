@@ -7,7 +7,7 @@ public class AttackDemo:MonoBehaviour
 {
     PlayerManager pm => PlayerManager.instance;
 
-    private const float SkillCooldown = 90f;
+    private const float SkillCooldown = 120f;
     private const float ASPDValue = -0.25f;
     private const float SpeedValue = 0.1f;
     private const float ArmourPenValue = 0.4f;
@@ -26,15 +26,15 @@ public class AttackDemo:MonoBehaviour
         if (pm == null) return;
         if (CD > 0) return;
 
-        CD = SkillCooldown * (1- Mathf.Clamp01(pm.attribute.CooldownReduction_Extra));
+        CD = SkillCooldown * (1 - pm.attribute.CooldownReduction_Current);
         buffDuration = BuffDuration;
-        ATKValue = 10 + DomainManager.instance.Killed * 0.005f;
+        ATKValue = 0.5f + DomainManager.instance.Killed * 0.001f;
 
-        pm.attribute.DealtDamage_Extra += ATKValue;
+        pm.attribute.DealtDamage_Ampl.TotalBonus += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus += ASPDValue;
-        pm.attribute.ArmourPenetration_Perc += ArmourPenValue;
-        pm.attribute.DamageReduction_Extra += Protecting;
+        pm.attribute.ArmourPenetration_Ampl.FlatBonus += ArmourPenValue;
+        pm.attribute.DamageReduction_Ampl.FlatBonus += Protecting;
         pm.clonedPack.ShootAccuracy += ShootAcc;
 
         isExpired = false;
@@ -42,18 +42,18 @@ public class AttackDemo:MonoBehaviour
     }
     public void Remove()
     {
-        pm.attribute.DealtDamage_Extra -= ATKValue;
+        pm.attribute.DealtDamage_Ampl.TotalBonus -= ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus -= SpeedValue;
         pm.attribute.ASPD_Ampl.TotalBonus -= ASPDValue;
-        pm.attribute.ArmourPenetration_Perc -= ArmourPenValue;
-        pm.attribute.DamageReduction_Extra -= Protecting;
+        pm.attribute.ArmourPenetration_Ampl.FlatBonus -= ArmourPenValue;
+        pm.attribute.DamageReduction_Ampl.FlatBonus -= Protecting;
         pm.clonedPack.ShootAccuracy -= ShootAcc;
 
     }
     private void Update()
     {
         if(CD > 0) CD -= Time.deltaTime;
-        if (UI != null) UI.fillAmount = CD/SkillCooldown;
+        if (UI != null) UI.fillAmount = CD/ (SkillCooldown * (1 - pm.attribute.CooldownReduction_Current));
 
         if(buffDuration > 0) buffDuration -= Time.deltaTime;
         else if(!isExpired && buffDuration <= 0)

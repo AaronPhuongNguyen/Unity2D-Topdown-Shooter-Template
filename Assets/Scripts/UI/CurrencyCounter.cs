@@ -14,6 +14,7 @@ public class CurrencyCounter : MonoBehaviour
     }
     private void Currency()
     {
+        if (!gameObject.activeSelf) return;
         if (currencyShower == null) return;
         if (dm.Currency == currency) return;
         currency = Mathf.Lerp(currency,dm.Currency,2*Time.deltaTime);
