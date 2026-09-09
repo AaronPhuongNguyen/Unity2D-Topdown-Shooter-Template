@@ -178,6 +178,7 @@ public class DomainManager : MonoBehaviour
     [SerializeField] private bool useRandomSeed = true;
     [SerializeField] private int seed = 0;
     public int Seed => seed;
+    public PlayerManager PM => PlayerManager.instance;
 
     private void InitializeSeed()
     {
@@ -236,51 +237,51 @@ public class DomainManager : MonoBehaviour
     {
         isGameRunning = true;
         Time.timeScale = 1f;
-        isNewWave = false;
         RemainingEnemy = 0;
         Killed = 0;
-        CurrentWave = 0;
         Currency = 0;
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
-        CurrentDifficulty = 0f;
+        CurrentWave = 0;
+        HandleWave(1);
     }
 
     public void HandleSpawn(ZomPackage p)
     {
         RemainingEnemy++;
+        AddCurrency(p.CurrencyAtKill * 0.5f);
     }
     public void HandleKill(ZomPackage p)
     {
         RemainingEnemy--;
         Killed++;
-        Currency += Mathf.FloorToInt(p.CurrencyAtKill * Mathf.Max(1,CurrentDifficulty));
+        AddCurrency(p.CurrencyAtKill);
     }
+    public void AddCurrency(float v) => Currency += Mathf.FloorToInt(v);
+    public void CostCurrency(float v) => Currency -= Mathf.CeilToInt(v);
     public void StartTheGame()
     {
         Time.timeScale = 1f;
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
-        HandleWave();
+        HandleWave(1);
     }
 
-    private void HandleWave()
+    private void HandleWave(int wave)
     {
-        CurrentWave++;
+        CurrentWave+=wave;
         CurrentDifficulty = CurrentWave / 4f;
+        PreparingTime = PreparingTimeDefault;
+        SecondBeforeNextWave = 0f;
         isNewWave = false;
-        MaxEnemyPerWave = RNG.GetInt(750, 1250);
+        MaxEnemyPerWave = Mathf.RoundToInt(1000 * RNG.GetFloat(0.5f, 1.5f));
+        AddCurrency(Killed + 100);
     }
     private void NextWave()
     {
         if (isNewWave)
         {
-            PreparingTime = PreparingTimeDefault;
-            SecondBeforeNextWave = 0f;
-
-            Currency += Mathf.FloorToInt(Killed * Mathf.Max(1,CurrentDifficulty));
-            HandleWave();
-
+            HandleWave(1);
             EventBus.RaiseWaveCleared();
             return;
         }
@@ -302,5 +303,10 @@ public class DomainManager : MonoBehaviour
         if (RemainingEnemy <= 0 || SecondBeforeNextWave <= 0)
             NextWave();
     }
+    #endregion
+
+    #region Debugger
+    [ContextMenu("Add 10 wave")]
+    private void AddWave() => HandleWave(10);
     #endregion
 }

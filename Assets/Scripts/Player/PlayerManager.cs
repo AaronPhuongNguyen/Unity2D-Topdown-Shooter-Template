@@ -23,6 +23,8 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public PlayerPackage clonedPack;
     [HideInInspector] public GameObject AimIndicator;
     [HideInInspector] public GameObject Controlling;
+    [HideInInspector] public RecoverOverTime rot;
+    [HideInInspector] public MoneyOverTime mot;
 
     public bool IsAttacking => Target != null && CurrentHP > 0;
     public bool IsMoving => MoveInput != Vector2.zero && !IsAttacking && CurrentHP > 0;
@@ -131,10 +133,14 @@ public class PlayerManager : MonoBehaviour
 
         if (!Controlling.TryGetComponent(out pc))
             pc = Controlling.AddComponent<PlayerCombat>();
+        if(!Controlling.TryGetComponent(out rot))
+            rot = Controlling.AddComponent<RecoverOverTime>();
+        if(!Controlling.TryGetComponent(out mot))
+            mot = Controlling.AddComponent<MoneyOverTime>();
 
-        if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
+        if (!Controlling.TryGetComponent(out ce))
         {
-            ce = cet;
+            ce = Controlling.AddComponent<CorpseEmitter>();
             ce.CreateEmitter(pc);
         }
 
@@ -208,7 +214,7 @@ public class PlayerManager : MonoBehaviour
     public void Heal(float value)
     {
         if (attribute.IsFullHP) return;
-        if (value >= attribute.HP_Max * 0.05f) healShockDuration += 1;
+        if (value >= attribute.HP_Max * 0.3f) healShockDuration += 0.5f;
         attribute.HP_Current = Mathf.Min(attribute.HP_Current + value, attribute.HP_Max);
     }
 

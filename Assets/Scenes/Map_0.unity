@@ -817,6 +817,7 @@ GameObject:
   - component: {fileID: 118959873}
   - component: {fileID: 118959874}
   - component: {fileID: 118959875}
+  - component: {fileID: 118959876}
   m_Layer: 0
   m_Name: Event
   m_TagString: Untagged
@@ -916,6 +917,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clip: {fileID: 0}
+--- !u!114 &118959876
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 118959871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7796f2e8c53a5d74381327351dbd9262, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &126431504
 GameObject:
   m_ObjectHideFlags: 0
@@ -2522,6 +2535,8 @@ MonoBehaviour:
   clonedPack: {fileID: 0}
   AimIndicator: {fileID: 0}
   Controlling: {fileID: 0}
+  rot: {fileID: 0}
+  mot: {fileID: 0}
   healShockDuration: 0
   combatDuration: 0
 --- !u!1 &446473926
@@ -4640,6 +4655,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 118959876}
+        m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
+        m_MethodName: ResumeGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &805534126
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5428,6 +5455,65 @@ RectTransform:
   m_AnchoredPosition: {x: 500, y: 100}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1065498886
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1065498887}
+  - component: {fileID: 1065498888}
+  - component: {fileID: 1065498889}
+  m_Layer: 0
+  m_Name: StoreManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1065498887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065498886}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1881132707}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1065498888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065498886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47f1e30fa111a294cbf23453d82fe04a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  su: {fileID: 1065498889}
+--- !u!114 &1065498889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1065498886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5be683e5dd336c941bfafb6c644a8614, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HPShower: {fileID: 0}
 --- !u!1 &1069603921
 GameObject:
   m_ObjectHideFlags: 0
@@ -6467,18 +6553,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1229039367}
-        m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
-        m_MethodName: PauseGame
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
       - m_Target: {fileID: 606810878}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -6498,6 +6572,18 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 8300000, guid: e08d1b424d836d64a9e044e9393e2a26, type: 3}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 118959876}
+        m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
+        m_MethodName: PauseGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -6801,6 +6887,7 @@ GameObject:
   - component: {fileID: 1267631878}
   - component: {fileID: 1267631877}
   - component: {fileID: 1267631876}
+  - component: {fileID: 1267631879}
   m_Layer: 0
   m_Name: Properties
   m_TagString: Untagged
@@ -6931,6 +7018,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 118959876}
+        m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
+        m_MethodName: PauseGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1267631877
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6969,6 +7068,33 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1267631874}
   m_CullTransparentMesh: 1
+--- !u!114 &1267631879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1267631874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f84000aacd7cf54a99c89781e966b09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OnGameStart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGamePause:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGameResume:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGameRestart:
+    m_PersistentCalls:
+      m_Calls: []
+  OnGameOver:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1298267496
 GameObject:
   m_ObjectHideFlags: 0
@@ -7019,9 +7145,9 @@ MonoBehaviour:
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:
-  - {fileID: 8300000, guid: 50be7a944ae536a44928e5a71b8519ba, type: 3}
-  - {fileID: 8300000, guid: 5bc711c8397629b46a11a92c75993c6c, type: 3}
-  - {fileID: 8300000, guid: 3a7c969f2522dcf41b7e989c41b81344, type: 3}
+  - {fileID: 8300000, guid: e99ccad6a2e14a342bcc66503cef43db, type: 3}
+  - {fileID: 8300000, guid: 042da6a9cd57add4384309fc0ea7159a, type: 3}
+  - {fileID: 8300000, guid: 703942e67a478014b8384486341c7b65, type: 3}
   shuffle: 1
   autoPlayMusicOnStart: 1
   musicVolume: 1
@@ -9330,6 +9456,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1065498887}
   - {fileID: 1217062004}
   - {fileID: 756637122}
   - {fileID: 1298267497}
@@ -9679,7 +9806,6 @@ GameObject:
   - component: {fileID: 2016030074}
   - component: {fileID: 2016030073}
   - component: {fileID: 2016030076}
-  - component: {fileID: 2016030075}
   m_Layer: 0
   m_Name: Close Menu
   m_TagString: Untagged
@@ -9744,18 +9870,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2016030071}
   m_CullTransparentMesh: 1
---- !u!114 &2016030075
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2016030071}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7796f2e8c53a5d74381327351dbd9262, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2016030076
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9800,7 +9914,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 2016030075}
+      - m_Target: {fileID: 118959876}
         m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
         m_MethodName: ResumeGame
         m_Mode: 1

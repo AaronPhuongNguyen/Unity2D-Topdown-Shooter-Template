@@ -1,5 +1,6 @@
 ﻿using Server;
 using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -76,14 +77,18 @@ public class PlayerProperties : MonoBehaviour
 
     #region Upgrader
     private const int DefaultPoint = 5;
-    private const float Growth_HP = 15;
-    private const float Growth_ATK = 1.5f;
+    private const float Growth_HP = 20;
+    private const float Growth_ATK = 2f;
     private const float Growth_DEF = 30f;
-    private const float Growth_SPEED = 0.5f;
+    private const float Growth_SPEED = 1f;
     private const float Growth_SIGHT = 1f;
-    private const float Growth_AP = 0.03f;
-    private const float Growth_HPP = 0.03f;
+    private const float Growth_AP = 0.02f;
+    private const float Growth_HPP = 0.02f;
     private const float Growth_CDR = 0.02f;
+
+    private const float Cap_SPEED = 10f;
+    private const float Cap_SIGHT = 20f;
+    private const float Cap_CDR = 0.6f;
 
     private int Up_Point;
     private float Up_HP;
@@ -105,7 +110,7 @@ public class PlayerProperties : MonoBehaviour
         interval = Time.time + 3f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty * RNG.GetInt(0,2));
+        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty * RNG.GetInt(0, 2));
         int finalReward = Mathf.Min(15, Mathf.FloorToInt(multiplier));
 
         Up_Point += finalReward;
@@ -149,28 +154,41 @@ public class PlayerProperties : MonoBehaviour
     }
     public void UpgradeSPEED()
     {
-        if (Up_Point <= 0) return;
-        if (Up_SPEED >= 10) return;
-        Up_SPEED += Growth_SPEED;
+        if (Up_Point <= 0 || Up_SPEED >= Cap_SPEED) return;
+        Up_SPEED = Mathf.Min(Up_SPEED + Growth_SPEED, Cap_SPEED);
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeSIGHT()
     {
-        if (Up_Point <= 0) return;
-        if (Up_SIGHT >= 20) return;
-        Up_SIGHT += Growth_SIGHT;
+        if (Up_Point <= 0 || Up_SIGHT >= Cap_SIGHT) return;
+        Up_SIGHT = Mathf.Min(Up_SIGHT + Growth_SIGHT, Cap_SIGHT);
         Up_Point--;
         UpdateStatus();
     }
     public void UpgradeCooldownReduction()
     {
-        if (Up_Point <= 0) return;
-        if (Up_CDR >= 0.6f) return;
-
-        Up_CDR += Growth_CDR;
+        if (Up_Point <= 0 || Up_CDR >= Cap_CDR) return;
+        Up_CDR = Mathf.Min(Up_CDR + Growth_CDR, Cap_CDR);
         Up_Point--;
         UpdateStatus();
+    }
+    #endregion
+
+    #region Debugger
+    [ContextMenu("AddStars")]
+    private void AddStars() => Up_Point += 99;
+    [ContextMenu("Auto Assign Point")]
+    private void Assign()
+    {
+        while (Up_Point > 0)
+        {
+            UpgradeHP();
+            UpgradeATK();
+            UpgradeSIGHT();
+            UpgradeSPEED();
+            UpgradeCooldownReduction();
+        }
     }
     #endregion
 }

@@ -154,50 +154,28 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        bool isAlpha = RNG.GetPercent() < 0.2f * Mathf.Clamp01(dm.CurrentDifficulty);
+        bool isAlpha = RNG.GetPercent() < 0.05f;
+
+        lastHPBonus = RNG.GetInt(300,900) * dm.CurrentDifficulty;
+        lastHPP = 0.25f * dm.CurrentDifficulty;
+
+        lastATKBonus = RNG.GetInt(30,90) * dm.CurrentDifficulty;
+        lastATKK = 0.25f * dm.CurrentDifficulty;
+
+        lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastSPEEDBonus = RNG.GetInt(2,4) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastScale = RNG.GetVector2(0,0.25f) * Mathf.Clamp01(dm.CurrentDifficulty);
 
         if (isAlpha)
         {
-            lastHPBonus = 1500 * dm.CurrentDifficulty * RNG.GetInt(2, 4);
-            lastHPP = RNG.GetInt(2, 4) * RNG.GetPercent() * dm.CurrentDifficulty;
+            lastHPBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastATKBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastDEFBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastSPEEDBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastAPBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastScale *=RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
         }
-        else
-        {
-            lastHPBonus = 750 * dm.CurrentDifficulty * RNG.GetInt(1, 2);
-            lastHPP = RNG.GetInt(1, 2) * RNG.GetPercent() * dm.CurrentDifficulty;
-        }
-
-        if (isAlpha)
-        {
-            lastATKBonus = 60 * dm.CurrentDifficulty * RNG.GetInt(2, 4);
-            lastATKK = RNG.GetInt(2, 4) * RNG.GetPercent() * dm.CurrentDifficulty;
-        }
-        else
-        {
-            lastATKBonus = 30 * dm.CurrentDifficulty * RNG.GetInt(1, 2);
-            lastATKK = RNG.GetInt(1, 2) * RNG.GetPercent() * dm.CurrentDifficulty;
-        }
-
-        if (isAlpha)
-            lastAPBonus = Mathf.Clamp01(0.4f + RNG.GetPercent()) * Mathf.Clamp01(dm.CurrentDifficulty);
-        else
-            lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
-
-        // DEF Bonus
-        if (isAlpha)
-            lastDEFBonus = 150 * RNG.GetPercent() * RNG.GetInt(2, 4) * Mathf.Clamp01(dm.CurrentDifficulty);
-        else
-            lastDEFBonus = 75 * RNG.GetPercent() * RNG.GetInt(1, 2) * Mathf.Clamp01(dm.CurrentDifficulty);
-
-        if (isAlpha)
-            lastSPEEDBonus = 6 * RNG.GetInt(2, 4) * RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
-        else
-            lastSPEEDBonus = 3 * RNG.GetInt(1, 2) * RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
-
-        if (isAlpha)
-            lastScale = transform.localScale * 0.5f * Mathf.Clamp(dm.CurrentDifficulty,1,2);
-        else
-            lastScale = Vector3.zero;
     }
     protected virtual void ApplyBonus()
     {

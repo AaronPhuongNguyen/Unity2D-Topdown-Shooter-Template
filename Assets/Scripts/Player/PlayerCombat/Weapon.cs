@@ -67,11 +67,11 @@ public class Weapon : MonoBehaviour, ITick
 
         if (Type == WeaponType.Shotgun)
         {
-            fireRateMultiplier = 7f;
+            fireRateMultiplier = 3f;
             pelletCount = 14;
-            spreadMultiplier = 8f;
-            damageMultiply = -0.25f;
-            rangeMultiplier = -0.3f;
+            spreadMultiplier = 10f;
+            damageMultiply = -0.8f;
+            rangeMultiplier = -0.25f;
         }
         else
         {
@@ -124,7 +124,7 @@ public class Weapon : MonoBehaviour, ITick
         {
             pm.AimIndicator.transform.localScale = TargetScale;
         }
-        ShootInterval = Time.time + pm.attribute.ASPD_Current * fireRateMultiplier;
+        ShootInterval = Time.time + 0.1f * pm.attribute.ASPD_Current * fireRateMultiplier;
 
         PlayMuzzleEffect();
 

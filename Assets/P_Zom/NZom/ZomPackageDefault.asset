@@ -18,10 +18,6 @@ MonoBehaviour:
   attribute:
     template: {fileID: 11400000, guid: 13c6fd6f8ced4d440ac96897a892e6a3, type: 2}
     HP_Current: 0
-    ArmourPenetration_Perc: 0
-    DamageReduction_Extra: 0
-    CooldownReduction_Extra: 0
-    DealtDamage_Extra: 0
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -46,9 +42,25 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   Media: {fileID: 11400000, guid: e2889cbc5f9e62b4292541a9aa4e3667, type: 2}
-  CurrencyAtKill: 2
+  CurrencyAtKill: 5
   AppearFromWave: 0
-  CountPerSpawner: 3
+  CountPerSpawner: 4
   _rateToAppear: 1
-  _biteAccuracy: 0.5
+  _biteAccuracy: 1
