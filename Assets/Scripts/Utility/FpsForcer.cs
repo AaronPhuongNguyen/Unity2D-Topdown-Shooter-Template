@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [DefaultExecutionOrder(-1000)]
-public class FpsForcer : MonoBehaviour
+public class FpsForcer : MonoBehaviour, IUnscaledTick
 {
     [Header("Target")]
     [SerializeField, Range(30, 240)] private int targetFPS = 60;
@@ -13,7 +13,7 @@ public class FpsForcer : MonoBehaviour
 
     [SerializeField] private bool syncFixedTimestep = true;
 
-    private float nextCheckTime;
+    private float checkTimer;
     private int lastAppliedFPS = -1;
 
     public static FpsForcer instance { get; private set; }
@@ -34,13 +34,27 @@ public class FpsForcer : MonoBehaviour
     private void OnEnable()
     {
         Apply();
+
+        // Engine/platform-level FPS enforcement - must keep running even
+        // while gameplay is paused or slowed via GameSpeed, so this rides
+        // IUnscaledTick (real time) rather than ITick.
+        if (TickSystem.Instance != null)
+            TickSystem.Register((IUnscaledTick)this);
     }
 
-    private void Update()
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((IUnscaledTick)this);
+    }
+
+    public void UnscaledTick(float delta)
     {
         if (!forcePeriodically) return;
-        if (Time.unscaledTime < nextCheckTime) return;
-        nextCheckTime = Time.unscaledTime + checkInterval;
+
+        checkTimer -= delta;
+        if (checkTimer > 0f) return;
+        checkTimer = checkInterval;
 
         if (Application.targetFrameRate != targetFPS || (!Application.isEditor && QualitySettings.vSyncCount != 0))
         {
