@@ -37,8 +37,6 @@ public class Weapon : MonoBehaviour, ITick
     private float lastDM, lastRange;
     #endregion
     #region Runtime
-    // Was Time.time-based (ignores GameSpeed/pause). Now a plain cooldown
-    // accumulator driven by the delta passed into Tick.
     private float shootCooldown;
     #endregion
 
@@ -90,8 +88,6 @@ public class Weapon : MonoBehaviour, ITick
         pm.attribute.SIGHT_Ampl.TotalBonus += rangeMultiplier;
     }
 
-    // Not registered with TickSystem - driven explicitly from
-    // PlayerCombat.Tick() (pm.pc?.Tick(delta) -> wp.Tick(dt)), same as before.
     #region Tick
     public void Tick(float dt)
     {
@@ -204,7 +200,7 @@ public class Weapon : MonoBehaviour, ITick
         if (o == null) return;
         o.transform.position = result.HitPoint;
 
-        DamagePopupManager.Show(result.HitPoint, result.Damage); // real final damage, not raw ATK
+        DamagePopupManager.Show(result.HitPoint, result.Damage);
     }
     #endregion
 }

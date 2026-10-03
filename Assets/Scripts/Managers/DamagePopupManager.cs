@@ -1,10 +1,11 @@
+using Server;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
 /// Static entry point: DamagePopupManager.Show(...) from anywhere, no
-/// reference-passing needed. Handles world-to-screen conversion and pooling;
-/// actual per-popup animation lives in DamagePopup.
+/// reference-passing needed. Handles world-to-screen conversion, pooling,
+/// and random jitter so multiple near-simultaneous popups on the same
+/// target (e.g. shotgun pellets) visibly fan out instead of overlapping.
 /// </summary>
 public class DamagePopupManager : MonoBehaviour
 {
@@ -23,14 +24,18 @@ public class DamagePopupManager : MonoBehaviour
     #endregion
 
     #region Inspector
-    [SerializeField] private Canvas canvas;          // screen-space canvas popups are parented under
+    [SerializeField] private Canvas canvas;
     [SerializeField] private DamagePopup popupPrefab;
-    [SerializeField] private Camera worldCamera;      // camera used for WorldToScreenPoint; falls back to Camera.main
+    [SerializeField] private Camera worldCamera;
 
     [Header("Colors")]
     [SerializeField] private Color normalColor = Color.white;
     [SerializeField] private Color critColor = new Color(1f, 0.6f, 0f);
     [SerializeField] private Color healColor = new Color(0.4f, 1f, 0.4f);
+
+    [Header("Jitter")]
+    [Tooltip("Max random screen-space offset radius (pixels) applied per popup, so simultaneous hits on the same spot visibly fan out instead of stacking.")]
+    [SerializeField] private float jitterRadius = 25f;
     #endregion
 
     #region Cache
@@ -69,6 +74,12 @@ public class DamagePopupManager : MonoBehaviour
         obj.transform.SetParent(canvas.transform, false);
 
         Vector2 screenPos = Cam.WorldToScreenPoint(worldPos);
+
+        // Random screen-space jitter via project RNG (seeded, deterministic
+        // with the match seed) so multiple same-frame popups on the same
+        // target - shotgun pellets, multi-hit AoE, etc. - fan out visibly
+        // instead of rendering exactly on top of each other.
+        screenPos += RNG.GetInsideCircle(jitterRadius);
 
         if (obj.TryGetComponent(out DamagePopup popup))
             popup.Init(screenPos, text, color);
