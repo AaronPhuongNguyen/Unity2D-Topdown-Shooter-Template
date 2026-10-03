@@ -46,7 +46,7 @@ public class HealDemo : MonoBehaviour, ITick
 
         if (healDuration > 0 && !isExpired)
         {
-            pm.Heal((HealValue / HealDuration / 100) * pm.attribute.HP_Max * delta);
+            pm.attribute.Heal((HealValue / HealDuration / 100) * pm.attribute.HP_Max * delta);
             healDuration -= delta;
             RemoveEffect();
         }
@@ -84,6 +84,6 @@ public class HealDemo : MonoBehaviour, ITick
     private void Lifesteal(float v)
     {
         if (healDuration <= 0f) return;
-        pm.Heal(v * Recovery + pm.attribute.HP_Current * Recovery);
+        pm.attribute.Heal(v * Recovery + pm.attribute.HP_Current * Recovery);
     }
 }

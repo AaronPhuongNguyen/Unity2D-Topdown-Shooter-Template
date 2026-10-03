@@ -6,12 +6,12 @@ using UnityEngine;
 public class AudioPackage : ScriptableObject
 {
     public List<AudioClip> AttackSounds;
-    public List<AudioClip> HitSounds;
+    public List<AudioClip> HitTargetSounds;
     public List<AudioClip> DeathSounds;
     public List<AudioClip> MiscSounds;
 
     public AudioClip GetAttackSound() => GetRandom(AttackSounds);
-    public AudioClip GetHitSound() => GetRandom(HitSounds);
+    public AudioClip GetHitSound() => GetRandom(HitTargetSounds);
     public AudioClip GetDeathSound() => GetRandom(DeathSounds);
     public AudioClip GetMiscSound() => GetRandom(MiscSounds);
 

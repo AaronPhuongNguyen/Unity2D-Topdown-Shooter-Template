@@ -14,17 +14,29 @@ public sealed class TickSystem : MonoBehaviour
 {
     private static TickSystem _instance;
 
-    public static TickSystem Instance
+    /// <summary>
+    /// Passive accessor - returns null if no TickSystem exists yet or if it has
+    /// already been destroyed (e.g. during scene/app teardown). Never creates one.
+    /// Safe to call from OnDisable/OnDestroy of any ticking object without risk
+    /// of resurrecting a destroyed singleton into a new orphan GameObject.
+    /// </summary>
+    public static TickSystem Instance => _instance;
+
+    /// <summary>
+    /// Guarantees a TickSystem exists, creating one if necessary. Call this
+    /// explicitly from game bootstrap code (e.g. a startup/bootstrap scene
+    /// script) - never called implicitly by Register/Unregister/Instance,
+    /// so shutdown-time access can never spawn a stray instance.
+    /// </summary>
+    public static TickSystem EnsureExists()
     {
-        get
+        if (_instance == null)
         {
-            if (_instance == null)
-            {
-                var go = new GameObject("TickSystem");
-                _instance = go.AddComponent<TickSystem>();
-            }
-            return _instance;
+            var go = new GameObject("TickSystem");
+            _instance = go.AddComponent<TickSystem>();
+            DontDestroyOnLoad(go);
         }
+        return _instance;
     }
 
     // ---------------- GameSpeed ----------------
@@ -89,7 +101,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Register(ITick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return; // no instance - never create one just to register
         inst._pendingRemoveTicks.Remove(ticker);
         if (!inst._pendingAddTicks.Contains(ticker))
             inst._pendingAddTicks.Add(ticker);
@@ -98,7 +111,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Unregister(ITick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return;
         inst._pendingAddTicks.Remove(ticker);
         if (!inst._pendingRemoveTicks.Contains(ticker))
             inst._pendingRemoveTicks.Add(ticker);
@@ -107,7 +121,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Register(ILateTick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return;
         inst._pendingRemoveLateTicks.Remove(ticker);
         if (!inst._pendingAddLateTicks.Contains(ticker))
             inst._pendingAddLateTicks.Add(ticker);
@@ -116,7 +131,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Unregister(ILateTick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return;
         inst._pendingAddLateTicks.Remove(ticker);
         if (!inst._pendingRemoveLateTicks.Contains(ticker))
             inst._pendingRemoveLateTicks.Add(ticker);
@@ -125,7 +141,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Register(IUnscaledTick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return;
         inst._pendingRemoveUnscaledTicks.Remove(ticker);
         if (!inst._pendingAddUnscaledTicks.Contains(ticker))
             inst._pendingAddUnscaledTicks.Add(ticker);
@@ -134,7 +151,8 @@ public sealed class TickSystem : MonoBehaviour
 
     public static void Unregister(IUnscaledTick ticker)
     {
-        var inst = Instance;
+        var inst = _instance;
+        if (inst == null) return;
         inst._pendingAddUnscaledTicks.Remove(ticker);
         if (!inst._pendingRemoveUnscaledTicks.Contains(ticker))
             inst._pendingRemoveUnscaledTicks.Add(ticker);
@@ -238,6 +256,7 @@ public sealed class TickSystem : MonoBehaviour
         }
     }
 }
+
 /// <summary>
 /// Implement to receive scaled per-frame ticks (affected by GameSpeed).
 /// </summary>

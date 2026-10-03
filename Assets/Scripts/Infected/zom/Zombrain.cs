@@ -111,6 +111,7 @@ public class Zombrain : HurtBox, ITick
         attribute.Reset();
         attribute.OnDeath += Despawn;
         attribute.OnTakeDamage += OnHit;
+        attribute.tag = UnitTag.Aggressive;
         isActive = true;
 
         package.attribute = attribute;
@@ -118,7 +119,7 @@ public class Zombrain : HurtBox, ITick
         GetBonus();
         ApplyBonus();
 
-        Target = pm.Controlling == null ? null : pm.Controlling.transform;
+        Target = null;
 
         // Reset perf caches on respawn so pooled instances don't reuse stale state.
         rotateInterval = 0f;
@@ -145,7 +146,7 @@ public class Zombrain : HurtBox, ITick
         if (!Unsubscribe()) return;
 
         PlayDeathSound();
-        ce?.SpawnCorpse(_t.position,lastCachedScaled, Direction);
+        ce?.SpawnCorpse(_t.position, lastCachedScaled, Direction);
 
         if (dm != null) dm.HandleKill(package);
 
@@ -156,25 +157,25 @@ public class Zombrain : HurtBox, ITick
     {
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetInt(300,900) * dm.CurrentDifficulty;
+        lastHPBonus = RNG.GetInt(200, 600) * dm.CurrentDifficulty;
         lastHPP = 0.25f * dm.CurrentDifficulty;
 
-        lastATKBonus = RNG.GetInt(30,90) * dm.CurrentDifficulty;
+        lastATKBonus = RNG.GetInt(20, 60) * dm.CurrentDifficulty;
         lastATKK = 0.25f * dm.CurrentDifficulty;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
         lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastSPEEDBonus = RNG.GetInt(2,4) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastScale = RNG.GetVector2(0,0.25f) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastSPEEDBonus = RNG.GetInt(1, 2) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastScale = RNG.GetVector2(0, 0.25f) * Mathf.Clamp01(dm.CurrentDifficulty);
 
         if (isAlpha)
         {
-            lastHPBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastATKBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastDEFBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastSPEEDBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastAPBonus *= RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastScale *=RNG.GetFloat(1.5f,3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastHPBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastATKBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastDEFBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastSPEEDBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastAPBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            lastScale *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
         }
     }
     protected virtual void ApplyBonus()
@@ -201,7 +202,7 @@ public class Zombrain : HurtBox, ITick
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
 
         transform.localScale -= lastScale;
-        
+
         if (appliedChaseBonus != 0f)
         {
             attribute.SPEED_Ampl.FlatBonus -= appliedChaseBonus;
@@ -314,7 +315,12 @@ public class Zombrain : HurtBox, ITick
             );
             separationInterval = _now + 0.2f;
         }
-        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 3f) ? 60f : 0f;
+
+        // Was: pm.attribute.SIGHT_Current (hardcoded to the player's stat).
+        // Now uses this zombie's own sight range, since Target is no longer
+        // guaranteed to be the player - PlayerManager.attribute wouldn't
+        // even be the right reference frame for a non-player prey.
+        SpeedHelper = (DistanceToTarget > attribute.SIGHT_Current * 3f) ? 60f : 0f;
         if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
         {
             attribute.SPEED_Ampl.FlatBonus += SpeedHelper - appliedChaseBonus;
@@ -359,7 +365,10 @@ public class Zombrain : HurtBox, ITick
         PlayAttackSound();
 
         if (RNG.GetPercent() < package.BiteAccuracy)
-            Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
+        {
+            AttackResult rs = Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
+            if (rs.DidHit) PlayHitSound();
+        }
 
         if (anim != null) anim.SetBool(AttackHash, CanAttack && isAttacking);
 
@@ -368,19 +377,68 @@ public class Zombrain : HurtBox, ITick
 
     protected virtual void OnHit(float damage)
     {
-        PlayHitSound();
+
     }
     #endregion
 
     #region Sense
+    [Header("Prey Search")]
+    [SerializeField] protected float preySearchRadius = 15f;
+    [SerializeField] protected LayerMask preyMask; // layer(s) friendly units live on - do NOT include this object's own layer
+
+    private Collider2D[] preyBuffer = new Collider2D[8];
+
     protected virtual void FindPrey()
     {
         if (Target != null) return;
         if (_now < findPreyInterval) return;
         findPreyInterval = _now + RNG.GetFloat(0.3f, 1f);
 
-        if (pm.Controlling == null) return;
-        Target = pm.Controlling.transform;
+        Target = SearchForPrey();
+    }
+
+    /// <summary>
+    /// Scans for the nearest valid prey: must carry a HurtBox whose
+    /// UnitAttribute.tag is Friendly, and must not be on this object's own
+    /// layer (so zombies never target each other via this path).
+    /// </summary>
+    protected virtual Transform SearchForPrey()
+    {
+        int count = Physics2D.OverlapCircleNonAlloc(_t.position, preySearchRadius, preyBuffer, preyMask);
+
+        if (count >= preyBuffer.Length)
+        {
+            preyBuffer = new Collider2D[preyBuffer.Length * 2];
+            return SearchForPrey();
+        }
+
+        int ownLayer = gameObject.layer;
+        float nearestSqr = float.MaxValue;
+        Transform nearest = null;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = preyBuffer[i];
+            if (col == null) continue;
+            if (col.gameObject.layer == ownLayer) continue;
+
+            if (!col.TryGetComponent(out HurtBox hurtBox)) continue;
+
+            UnitPackage package = hurtBox.Access();
+            if (package?.attribute == null) continue;
+            if (package.attribute.tag != UnitTag.Friendly) continue;
+
+            Vector2 delta = (Vector2)col.transform.position - (Vector2)_t.position;
+            float distSqr = delta.sqrMagnitude;
+
+            if (distSqr < nearestSqr)
+            {
+                nearestSqr = distSqr;
+                nearest = col.transform;
+            }
+        }
+
+        return nearest;
     }
 
     protected virtual void PlayAttackSound()
@@ -400,7 +458,6 @@ public class Zombrain : HurtBox, ITick
         if (AudioManager.instance == null || package == null) return;
         PlayHitSound();
         PlayMiscSound();
-        PlayAttackSound();
         AudioManager.instance.PlayAudio(package.Media.Audio.GetDeathSound(), _t.position);
     }
 

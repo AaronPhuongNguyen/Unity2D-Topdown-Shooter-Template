@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2438015239626372522}
   - component: {fileID: 55477727124292038}
   - component: {fileID: 7487198544445763675}
+  - component: {fileID: 7354964546579288016}
   m_Layer: 6
   m_Name: Sprite
   m_TagString: Untagged
@@ -123,6 +124,19 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7354964546579288016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 739964849157105060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 7487198544445763675}
 --- !u!1 &1349149678334999788
 GameObject:
   m_ObjectHideFlags: 0
@@ -219,6 +233,7 @@ MonoBehaviour:
   package: {fileID: 0}
   attribute:
     template: {fileID: 0}
+    tag: 0
     HP_Current: 0
     HP_Ampl:
       FlatBonus: 0
@@ -244,12 +259,29 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   anim: {fileID: 7487198544445763675}
   Target: {fileID: 0}
   Direction: {x: 0, y: 0}
   CanAttack: 1
   CanMove: 1
   DistanceToTarget: 0
+  SpeedHelper: 0
   separationRadius: 1
   separationStrength: 1.5
 --- !u!114 &1764429228207518003

@@ -96,6 +96,7 @@ MonoBehaviour:
   package: {fileID: 0}
   attribute:
     template: {fileID: 0}
+    tag: 0
     HP_Current: 0
     HP_Ampl:
       FlatBonus: 0
@@ -118,6 +119,22 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
@@ -157,6 +174,7 @@ GameObject:
   - component: {fileID: 3588174963957080077}
   - component: {fileID: 4323807463548846895}
   - component: {fileID: 936605475563574437}
+  - component: {fileID: 3594574311949952823}
   m_Layer: 6
   m_Name: Sprites
   m_TagString: Untagged
@@ -268,6 +286,19 @@ MonoBehaviour:
   shadow_sr: {fileID: 5530025081731567336}
   Offset: {x: 0.3, y: -0.1, z: 0}
   shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+--- !u!114 &3594574311949952823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084547090343005438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 3588174963957080077}
 --- !u!1 &5525271499860763374
 GameObject:
   m_ObjectHideFlags: 0

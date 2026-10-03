@@ -158,6 +158,7 @@ public class Weapon : MonoBehaviour, ITick
         }
 
         if (!anyHit) pm.PlayMiscSound();
+        else pm.PlayHitSound();
     }
 
     private static Vector2 RotateDirection(Vector2 dir, float angleDegrees)

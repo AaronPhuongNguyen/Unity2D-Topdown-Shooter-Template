@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 [Serializable]
 public class Amplification
@@ -24,6 +25,7 @@ public class Amplification
 public class UnitAttribute
 {
     public UnitAttributeTemplate template;
+    public UnitTag tag;
 
     #region Current Status
     public float HP_Current;
@@ -109,6 +111,12 @@ public class UnitAttribute
         HP_Current -= damage * (1 - DamageReduction_Current);
         DeathHandler();
     }
+    public void Heal(float value)
+    {
+        if (IsFullHP) return;
+        float finalVal = value; //future amplifier; HealingEfficiency
+        HP_Current = Mathf.Min(HP_Current + finalVal, HP_Max);
+    }
 
     private void DeathHandler()
     {
@@ -138,4 +146,10 @@ public class UnitAttribute
         };
     }
     #endregion
+}
+public enum UnitTag
+{
+    Friendly,
+    Neutral,
+    Aggressive
 }

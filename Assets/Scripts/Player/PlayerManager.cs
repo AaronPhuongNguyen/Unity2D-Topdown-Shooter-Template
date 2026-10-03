@@ -30,7 +30,6 @@ public class PlayerManager : MonoBehaviour, ITick
     public bool IsMoving => MoveInput != Vector2.zero && !IsAttacking && CurrentHP > 0;
     public bool IsIdle => !IsAttacking && !IsMoving && CurrentHP > 0;
 
-    [HideInInspector] public float healShockDuration;
     [HideInInspector] public float combatDuration;
     private CorpseEmitter ce;
     #endregion
@@ -77,7 +76,6 @@ public class PlayerManager : MonoBehaviour, ITick
     public void Tick(float delta)
     {
         if (combatDuration > 0) combatDuration -= delta;
-        if (healShockDuration > 0) healShockDuration -= delta;
         if (Controlling == null) return;
 
         pc?.Tick(delta);
@@ -149,8 +147,8 @@ public class PlayerManager : MonoBehaviour, ITick
 
         clonedPack.attribute = clonedPack.attribute.Clone();
         attribute.Reset();
+        attribute.tag = UnitTag.Friendly;
         attribute.OnTakeDamage += SetCombat;
-        attribute.OnTakeDamage += OnHit;
         attribute.OnDeath += PlayDeathSound;
         attribute.OnDeath += AfterDeath;
 
@@ -190,7 +188,6 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.OnDeath -= AfterDeath;
         attribute.OnDeath -= PlayDeathSound;
         attribute.OnTakeDamage -= SetCombat;
-        attribute.OnTakeDamage -= OnHit;
 
         PoolingSystem.instance.DestroyObject(Controlling);
 
@@ -208,17 +205,8 @@ public class PlayerManager : MonoBehaviour, ITick
         healingTimer = 10f;
 
         if (combatDuration > 0) return;
-        Heal(attribute.HP_Max * 0.025f);
+        attribute.Heal(attribute.HP_Max * 0.025f);
     }
-
-    public void Heal(float value)
-    {
-        if (attribute.IsFullHP) return;
-        if (value >= attribute.HP_Max * 0.3f) healShockDuration += 0.5f;
-        attribute.HP_Current = Mathf.Min(attribute.HP_Current + value, attribute.HP_Max);
-    }
-
-    private void OnHit(float v) => PlayHitSound();
 
     public void PlayAttackSound() => PlaySound(package?.Media?.Audio?.GetAttackSound());
     public void PlayHitSound() => PlaySound(package?.Media?.Audio?.GetHitSound());

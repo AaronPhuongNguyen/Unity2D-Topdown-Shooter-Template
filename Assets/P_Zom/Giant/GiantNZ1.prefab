@@ -96,11 +96,8 @@ MonoBehaviour:
   package: {fileID: 0}
   attribute:
     template: {fileID: 0}
+    tag: 0
     HP_Current: 0
-    ArmourPenetration_Perc: 0
-    DamageReduction_Extra: 0
-    CooldownReduction_Extra: 0
-    DealtDamage_Extra: 1
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -122,6 +119,22 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
@@ -149,7 +162,6 @@ MonoBehaviour:
   prefab: {fileID: 9191306370210630647, guid: ff72eab521c6c4840ae8786901209ff0, type: 3}
   corpseLifetime: 120
   defaultSlideForce: 3
-  corpseSize: {x: 8, y: 8, z: 1}
 --- !u!1 &2084547090343005438
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,6 +174,7 @@ GameObject:
   - component: {fileID: 3588174963957080077}
   - component: {fileID: 4323807463548846895}
   - component: {fileID: 936605475563574437}
+  - component: {fileID: 4331096389366223209}
   m_Layer: 6
   m_Name: Sprites
   m_TagString: Untagged
@@ -273,6 +286,19 @@ MonoBehaviour:
   shadow_sr: {fileID: 5530025081731567336}
   Offset: {x: 0.3, y: -0.1, z: 0}
   shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+--- !u!114 &4331096389366223209
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084547090343005438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 3588174963957080077}
 --- !u!1 &5525271499860763374
 GameObject:
   m_ObjectHideFlags: 0

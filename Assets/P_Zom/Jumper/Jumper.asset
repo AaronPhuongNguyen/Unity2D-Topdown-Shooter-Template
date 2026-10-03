@@ -63,4 +63,4 @@ MonoBehaviour:
   AppearFromWave: 3
   CountPerSpawner: 4
   _rateToAppear: 1
-  _biteAccuracy: 1
+  _biteAccuracy: 0.5

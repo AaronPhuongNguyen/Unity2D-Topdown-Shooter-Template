@@ -1,8 +1,9 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(100)]
 public class MapLocator : MonoBehaviour
 {
-    public Vector2 Original = Vector2.one;
+    [SerializeField] private Vector2 Original = Vector2.one;
 
     private void OnEnable()
     {

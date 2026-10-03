@@ -483,6 +483,7 @@ GameObject:
   - component: {fileID: 1459295512101138924}
   - component: {fileID: 967398478182381395}
   - component: {fileID: 187754163518266985}
+  - component: {fileID: 2440875546067092243}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -600,9 +601,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Type: 0
-  fireRateMultiplier: 1
-  pelletCount: 1
-  rangeMultiplier: 1
   muzzle: {fileID: 3401477344332366387}
   BulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
@@ -621,6 +619,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e6b86c0eb26345c4db7aba3850e73511, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 7244348577406268404}
+--- !u!114 &2440875546067092243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9179845207231992246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   anim: {fileID: 7244348577406268404}

@@ -1,9 +1,6 @@
 using Unity.Mathematics;
 using UnityEngine;
 
-// No longer registers with TickSystem directly - driven explicitly from
-// PlayerCombat.Tick(), same reasoning as Weapon. Implements ITick purely
-// so Tick(float) has a consistent signature callers can rely on.
 public class Detector : MonoBehaviour, ITick
 {
     #region Cache
@@ -12,9 +9,14 @@ public class Detector : MonoBehaviour, ITick
     private Transform currentTarget;
     private int foundTarget;
 
-    // Was Time.time-based (bypasses GameSpeed/pause). Now a plain
-    // accumulator driven by the delta passed into Tick, consistent with
-    // the rest of the tick-driven systems.
+    // Search cadence is now independent of ASPD_Current - that stat is
+    // attack speed, not "how often to look for a target", and reusing it
+    // here meant losing/switching targets could take up to a full attack
+    // cycle to notice. 0 = search every Tick (most responsive, fine for a
+    // single player-driven Detector); raise slightly (e.g. 0.05-0.1) only
+    // if profiling shows OverlapCircleNonAlloc actually costs something
+    // here - for one object this is effectively free.
+    [SerializeField] private float searchInterval = 0f;
     private float searchTimer;
     #endregion
 
@@ -29,9 +31,12 @@ public class Detector : MonoBehaviour, ITick
     #region Functions
     private void PerformSearch(float delta)
     {
-        searchTimer -= delta;
-        if (searchTimer > 0f) return;
-        searchTimer = pm.attribute.ASPD_Current;
+        if (searchInterval > 0f)
+        {
+            searchTimer -= delta;
+            if (searchTimer > 0f) return;
+            searchTimer = searchInterval;
+        }
 
         SearchTarget();
         pm.Target = FindNearestTarget();
@@ -54,14 +59,6 @@ public class Detector : MonoBehaviour, ITick
         }
     }
 
-    // Replaced the Burst IJob (scheduled then immediately .Complete()'d on
-    // the same line) with a plain inline loop. For <=16-ish targets the
-    // job's own overhead - native buffer bookkeeping, Burst dispatch, the
-    // forced sync point from Complete() - costs more than the O(n)
-    // distance comparison it's meant to speed up. A plain loop here is both
-    // simpler and lower-latency: no job scheduling delay, no native array
-    // allocation/disposal lifecycle, nothing to leak if OnDisable is ever
-    // skipped (e.g. object destroyed while disabled).
     private Transform FindNearestTarget()
     {
         if (foundTarget <= 0)

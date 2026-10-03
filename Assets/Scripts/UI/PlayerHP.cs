@@ -68,7 +68,6 @@ public class PlayerHP : MonoBehaviour, ITick
     {
         if (red == null) return;
         if (pm == null) return;
-        if (pm.healShockDuration > 0) return;
         if (red.value != lastHp) red.value = MoveSlide(red.value, lastHp, SlideSpeed * delta);
     }
 

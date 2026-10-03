@@ -15,7 +15,8 @@ MonoBehaviour:
   AttackSounds:
   - {fileID: 8300000, guid: de634015f7fe39e418c7250c3a0bb7ff, type: 3}
   - {fileID: 8300000, guid: c4110637ae8154044bfdcf6be2e5b13b, type: 3}
-  HitSounds:
+  HitTargetSounds:
+  - {fileID: 8300000, guid: 28d4b3a9848dffd459a183b12bc12a6a, type: 3}
   - {fileID: 8300000, guid: 92b2c8a31f62a94418d0e316a3460fb2, type: 3}
   - {fileID: 8300000, guid: 4d10feb0b27898c4e8d2a6de10024f80, type: 3}
   - {fileID: 8300000, guid: 87580a35387d7f24e95fb9415bcf1933, type: 3}
@@ -35,7 +36,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 692405c67ff76c04bb71822945c930dd, type: 3}
   - {fileID: 8300000, guid: 0219ece8a026e1a43ba79569a3ef91be, type: 3}
   - {fileID: 8300000, guid: 7a32aa98da32cd54b9b7578e265f1a0f, type: 3}
-  - {fileID: 8300000, guid: 28d4b3a9848dffd459a183b12bc12a6a, type: 3}
   DeathSounds:
   - {fileID: 8300000, guid: 832b4cc3dca8ee84d8f02e2739da88db, type: 3}
   - {fileID: 8300000, guid: 3b6ac2d5847fdf74b9e45e227a330cea, type: 3}

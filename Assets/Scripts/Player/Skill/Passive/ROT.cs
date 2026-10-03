@@ -47,6 +47,6 @@ public class RecoverOverTime : MonoBehaviour, ITick
         float up = sm.su.Recovery.Growth * sm.su.Recovery.UpgradeTimes;
         float value = up * pm.attribute.HP_Max;
 
-        pm.Heal(value);
+        pm.attribute.Heal(value);
     }
 }

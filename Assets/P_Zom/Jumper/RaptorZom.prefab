@@ -95,6 +95,7 @@ MonoBehaviour:
   package: {fileID: 0}
   attribute:
     template: {fileID: 0}
+    tag: 0
     HP_Current: 0
     HP_Ampl:
       FlatBonus: 0
@@ -120,12 +121,29 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   anim: {fileID: 3588174963957080077}
   Target: {fileID: 0}
   Direction: {x: 0, y: 0}
   CanAttack: 1
   CanMove: 1
   DistanceToTarget: 0
+  SpeedHelper: 0
   separationRadius: 1
   separationStrength: 1.5
 --- !u!114 &2740413330311414842
@@ -141,8 +159,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 9191306370210630647, guid: ff72eab521c6c4840ae8786901209ff0, type: 3}
-  corpses: {fileID: 11400000, guid: 07ecc7a1e611ee34ba7bb4768974e6d6, type: 2}
-  bloodpack: {fileID: 11400000, guid: 0cfb1709f92f49e468a992a7df271fac, type: 2}
   corpseLifetime: 120
   defaultSlideForce: 3
 --- !u!1 &2084547090343005438
@@ -157,6 +173,7 @@ GameObject:
   - component: {fileID: 3588174963957080077}
   - component: {fileID: 4323807463548846895}
   - component: {fileID: 936605475563574437}
+  - component: {fileID: 765756986743105838}
   m_Layer: 6
   m_Name: Sprites
   m_TagString: Untagged
@@ -240,7 +257,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1010793597
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 426941615, guid: eb3d3aabd2d90a04e94438b1f68d0a3a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -267,6 +284,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sr: {fileID: 4323807463548846895}
   shadow_sr: {fileID: 5530025081731567336}
+  Offset: {x: 0.3, y: -0.1, z: 0}
+  shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+--- !u!114 &765756986743105838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2084547090343005438}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  anim: {fileID: 3588174963957080077}
 --- !u!1 &5525271499860763374
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,7 +370,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -464709109
-  m_SortingLayer: 2
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.7058824}
