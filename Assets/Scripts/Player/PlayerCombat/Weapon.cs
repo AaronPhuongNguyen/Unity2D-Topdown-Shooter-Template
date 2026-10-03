@@ -200,7 +200,7 @@ public class Weapon : MonoBehaviour, ITick
         if (o == null) return;
         o.transform.position = result.HitPoint;
 
-        DamagePopupManager.Show(result.HitPoint, result.Damage);
+        DamagePopupManager.Show(result.HitPoint, result.Damage,result.IsCrit);
     }
     #endregion
 }

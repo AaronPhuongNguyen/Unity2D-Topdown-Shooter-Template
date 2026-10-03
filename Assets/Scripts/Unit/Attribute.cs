@@ -32,6 +32,9 @@ public class UnitAttribute
     public float HP_Lost => (HP_Max - HP_Current) / HP_Max;
     public bool IsFullHP => (HP_Current >= HP_Max);
 
+    public float CritRate = 0.1f;
+    public float CritDamage = 2.0f;
+
     public float HP_Max => Server.Calculation.FinalValue(template.HP_Base, HP_Ampl);
     public float ATK_Current => Server.Calculation.FinalValue(template.ATK_Base, ATK_Ampl);
     public float SPEED_Current => Server.Calculation.FinalValue(template.SPEED_Base, SPEED_Ampl);

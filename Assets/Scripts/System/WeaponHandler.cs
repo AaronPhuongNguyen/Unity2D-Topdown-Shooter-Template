@@ -4,6 +4,7 @@ using UnityEngine;
 public struct AttackResult
 {
     public bool DidHit;
+    public bool IsCrit;
     public GameObject Target;
     public Vector2 HitPoint;
     public UnitAttribute HitUnit;
@@ -31,11 +32,16 @@ public static class Attack
 
         if (hitUnit == null) return default;
 
-        Combat.DealDamage(ua.ATK_Current,out float finalDamage, ua, hitUnit);
+        float damage = ua.ATK_Current;
+        bool isCrit = RNG.GetPercent() <= ua.CritRate;
+        if (isCrit) damage *= ua.CritDamage;
+
+        Combat.DealDamage(damage,out float finalDamage, ua, hitUnit);
 
         return new AttackResult
         {
             DidHit = true,
+            IsCrit = isCrit,
             Target = hit.collider.gameObject,
             HitPoint = hit.point,
             HitUnit = hitUnit,
