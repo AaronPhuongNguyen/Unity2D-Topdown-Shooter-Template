@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [DefaultExecutionOrder(100)]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, ITick
 {
     [Header("Debugger")]
     [SerializeField] private bool isDebugMode = false;
@@ -15,20 +15,31 @@ public class PlayerController : MonoBehaviour
     #endregion
 
     #region Input
-    // Legacy input (debug only)
-    private void Update()
+    public void _Update(InputAction.CallbackContext ctx)
     {
+        if (!isDebugMode) m = ctx.ReadValue<Vector2>();
+    }
+    #endregion
 
+    #region Lifecycle
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
+    {
         if (isDebugMode) m = PrimaryInput.GetInput();
 
         HandleMotion();
         HandleRotate();
-    }
-
-    // New Input System
-    public void _Update(InputAction.CallbackContext ctx)
-    {
-        if (!isDebugMode) m = ctx.ReadValue<Vector2>();
     }
     #endregion
 

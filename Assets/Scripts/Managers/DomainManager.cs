@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [DefaultExecutionOrder(-5)]
-public class DomainManager : MonoBehaviour
+public class DomainManager : MonoBehaviour, ITick
 {
     #region Singleton
     public static DomainManager instance { get; private set; }
@@ -32,16 +32,22 @@ public class DomainManager : MonoBehaviour
     {
         EventBus.OnGameRestart += Reboot;
         EventBus.OnGameOver += StopDomain;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
     }
     private void OnDisable()
     {
         EventBus.OnGameRestart -= Reboot;
         EventBus.OnGameOver -= StopDomain;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
     }
     #endregion
 
     #region Cycle
-    private void Update() => RunGame();
+    public void Tick(float delta) => RunGame(delta);
     #endregion
 
     #region Map Settings
@@ -231,12 +237,10 @@ public class DomainManager : MonoBehaviour
     private void StopDomain()
     {
         isGameRunning = false;
-        Time.timeScale = 0;
     }
     private void Reboot()
     {
         isGameRunning = true;
-        Time.timeScale = 1f;
         RemainingEnemy = 0;
         Killed = 0;
         Currency = 0;
@@ -261,7 +265,6 @@ public class DomainManager : MonoBehaviour
     public void CostCurrency(float v) => Currency -= Mathf.CeilToInt(v);
     public void StartTheGame()
     {
-        Time.timeScale = 1f;
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
         HandleWave(1);
@@ -269,7 +272,7 @@ public class DomainManager : MonoBehaviour
 
     private void HandleWave(int wave)
     {
-        CurrentWave+=wave;
+        CurrentWave += wave;
         CurrentDifficulty = CurrentWave / 4f;
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
@@ -293,12 +296,12 @@ public class DomainManager : MonoBehaviour
         EventBus.RaiseNewWave(CurrentWave);
     }
 
-    private void RunGame()
+    private void RunGame(float delta)
     {
         if (!isGameRunning) return;
 
-        if (SecondBeforeNextWave > 0) SecondBeforeNextWave -= Time.deltaTime;
-        if (PreparingTime > 0) PreparingTime -= Time.deltaTime;
+        if (SecondBeforeNextWave > 0) SecondBeforeNextWave -= delta;
+        if (PreparingTime > 0) PreparingTime -= delta;
 
         if (RemainingEnemy <= 0 || SecondBeforeNextWave <= 0)
             NextWave();

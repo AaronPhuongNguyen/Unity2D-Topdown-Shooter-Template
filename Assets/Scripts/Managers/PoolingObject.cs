@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PoolingSystem : MonoBehaviour
+public class PoolingSystem : MonoBehaviour, ITick
 {
     public static PoolingSystem instance { get; private set; }
     private Dictionary<string, Queue<GameObject>> poolDict = new Dictionary<string, Queue<GameObject>>();
@@ -30,15 +30,21 @@ public class PoolingSystem : MonoBehaviour
         // mid-way through PlayerManager.Init() before HiveBrain has had a
         // chance to return the previous wave's leftover zombies to the pool.
         EventBus.OnGameRestart += Reboot;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
     }
     private void OnDisable()
     {
         EventBus.OnGameRestart -= Reboot;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
     }
 
-    private void Update()
+    public void Tick(float delta)
     {
-        checkTimer -= Time.deltaTime;
+        checkTimer -= delta;
         if (checkTimer > 0f) return;
         checkTimer = checkInterval;
         CheckForDisabledObjects();

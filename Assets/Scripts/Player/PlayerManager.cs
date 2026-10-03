@@ -2,7 +2,7 @@ using Server;
 using UnityEngine;
 
 [DefaultExecutionOrder(-5)]
-public class PlayerManager : MonoBehaviour
+public class PlayerManager : MonoBehaviour, ITick
 {
     [SerializeField] bool DebugMode;
     public PlayerPackage package;
@@ -57,6 +57,9 @@ public class PlayerManager : MonoBehaviour
         EventBus.OnGameStart += OnGameStarted;
         EventBus.OnGameStart += ResetRuntimeStatus;
         EventBus.OnGameRestart += Init;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
     }
 
     private void OnDisable()
@@ -64,23 +67,21 @@ public class PlayerManager : MonoBehaviour
         EventBus.OnGameStart -= OnGameStarted;
         EventBus.OnGameStart -= ResetRuntimeStatus;
         EventBus.OnGameRestart -= Init;
+
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
     }
     #endregion
 
     #region Lifecycle
-    private void Update()
+    public void Tick(float delta)
     {
-        Tick(Time.deltaTime);
-    }
-
-    private void Tick(float dt)
-    {
-        if (combatDuration > 0) combatDuration -= dt;
-        if (healShockDuration > 0) healShockDuration -= dt;
+        if (combatDuration > 0) combatDuration -= delta;
+        if (healShockDuration > 0) healShockDuration -= delta;
         if (Controlling == null) return;
 
-        pc?.Tick(dt);
-        NaturalHealing();
+        pc?.Tick(delta);
+        NaturalHealing(delta);
 
         if (clonedPack != null && CurrentHP != attribute.HP_Current)
             CurrentHP = attribute.HP_Current;
@@ -88,9 +89,6 @@ public class PlayerManager : MonoBehaviour
     #endregion
 
     #region Setup
-    // Guards against re-entrant Init() calls (e.g. if a respawn/game-start
-    // event handler ends up calling Init/Respawn again, this stops the
-    // resulting stack from growing unbounded instead of overflowing).
     private bool isInitializing;
 
     public void Init()
@@ -117,8 +115,7 @@ public class PlayerManager : MonoBehaviour
     {
         if (Controlling != null) PoolingSystem.instance.DestroyObject(Controlling);
         if (AimIndicator != null) PoolingSystem.instance.DestroyObject(AimIndicator);
-        if (clonedPack != null) Destroy (clonedPack);
-
+        if (clonedPack != null) Destroy(clonedPack);
 
         clonedPack = Instantiate(package);
 
@@ -133,9 +130,9 @@ public class PlayerManager : MonoBehaviour
 
         if (!Controlling.TryGetComponent(out pc))
             pc = Controlling.AddComponent<PlayerCombat>();
-        if(!Controlling.TryGetComponent(out rot))
+        if (!Controlling.TryGetComponent(out rot))
             rot = Controlling.AddComponent<RecoverOverTime>();
-        if(!Controlling.TryGetComponent(out mot))
+        if (!Controlling.TryGetComponent(out mot))
             mot = Controlling.AddComponent<MoneyOverTime>();
 
         if (!Controlling.TryGetComponent(out ce))
@@ -195,17 +192,20 @@ public class PlayerManager : MonoBehaviour
         attribute.OnTakeDamage -= SetCombat;
         attribute.OnTakeDamage -= OnHit;
 
-        PoolingSystem.instance.DestroyObject(Controlling); // End game instantly, no need to pool
+        PoolingSystem.instance.DestroyObject(Controlling);
 
         EventBus.RaisePlayerDeath();
         EventBus.RaiseGameOver();
     }
 
-    private float healingInterval;
-    private void NaturalHealing()
+    // Was comparing against Time.time (ignores GameSpeed/pause); now an
+    // accumulator driven by the same delta everything else uses.
+    private float healingTimer;
+    private void NaturalHealing(float delta)
     {
-        if (healingInterval > Time.time) return;
-        healingInterval = Time.time + 10;
+        healingTimer -= delta;
+        if (healingTimer > 0f) return;
+        healingTimer = 10f;
 
         if (combatDuration > 0) return;
         Heal(attribute.HP_Max * 0.025f);

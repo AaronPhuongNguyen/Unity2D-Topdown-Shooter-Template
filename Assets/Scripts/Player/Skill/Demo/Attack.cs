@@ -1,9 +1,7 @@
-
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AttackDemo:MonoBehaviour
+public class AttackDemo : MonoBehaviour, ITick
 {
     PlayerManager pm => PlayerManager.instance;
 
@@ -18,7 +16,7 @@ public class AttackDemo:MonoBehaviour
 
     private float CD;
     private float buffDuration;
-    private bool isExpired=true;
+    private bool isExpired = true;
     private float ATKValue;
 
     public void Attack()
@@ -40,6 +38,7 @@ public class AttackDemo:MonoBehaviour
         isExpired = false;
         if (UI != null) UI.fillAmount = 0;
     }
+
     public void Remove()
     {
         pm.attribute.DealtDamage_Ampl.TotalBonus -= ATKValue;
@@ -48,28 +47,45 @@ public class AttackDemo:MonoBehaviour
         pm.attribute.ArmourPenetration_Ampl.FlatBonus -= ArmourPenValue;
         pm.attribute.DamageReduction_Ampl.FlatBonus -= Protecting;
         pm.clonedPack.ShootAccuracy -= ShootAcc;
-
     }
-    private void Update()
-    {
-        if(CD > 0) CD -= Time.deltaTime;
-        if (UI != null) UI.fillAmount = CD/ (SkillCooldown * (1 - pm.attribute.CooldownReduction_Current));
 
-        if(buffDuration > 0) buffDuration -= Time.deltaTime;
-        else if(!isExpired && buffDuration <= 0)
+    public void Tick(float delta)
+    {
+        if (pm == null) return;
+
+        if (CD > 0) CD -= delta;
+        if (UI != null) UI.fillAmount = CD / (SkillCooldown * (1 - pm.attribute.CooldownReduction_Current));
+
+        if (buffDuration > 0) buffDuration -= delta;
+        else if (!isExpired && buffDuration <= 0)
         {
             Remove();
             isExpired = true;
         }
     }
+
     private void Awake()
     {
         EventBus.OnGameRestart += Refresh;
     }
+
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
     private void OnDestroy()
     {
         EventBus.OnGameRestart -= Refresh;
     }
+
     void Refresh()
     {
         CD = 0;

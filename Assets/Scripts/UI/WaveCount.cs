@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(100)]
-public class WaveCount : MonoBehaviour
+public class WaveCount : MonoBehaviour, ITick
 {
     public TextMeshProUGUI tmp;
     public TextMeshProUGUI diff;
@@ -11,11 +11,26 @@ public class WaveCount : MonoBehaviour
     private int waveCount = 0;
     private float diffs = 0;
 
-    private void Update()
+    private void OnEnable()
     {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
+    {
+        if (dm == null) return;
+
         ShowWaveCount();
         ShowDifficulty();
     }
+
     void ShowWaveCount()
     {
         if (tmp == null) return;
@@ -23,6 +38,7 @@ public class WaveCount : MonoBehaviour
         waveCount = dm.CurrentWave;
         tmp.text = waveCount.ToString();
     }
+
     void ShowDifficulty()
     {
         if (diff == null) return;

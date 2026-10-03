@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HiveBrain : MonoBehaviour
+public class HiveBrain : MonoBehaviour, ITick
 {
     public static HiveBrain instance { get; private set; }
     public LayerMask enemyMask;
@@ -99,11 +99,23 @@ public class HiveBrain : MonoBehaviour
         instance = this;
     }
 
-    private void OnEnable() => EventBus.OnGameRestart += Reboot;
-    private void OnDisable() => EventBus.OnGameRestart -= Reboot;
+    private void OnEnable()
+    {
+        EventBus.OnGameRestart += Reboot;
+        TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        EventBus.OnGameRestart -= Reboot;
+        TickSystem.Unregister((ITick)this);
+    }
     #endregion
 
-    private void Update()
+    // Driven by TickSystem instead of Unity's Update(): automatically
+    // scales with GameSpeed and freezes on GameManager.PauseGame()/StopGame(),
+    // same as every other ITick consumer, with zero extra wiring here.
+    public void Tick(float delta)
     {
         if (zoms.Count == 0) return;
 
@@ -117,13 +129,11 @@ public class HiveBrain : MonoBehaviour
         }
         if (zoms.Count == 0) return;
 
-        float dt = Time.deltaTime;
-
         if (ticksPerFrame <= 0 || ticksPerFrame >= zoms.Count)
         {
             // Old behavior: tick everyone every frame.
             for (int i = 0; i < zoms.Count; i++)
-                zoms[i].Tick(dt);
+                zoms[i].Tick(delta);
         }
         else
         {
@@ -135,7 +145,7 @@ public class HiveBrain : MonoBehaviour
             for (int n = 0; n < count; n++)
             {
                 tickCursor %= zoms.Count;
-                zoms[tickCursor].Tick(dt);
+                zoms[tickCursor].Tick(delta);
                 tickCursor++;
             }
         }

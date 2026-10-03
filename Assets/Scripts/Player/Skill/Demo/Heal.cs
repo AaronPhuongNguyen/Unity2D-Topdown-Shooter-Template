@@ -1,9 +1,7 @@
-
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HealDemo:MonoBehaviour
+public class HealDemo : MonoBehaviour, ITick
 {
     PlayerManager pm => PlayerManager.instance;
 
@@ -15,8 +13,8 @@ public class HealDemo:MonoBehaviour
 
     private float CD;
     private float healDuration;
-    private bool isExpired=true;
-    
+    private bool isExpired = true;
+
     public void Heal()
     {
         if (pm == null) return;
@@ -30,41 +28,59 @@ public class HealDemo:MonoBehaviour
 
         if (UI != null) UI.fillAmount = 0;
     }
+
     private void RemoveEffect()
     {
         if (isExpired) return;
-        isExpired = healDuration<=0;
+        isExpired = healDuration <= 0;
 
         if (isExpired) pm.attribute.OnDealDamage -= Lifesteal;
-
     }
-    private void Update()
+
+    public void Tick(float delta)
     {
-        if(CD > 0) CD -= Time.deltaTime;
+        if (pm == null) return;
+
+        if (CD > 0) CD -= delta;
         if (UI != null) UI.fillAmount = CD / (SkillCooldown * (1 - pm.attribute.CooldownReduction_Current));
 
-        if(healDuration > 0 && !isExpired)
+        if (healDuration > 0 && !isExpired)
         {
-            pm.Heal( (HealValue/ HealDuration / 100) * pm.attribute.HP_Max * Time.deltaTime);
-            healDuration -= Time.deltaTime;
+            pm.Heal((HealValue / HealDuration / 100) * pm.attribute.HP_Max * delta);
+            healDuration -= delta;
             RemoveEffect();
         }
-
     }
+
     private void Awake()
     {
         EventBus.OnGameRestart += Refresh;
     }
+
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
     private void OnDestroy()
     {
         EventBus.OnGameRestart -= Refresh;
     }
+
     void Refresh()
     {
         CD = 0;
         healDuration = 0f;
         isExpired = true;
     }
+
     private void Lifesteal(float v)
     {
         if (healDuration <= 0f) return;

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [DefaultExecutionOrder(500)]
-public class PlayerHP : MonoBehaviour
+public class PlayerHP : MonoBehaviour, ITick
 {
     public TextMeshProUGUI hp;
     public Slider red;
@@ -13,17 +13,30 @@ public class PlayerHP : MonoBehaviour
     public float SlideSpeed = 3f;
 
     private PlayerManager pm => PlayerManager.instance;
-    private float lastHp,lastMaxHP;
+    private float lastHp, lastMaxHP;
 
-    private void Update()
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
     {
         Checker();
 
         UpdateHP();
         BlueLerp();
-        RedLerp();
-        YellowLerp();
+        RedLerp(delta);
+        YellowLerp(delta);
     }
+
     private void Checker()
     {
         if (red == null || yellow == null || green == null) return;
@@ -36,6 +49,7 @@ public class PlayerHP : MonoBehaviour
 
         if (lastHp != pm.attribute.HP_Current) lastHp = pm.attribute.HP_Current;
     }
+
     private void UpdateHP()
     {
         if (hp == null) return;
@@ -43,23 +57,30 @@ public class PlayerHP : MonoBehaviour
 
         hp.text = $"{pm.attribute.HP_Current.ToString("F0")} / {pm.attribute.HP_Max.ToString("F0")}";
     }
+
     private void BlueLerp()
     {
         if (green == null) return;
         if (green.value != lastHp) green.value = MoveSlide(green.value, lastHp, 1f);
     }
-    private void RedLerp()
+
+    private void RedLerp(float delta)
     {
-        if(red == null) return;
+        if (red == null) return;
+        if (pm == null) return;
         if (pm.healShockDuration > 0) return;
-        if (red.value != lastHp) red.value = MoveSlide(red.value, lastHp, SlideSpeed * Time.deltaTime);
+        if (red.value != lastHp) red.value = MoveSlide(red.value, lastHp, SlideSpeed * delta);
     }
-    private void YellowLerp()
+
+    private void YellowLerp(float delta)
     {
+        if (yellow == null || red == null) return;
+        if (pm == null) return;
         if (pm.combatDuration > 0) return;
-        if (yellow.value != red.value) yellow.value = MoveSlide(yellow.value, lastHp, SlideSpeed * SlideSpeed * Time.deltaTime);
+        if (yellow.value != red.value) yellow.value = MoveSlide(yellow.value, lastHp, SlideSpeed * SlideSpeed * delta);
     }
-    private float MoveSlide(float o,float d,float speed)
+
+    private float MoveSlide(float o, float d, float speed)
     {
         return Mathf.Lerp(o, d, speed);
     }

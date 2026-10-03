@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : MonoBehaviour, ITick
 {
     private Vector2 targetPoint;
     private float speed;
@@ -22,13 +22,28 @@ public class Bullet : MonoBehaviour
         }
     }
 
-    private void Update()
+    // Pooled objects are SetActive(true)/(false)'d rather than destroyed,
+    // which still fires OnEnable/OnDisable - so registration naturally
+    // tracks pool lifetime with no extra hooks needed.
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
     {
         if (!isLaunched) return;
 
-        transform.position = Vector2.MoveTowards(transform.position, targetPoint, speed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, targetPoint, speed * delta);
 
-        lifeRemaining -= Time.deltaTime;
+        lifeRemaining -= delta;
 
         bool reachedTarget = Vector2.Distance(transform.position, targetPoint) < 0.05f;
 
@@ -41,6 +56,7 @@ public class Bullet : MonoBehaviour
     private void Despawn()
     {
         isLaunched = false;
-        PoolingSystem.instance.RemoveToPool(gameObject);
+        if (PoolingSystem.instance != null)
+            PoolingSystem.instance.RemoveToPool(gameObject);
     }
 }

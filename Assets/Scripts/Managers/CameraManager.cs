@@ -1,15 +1,13 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 [DefaultExecutionOrder(100)]
-public class CamManager : MonoBehaviour
+public class CamManager : MonoBehaviour, ILateTick
 {
-
     #region Singleton
-    public static CamManager instance {  get; private set; }
+    public static CamManager instance { get; private set; }
     private void Awake()
     {
-        if(instance!=null && instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
@@ -21,11 +19,19 @@ public class CamManager : MonoBehaviour
     #region Unity
     private void Start()
     {
-        if(cam==null) cam = Camera.main;
+        if (cam == null) cam = Camera.main;
     }
-    private void Update()
+
+    private void OnEnable()
     {
-        CameraMove();
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ILateTick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ILateTick)this);
     }
     #endregion
 
@@ -33,31 +39,32 @@ public class CamManager : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float ZoomValue;
     [SerializeField] private Vector2 Offset;
-    
 
     private Camera cam;
     private PlayerManager pm => PlayerManager.instance;
-    private Vector2 ZoomLimit => new Vector2(4f, pm.attribute.SIGHT_Current/2f);
+    private Vector2 ZoomLimit => new Vector2(4f, pm.attribute.SIGHT_Current / 2f);
 
-
-
-    private void CameraMove()
+    // Camera follow runs as a LateTick (after gameplay Tick) so it reads
+    // the player's already-moved position this frame instead of lagging
+    // a frame behind, same reasoning as Unity's Update/LateUpdate split.
+    public void LateTick(float delta)
     {
         if (!CanMove()) return;
-
-        MoveCamera();
+        MoveCamera(delta);
     }
-    private void MoveCamera()
+
+    private void MoveCamera(float delta)
     {
-        Vector3 step = Vector3.Lerp(cam.transform.position, pm.Controlling.transform.position + (Vector3)Offset, moveSpeed * Time.deltaTime);
+        Vector3 step = Vector3.Lerp(cam.transform.position, pm.Controlling.transform.position + (Vector3)Offset, moveSpeed * delta);
         step.z = -10f;
         cam.transform.position = step;
     }
+
     bool CanMove()
     {
         if (pm == null) return false;
         if (pm.Controlling == null) return false;
-        if(cam==null) return false;
+        if (cam == null) return false;
         if ((pm.Controlling.transform.position + (Vector3)Offset) == cam.transform.position) return false;
         return true;
     }
@@ -84,7 +91,5 @@ public class CamManager : MonoBehaviour
         cam.orthographicSize = ZoomValue;
     }
     #endregion
-
     #endregion
-
 }

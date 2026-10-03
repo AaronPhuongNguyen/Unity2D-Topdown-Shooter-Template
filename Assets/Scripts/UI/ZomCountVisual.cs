@@ -2,20 +2,35 @@ using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(100)]
-public class VisualZomCount : MonoBehaviour
+public class VisualZomCount : MonoBehaviour, ITick
 {
     public TextMeshProUGUI tmp;
     public TextMeshProUGUI tmp2;
 
     private DomainManager dm => DomainManager.instance;
-    private int zomcount=9999;
+    private int zomcount = 9999;
     private int zomkilled = 9999;
 
-    private void Update()
+    private void OnEnable()
     {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
+    {
+        if (dm == null) return;
+
         Zomcount();
         ZomKilled();
     }
+
     void Zomcount()
     {
         if (tmp == null) return;
@@ -23,6 +38,7 @@ public class VisualZomCount : MonoBehaviour
         zomcount = dm.RemainingEnemy;
         tmp.text = $"{zomcount}";
     }
+
     void ZomKilled()
     {
         if (tmp2 == null) return;

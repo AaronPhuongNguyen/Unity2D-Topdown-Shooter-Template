@@ -21,9 +21,9 @@ public class Weapon : MonoBehaviour, ITick
 
     [Header("Effects")]
     public Transform muzzle;
-    public Bullet BulletPrefab;      // visual bullet/trail, spawned toward the hit point (or full range if no hit)
-    public GameObject ShootEffect;   // muzzle flash particle system
-    public GameObject HitEffect;     // impact particle system
+    public Bullet BulletPrefab;
+    public GameObject ShootEffect;
+    public GameObject HitEffect;
     [Header("Bullet Visual")]
     [SerializeField] private float rateToSpawn = 0.5f;
     [SerializeField] private float bulletSpeed = 40f;
@@ -37,7 +37,9 @@ public class Weapon : MonoBehaviour, ITick
     private float lastDM, lastRange;
     #endregion
     #region Runtime
-    private float ShootInterval;
+    // Was Time.time-based (ignores GameSpeed/pause). Now a plain cooldown
+    // accumulator driven by the delta passed into Tick.
+    private float shootCooldown;
     #endregion
 
     private void Reset()
@@ -88,16 +90,24 @@ public class Weapon : MonoBehaviour, ITick
         pm.attribute.SIGHT_Ampl.TotalBonus += rangeMultiplier;
     }
 
+    // Not registered with TickSystem - driven explicitly from
+    // PlayerCombat.Tick() (pm.pc?.Tick(delta) -> wp.Tick(dt)), same as before.
     #region Tick
     public void Tick(float dt)
     {
-        HandleIndicator();
+        if (pm == null) return;
+
+        if (shootCooldown > 0f) shootCooldown -= dt;
+
+        HandleIndicator(dt);
         Fire();
     }
     #endregion
     #region Functions
-    private void HandleIndicator()
+    private void HandleIndicator(float dt)
     {
+        if (pm.AimIndicator == null) return;
+
         if (pm.Target == null)
         {
             pm.AimIndicator.SetActive(false);
@@ -106,14 +116,14 @@ public class Weapon : MonoBehaviour, ITick
         else pm.AimIndicator.SetActive(true);
         pm.AimIndicator.transform.position = pm.Target.position;
         if (pm.AimIndicator.transform.localScale == normalScale) return;
-        Vector3 scale = Vector3.LerpUnclamped(pm.AimIndicator.transform.localScale, normalScale, Time.deltaTime);
+        Vector3 scale = Vector3.LerpUnclamped(pm.AimIndicator.transform.localScale, normalScale, dt);
         pm.AimIndicator.transform.localScale = scale;
     }
     private bool CanFire()
     {
         if (pm == null) return false;
         if (!pm.IsAttacking) return false;
-        if (Time.time < ShootInterval) return false;
+        if (shootCooldown > 0f) return false;
         return true;
     }
     private void Fire()
@@ -124,7 +134,7 @@ public class Weapon : MonoBehaviour, ITick
         {
             pm.AimIndicator.transform.localScale = TargetScale;
         }
-        ShootInterval = Time.time + 0.1f * pm.attribute.ASPD_Current * fireRateMultiplier;
+        shootCooldown = 0.1f * pm.attribute.ASPD_Current * fireRateMultiplier;
 
         PlayMuzzleEffect();
 
@@ -164,6 +174,7 @@ public class Weapon : MonoBehaviour, ITick
     private void PlayMuzzleEffect()
     {
         if (muzzle == null || ShootEffect == null) return;
+        if (PoolingSystem.instance == null) return;
         GameObject o = PoolingSystem.instance.GetFromPool(ShootEffect);
         if (o == null) return;
         o.transform.position = muzzle.position;
@@ -172,6 +183,7 @@ public class Weapon : MonoBehaviour, ITick
     private void PlayBulletVisual(Vector2 dir, AttackResult result, float range)
     {
         if (muzzle == null || BulletPrefab == null) return;
+        if (PoolingSystem.instance == null) return;
         if (RNG.GetFloat(0, 1) > rateToSpawn) return;
         GameObject o = PoolingSystem.instance.GetFromPool(BulletPrefab.gameObject);
         if (o == null) return;
@@ -187,6 +199,7 @@ public class Weapon : MonoBehaviour, ITick
     {
         if (!result.DidHit) return;
         if (HitEffect == null) return;
+        if (PoolingSystem.instance == null) return;
         GameObject o = PoolingSystem.instance.GetFromPool(HitEffect);
         if (o == null) return;
         o.transform.position = result.HitPoint;

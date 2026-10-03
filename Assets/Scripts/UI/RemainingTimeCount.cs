@@ -1,11 +1,12 @@
 using TMPro;
 using UnityEngine;
+
 [DefaultExecutionOrder(100)]
-public class RTimeCount : MonoBehaviour
+public class RTimeCount : MonoBehaviour, ITick
 {
     [Header("Text Refs")]
     public TextMeshProUGUI remainingTimeTmp;
-    public TextMeshProUGUI passedTimeTmp;   
+    public TextMeshProUGUI passedTimeTmp;
 
     private DomainManager dm => DomainManager.instance;
 
@@ -13,12 +14,24 @@ public class RTimeCount : MonoBehaviour
     private float elapsed;
     private int lastElapsedSecond = -1;
 
-    private void Update()
+    private void OnEnable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Register((ITick)this);
+    }
+
+    private void OnDisable()
+    {
+        if (TickSystem.Instance != null)
+            TickSystem.Unregister((ITick)this);
+    }
+
+    public void Tick(float delta)
     {
         if (dm == null) return;
 
         UpdateRemainingTime();
-        UpdatePassedTime();
+        UpdatePassedTime(delta);
     }
 
     private void UpdateRemainingTime()
@@ -32,14 +45,14 @@ public class RTimeCount : MonoBehaviour
         remainingTimeTmp.text = FormatMinuteSeconds(remaining);
     }
 
-    private void UpdatePassedTime()
+    private void UpdatePassedTime(float delta)
     {
         if (passedTimeTmp == null) return;
 
-        elapsed += Time.deltaTime;
+        elapsed += delta;
 
         int wholeSecond = Mathf.FloorToInt(elapsed);
-        if (wholeSecond == lastElapsedSecond) return; 
+        if (wholeSecond == lastElapsedSecond) return;
         lastElapsedSecond = wholeSecond;
 
         passedTimeTmp.text = FormatMinuteSeconds(elapsed);
@@ -53,6 +66,7 @@ public class RTimeCount : MonoBehaviour
         int seconds = Mathf.FloorToInt(totalSeconds % 60f);
         return $"{minutes:00}:{seconds:00}";
     }
+
     public void ResetElapsed()
     {
         elapsed = 0f;
