@@ -220,17 +220,20 @@ public class DomainManager : MonoBehaviour, ITick
     private bool isGameRunning;
     private bool isNewWave = false;
 
-    private void PrepareTheMatch()
+    private async void PrepareTheMatch()
     {
         InitializeSeed();
 
-        var generator = FindFirstObjectByType<TilemapGenerator>();
-        if (generator == null)
+        var terrainGen = FindFirstObjectByType<TerrainGenerator>();
+        if (terrainGen == null)
         {
-            Debug.LogError("DomainManager: No TilemapGenerator found in scene - cannot generate map.");
+            Debug.LogError("DomainManager: No TerrainGenerator found in scene.");
             return;
         }
-        generator.Generate();
+        await terrainGen.Generate();
+
+        var natureGen = FindFirstObjectByType<NatureGenerator>();
+        natureGen.Generate();
 
         SpawnBorders();
     }

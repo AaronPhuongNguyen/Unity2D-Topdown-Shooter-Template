@@ -725,7 +725,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &73665687
 Transform:
@@ -1013,7 +1013,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &126431505
 Transform:
@@ -4119,7 +4119,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &763618235
 Transform:
@@ -5486,7 +5486,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &951971984
 Transform:
@@ -5546,7 +5546,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &963744667
 Transform:
@@ -8682,6 +8682,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1603287763}
   - component: {fileID: 1603287764}
+  - component: {fileID: 1603287765}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
@@ -8721,36 +8722,111 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemap: {fileID: 1708795764}
-  tiles:
-  - {fileID: 11400000, guid: 9aaa4feaab791fe4bb13ebee2f58bf2d, type: 2}
-  - {fileID: 11400000, guid: 5bed7f2d31a177d47b123fff47337f9e, type: 2}
-  - {fileID: 11400000, guid: a72c99849eb72c0499be2dab14f05952, type: 2}
-  - {fileID: 11400000, guid: 331a537b49f13564e83246dc96958f3c, type: 2}
-  - {fileID: 11400000, guid: 217309161c00c114ca3aeb2725424536, type: 2}
-  - {fileID: 11400000, guid: 1dd48d6d094aa6d468cb9f1b261722ae, type: 2}
-  - {fileID: 11400000, guid: c99bebd992aabf64a8508a240f762180, type: 2}
-  - {fileID: 11400000, guid: eb3d374a2b60f5145b6a60b3ecaefbab, type: 2}
-  - {fileID: 11400000, guid: 9153b75f943730347b115de0f3a69026, type: 2}
-  - {fileID: 11400000, guid: e7ffb9ad135a99247bda3959ce20dc20, type: 2}
-  - {fileID: 11400000, guid: 73128d603c8037e4ab39cbe05405bf73, type: 2}
-  - {fileID: 11400000, guid: 295bee07093b3994d9afa9bcfd326a35, type: 2}
-  - {fileID: 11400000, guid: 664c341761916d04594ac1a78f51a086, type: 2}
-  - {fileID: 11400000, guid: cc41f17c243415141905ec3e26200675, type: 2}
-  - {fileID: 11400000, guid: 4f3c527a7674c1f48a6d1278e09ee66b, type: 2}
-  - {fileID: 11400000, guid: 0b1c557489a737949986753712322300, type: 2}
-  - {fileID: 11400000, guid: 6958923a14852c349b3dd56ef22f8143, type: 2}
-  - {fileID: 11400000, guid: d71476855fee79e44a6ff77c32d90458, type: 2}
-  - {fileID: 11400000, guid: e7446b95b4e24dd409c0423eb80262f5, type: 2}
-  - {fileID: 11400000, guid: 28b6992f741d9704e8df85733d672fb7, type: 2}
-  - {fileID: 11400000, guid: 2a8df6987b2922b4a84bcaaafed79f26, type: 2}
-  - {fileID: 11400000, guid: b3b179afb9b71154abe2935202910e3c, type: 2}
-  - {fileID: 11400000, guid: b02008ba9b328d54b9331f4c6b79a4ca, type: 2}
-  - {fileID: 11400000, guid: b525a149b88ec37468ecb87ccdd5a28b, type: 2}
-  - {fileID: 11400000, guid: 940d637d917034f4397edf6b0ea5c96c, type: 2}
-  - {fileID: 11400000, guid: d88e3d608d2ca8e4b8dc9f50f35d5307, type: 2}
+  levels:
+  - name: Stony
+    maxThreshold: 0.15
+    tiles:
+    - {fileID: 11400000, guid: e7446b95b4e24dd409c0423eb80262f5, type: 2}
+    - {fileID: 11400000, guid: 28b6992f741d9704e8df85733d672fb7, type: 2}
+    - {fileID: 11400000, guid: 2a8df6987b2922b4a84bcaaafed79f26, type: 2}
+    - {fileID: 11400000, guid: b3b179afb9b71154abe2935202910e3c, type: 2}
+  - name: Sandy
+    maxThreshold: 0.2
+    tiles:
+    - {fileID: 11400000, guid: 0ed9b18db1cfdd54a824dba8ed12841d, type: 2}
+    - {fileID: 11400000, guid: 2fe6339a16eb6454cbe1f234eb4e83c7, type: 2}
+    - {fileID: 11400000, guid: 2566f6b0f24d18e4d8b12d50e7a4f318, type: 2}
+    - {fileID: 11400000, guid: 0b96c354f4cf4c14f8bbbe9a50db685c, type: 2}
+  - name: Riverbank
+    maxThreshold: 0.3
+    tiles:
+    - {fileID: 11400000, guid: 9aaa4feaab791fe4bb13ebee2f58bf2d, type: 2}
+    - {fileID: 11400000, guid: 5bed7f2d31a177d47b123fff47337f9e, type: 2}
+    - {fileID: 11400000, guid: a72c99849eb72c0499be2dab14f05952, type: 2}
+    - {fileID: 11400000, guid: 331a537b49f13564e83246dc96958f3c, type: 2}
+    - {fileID: 11400000, guid: 217309161c00c114ca3aeb2725424536, type: 2}
+    - {fileID: 11400000, guid: 1dd48d6d094aa6d468cb9f1b261722ae, type: 2}
+    - {fileID: 11400000, guid: c99bebd992aabf64a8508a240f762180, type: 2}
+    - {fileID: 11400000, guid: eb3d374a2b60f5145b6a60b3ecaefbab, type: 2}
+    - {fileID: 11400000, guid: 9153b75f943730347b115de0f3a69026, type: 2}
+  - name: Moss
+    maxThreshold: 0.7
+    tiles:
+    - {fileID: 11400000, guid: b02008ba9b328d54b9331f4c6b79a4ca, type: 2}
+    - {fileID: 11400000, guid: b525a149b88ec37468ecb87ccdd5a28b, type: 2}
+    - {fileID: 11400000, guid: 940d637d917034f4397edf6b0ea5c96c, type: 2}
+    - {fileID: 11400000, guid: d88e3d608d2ca8e4b8dc9f50f35d5307, type: 2}
+  - name: Grass
+    maxThreshold: 1
+    tiles:
+    - {fileID: 11400000, guid: e7ffb9ad135a99247bda3959ce20dc20, type: 2}
+    - {fileID: 11400000, guid: 73128d603c8037e4ab39cbe05405bf73, type: 2}
+    - {fileID: 11400000, guid: 295bee07093b3994d9afa9bcfd326a35, type: 2}
+    - {fileID: 11400000, guid: 664c341761916d04594ac1a78f51a086, type: 2}
+    - {fileID: 11400000, guid: cc41f17c243415141905ec3e26200675, type: 2}
+    - {fileID: 11400000, guid: 4f3c527a7674c1f48a6d1278e09ee66b, type: 2}
+    - {fileID: 11400000, guid: 0b1c557489a737949986753712322300, type: 2}
+    - {fileID: 11400000, guid: 6958923a14852c349b3dd56ef22f8143, type: 2}
+    - {fileID: 11400000, guid: d71476855fee79e44a6ff77c32d90458, type: 2}
+  noise:
+    scale: 50
+    octaves: 4
+    persistence: 0.3
+    lacunarity: 2
   useDomainMapSize: 1
   manualSize: {x: 20, y: 20}
   cellWorldSize: 1
+--- !u!114 &1603287765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1603287762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fee44e9624f43049a7b067d34715ea1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  terrain: {fileID: 1603287764}
+  entries:
+  - name: Forest
+    allowedLevelNames:
+    - Grass
+    - Moss
+    prefabs:
+    - {fileID: 7345994766129446155, guid: 368bf54a2468b9842bfcc4b9d40e0ed6, type: 3}
+    density: 0.1
+    scaleRange: {x: 1, y: 3}
+    randomRotation: 0
+    parent: {fileID: 1708795763}
+    minSpacingCells: 6
+  - name: Bush
+    allowedLevelNames:
+    - Grass
+    - Moss
+    - Riverbank
+    prefabs:
+    - {fileID: 2876611172102913895, guid: 17ca87f917ba318428d3c8d126302043, type: 3}
+    density: 0.3
+    scaleRange: {x: 1, y: 1.2}
+    randomRotation: 0
+    parent: {fileID: 1708795763}
+    minSpacingCells: 2
+  - name: Grass
+    allowedLevelNames:
+    - Grass
+    - Moss
+    - Riverbank
+    prefabs:
+    - {fileID: 4852797025051528183, guid: 93112bde63b2acb419d0873798335a87, type: 3}
+    density: 0.7
+    scaleRange: {x: 1, y: 1.5}
+    randomRotation: 0
+    parent: {fileID: 1708795763}
+    minSpacingCells: 0
+  preloadFraction: 0.3
+  ratePerSecond: 0.05
 --- !u!1 &1654036480
 GameObject:
   m_ObjectHideFlags: 0
@@ -8927,7 +9003,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1708795763
 Transform:
@@ -9627,7 +9703,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1847422872
 Transform:
@@ -9969,7 +10045,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1965154199
 Transform:
@@ -10008,7 +10084,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1970436254
 Transform:
