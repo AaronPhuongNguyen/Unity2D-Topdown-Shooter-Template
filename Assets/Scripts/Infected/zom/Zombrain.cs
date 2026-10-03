@@ -315,12 +315,8 @@ public class Zombrain : HurtBox, ITick
             );
             separationInterval = _now + 0.2f;
         }
-
-        // Was: pm.attribute.SIGHT_Current (hardcoded to the player's stat).
-        // Now uses this zombie's own sight range, since Target is no longer
-        // guaranteed to be the player - PlayerManager.attribute wouldn't
-        // even be the right reference frame for a non-player prey.
-        SpeedHelper = (DistanceToTarget > attribute.SIGHT_Current * 3f) ? 60f : 0f;
+        // function: When not in player sight, speeded up to make the game faster instead of waiting for it to slowly come
+        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 3f) ? 60f : 0f;
         if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
         {
             attribute.SPEED_Ampl.FlatBonus += SpeedHelper - appliedChaseBonus;
@@ -384,7 +380,6 @@ public class Zombrain : HurtBox, ITick
     #region Sense
     [Header("Prey Search")]
     [SerializeField] protected float preySearchRadius = 15f;
-    [SerializeField] protected LayerMask preyMask; // layer(s) friendly units live on - do NOT include this object's own layer
 
     private Collider2D[] preyBuffer = new Collider2D[8];
 
@@ -404,7 +399,7 @@ public class Zombrain : HurtBox, ITick
     /// </summary>
     protected virtual Transform SearchForPrey()
     {
-        int count = Physics2D.OverlapCircleNonAlloc(_t.position, preySearchRadius, preyBuffer, preyMask);
+        int count = Physics2D.OverlapCircleNonAlloc(_t.position, preySearchRadius, preyBuffer, hb.enemyMask);
 
         if (count >= preyBuffer.Length)
         {
@@ -437,6 +432,7 @@ public class Zombrain : HurtBox, ITick
                 nearest = col.transform;
             }
         }
+        if (nearest == null && pm.Controlling != null) nearest = pm.Controlling.transform;
 
         return nearest;
     }
