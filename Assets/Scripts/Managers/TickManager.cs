@@ -90,6 +90,8 @@ public sealed class TickSystem : MonoBehaviour
         }
         _instance = this;
         DontDestroyOnLoad(gameObject);
+
+        ResetGameSpeed();
     }
 
     private void OnDestroy()

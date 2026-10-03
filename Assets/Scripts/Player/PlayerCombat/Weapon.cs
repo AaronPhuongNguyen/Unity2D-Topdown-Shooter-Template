@@ -200,10 +200,11 @@ public class Weapon : MonoBehaviour, ITick
     {
         if (!result.DidHit) return;
         if (HitEffect == null) return;
-        if (PoolingSystem.instance == null) return;
         GameObject o = PoolingSystem.instance.GetFromPool(HitEffect);
         if (o == null) return;
         o.transform.position = result.HitPoint;
+
+        DamagePopupManager.Show(result.HitPoint, result.Damage); // real final damage, not raw ATK
     }
     #endregion
 }

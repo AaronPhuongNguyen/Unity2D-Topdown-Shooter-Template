@@ -284,7 +284,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetFPS: 60
-  forceEveryUpdate: 1
+  forcePeriodically: 1
+  checkInterval: 1
   syncFixedTimestep: 1
 --- !u!1 &730559535
 GameObject:

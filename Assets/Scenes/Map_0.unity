@@ -1441,6 +1441,56 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 183157105}
   m_CullTransparentMesh: 1
+--- !u!1 &197138793
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 197138794}
+  - component: {fileID: 197138795}
+  m_Layer: 0
+  m_Name: Popup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &197138794
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197138793}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1881132707}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &197138795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 197138793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f23375f158d90004fa6dcf0847221343, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 705027508}
+  popupPrefab: {fileID: 4156791558043456627, guid: 89271fa3f1a563e44a8f1a71af0636a1, type: 3}
+  worldCamera: {fileID: 519420031}
+  normalColor: {r: 1, g: 1, b: 1, a: 1}
+  critColor: {r: 1, g: 0.6, b: 0, a: 1}
+  healColor: {r: 0.4, g: 1, b: 0.4, a: 1}
 --- !u!1 &204580793
 GameObject:
   m_ObjectHideFlags: 0
@@ -4686,6 +4736,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 118959876}
+        m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
+        m_MethodName: ResumeGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &805534123
 GameObject:
   m_ObjectHideFlags: 0
@@ -5715,7 +5777,7 @@ GameObject:
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &1065498887
 Transform:
@@ -8724,12 +8786,20 @@ MonoBehaviour:
   tilemap: {fileID: 1708795764}
   levels:
   - name: Stony
-    maxThreshold: 0.15
+    maxThreshold: 0.12
     tiles:
-    - {fileID: 11400000, guid: e7446b95b4e24dd409c0423eb80262f5, type: 2}
-    - {fileID: 11400000, guid: 28b6992f741d9704e8df85733d672fb7, type: 2}
-    - {fileID: 11400000, guid: 2a8df6987b2922b4a84bcaaafed79f26, type: 2}
-    - {fileID: 11400000, guid: b3b179afb9b71154abe2935202910e3c, type: 2}
+    - {fileID: 11400000, guid: c7bdc7ae3558ada46aa27d2356ad7f85, type: 2}
+    - {fileID: 11400000, guid: 4cf007e3d636322449d9b00fc5132313, type: 2}
+    - {fileID: 11400000, guid: cc760a4d9fdd448449a4ae755ea53b15, type: 2}
+    - {fileID: 11400000, guid: d7983ab52af68ab4b99ef51d1fcb6006, type: 2}
+    - {fileID: 11400000, guid: 68d21e29c4c0bde469dd19ad7c921d17, type: 2}
+    - {fileID: 11400000, guid: a07a1fd104e6fc7449ed9de1b636679d, type: 2}
+    - {fileID: 11400000, guid: 140eafbc558e6dd41ab8ba30fa59de09, type: 2}
+    - {fileID: 11400000, guid: f436ec3300c3a1249b681cbb9106a8c2, type: 2}
+    - {fileID: 11400000, guid: 98db58396fa0da844a7f42ec57b88800, type: 2}
+    - {fileID: 11400000, guid: 192afa7461800cc488dccd0c8a780b62, type: 2}
+    - {fileID: 11400000, guid: 3b0714117473efe49a0a2782dfe79a50, type: 2}
+    - {fileID: 11400000, guid: 811b1fa89f1d7024ab7ce86bae052af4, type: 2}
   - name: Sandy
     maxThreshold: 0.2
     tiles:
@@ -8770,9 +8840,9 @@ MonoBehaviour:
     - {fileID: 11400000, guid: d71476855fee79e44a6ff77c32d90458, type: 2}
   noise:
     scale: 50
-    octaves: 4
-    persistence: 0.3
-    lacunarity: 2
+    octaves: 3
+    persistence: 0.275
+    lacunarity: 1.6
   useDomainMapSize: 1
   manualSize: {x: 20, y: 20}
   cellWorldSize: 1
@@ -8796,23 +8866,11 @@ MonoBehaviour:
     - Moss
     prefabs:
     - {fileID: 7345994766129446155, guid: 368bf54a2468b9842bfcc4b9d40e0ed6, type: 3}
-    density: 0.1
-    scaleRange: {x: 1, y: 3}
-    randomRotation: 0
-    parent: {fileID: 1708795763}
-    minSpacingCells: 6
-  - name: Bush
-    allowedLevelNames:
-    - Grass
-    - Moss
-    - Riverbank
-    prefabs:
-    - {fileID: 2876611172102913895, guid: 17ca87f917ba318428d3c8d126302043, type: 3}
     density: 0.3
-    scaleRange: {x: 1, y: 1.2}
+    scaleRange: {x: 2, y: 4}
     randomRotation: 0
     parent: {fileID: 1708795763}
-    minSpacingCells: 2
+    minSpacingCells: 4
   - name: Grass
     allowedLevelNames:
     - Grass
@@ -8821,11 +8879,11 @@ MonoBehaviour:
     prefabs:
     - {fileID: 4852797025051528183, guid: 93112bde63b2acb419d0873798335a87, type: 3}
     density: 0.7
-    scaleRange: {x: 1, y: 1.5}
+    scaleRange: {x: 1.5, y: 2}
     randomRotation: 0
     parent: {fileID: 1708795763}
     minSpacingCells: 0
-  preloadFraction: 0.3
+  preloadFraction: 0.75
   ratePerSecond: 0.05
 --- !u!1 &1654036480
 GameObject:
@@ -9784,6 +9842,7 @@ Transform:
   - {fileID: 1298267497}
   - {fileID: 2145791899}
   - {fileID: 429566561}
+  - {fileID: 197138794}
   m_Father: {fileID: 1313200930}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1881132708

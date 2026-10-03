@@ -71,16 +71,21 @@ namespace Server
 
     public static class Combat
     {
-        public static void DealDamage(float damage, UnitAttribute attacker = default, UnitAttribute victim = default)
+        public static void DealDamage(float damage, out float finalDamage, UnitAttribute attacker = default, UnitAttribute victim = default)
         {
-            if (attacker == null || victim == null) return;
-            if (victim.IsDead) return;
+            if (attacker == null || victim == null || victim.IsDead)
+            {
+                finalDamage = 0f;
+                return;
+            }
 
             damage = HandleDamage(damage, attacker, victim);
             victim.TakeDamage(damage);
 
             victim.OnTakeDamage?.Invoke(damage);
             attacker.OnDealDamage?.Invoke(damage);
+
+            finalDamage = damage;
         }
         public static float HandleDamage(float damage, UnitAttribute a, UnitAttribute v)
         {

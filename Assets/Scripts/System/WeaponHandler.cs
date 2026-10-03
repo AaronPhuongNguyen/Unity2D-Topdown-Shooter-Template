@@ -7,6 +7,7 @@ public struct AttackResult
     public GameObject Target;
     public Vector2 HitPoint;
     public UnitAttribute HitUnit;
+    public float Damage; // actual damage dealt after DealDamage's calculation (armor, crit, etc.)
 }
 
 public static class Attack
@@ -30,14 +31,15 @@ public static class Attack
 
         if (hitUnit == null) return default;
 
-        Combat.DealDamage(ua.ATK_Current, ua, hitUnit);
+        Combat.DealDamage(ua.ATK_Current,out float finalDamage, ua, hitUnit);
 
         return new AttackResult
         {
             DidHit = true,
             Target = hit.collider.gameObject,
             HitPoint = hit.point,
-            HitUnit = hitUnit
+            HitUnit = hitUnit,
+            Damage = finalDamage
         };
     }
 }

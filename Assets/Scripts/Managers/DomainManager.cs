@@ -271,6 +271,7 @@ public class DomainManager : MonoBehaviour, ITick
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
         HandleWave(1);
+        Time.timeScale = 1f;
     }
 
     private void HandleWave(int wave)
