@@ -9,11 +9,11 @@ public class StoreUpgrade : MonoBehaviour
     PlayerManager pm => PlayerManager.instance;
 
     #region Constant growth value
-    public UpgradeValue HP = new(1500, 0.03f, 50);
-    public UpgradeValue ATK = new(1500, 0.03f, 50);
+    public UpgradeValue HP = new(1250, 0.03f, 50);
+    public UpgradeValue ATK = new(1250, 0.03f, 50);
 
-    public UpgradeValue Recovery = new(5000, 0.005f, 10);
-    public UpgradeValue Money = new(5000, 1, 25);
+    public UpgradeValue Recovery = new(5000, 0.01f, 15);
+    public UpgradeValue Money = new(5000, 1, 50);
 
     public event Action OnUpgraded, OnReset;
     #endregion
@@ -245,7 +245,7 @@ public class UpgradeValue
     public float Growth;
     public float lastGrowth;
 
-    public float PriceGrowthRate = 1.1f;
+    public float PriceGrowthRate = 1.05f;
 
     public UpgradeValue(int price, float growthValue, int maxUpgrade)
     {
