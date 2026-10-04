@@ -58,7 +58,7 @@ public class Zombrain : HurtBox, ITick
 
     #region Hit Stagger
     [Header("Hit Stagger")]
-    private const float HitStaggerSlowPercent = -0.25f;
+    private const float HitStaggerSlowPercent = -0.4f;
     private const float HitStaggerDuration = 1.5f;
 
     private float hitStaggerTimer;
