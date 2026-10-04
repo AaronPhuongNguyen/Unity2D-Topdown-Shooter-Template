@@ -17,7 +17,10 @@ MonoBehaviour:
   prefab: {fileID: 1191015796755749475, guid: 85e22b63e8adf254092cf59da3c4039f, type: 3}
   attribute:
     template: {fileID: 11400000, guid: 13c6fd6f8ced4d440ac96897a892e6a3, type: 2}
+    tag: 0
     HP_Current: 0
+    CritRate: 0.1
+    CritDamage: 2
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -63,4 +66,4 @@ MonoBehaviour:
   AppearFromWave: 0
   CountPerSpawner: 4
   _rateToAppear: 1
-  _biteAccuracy: 0.5
+  _biteAccuracy: 0.9

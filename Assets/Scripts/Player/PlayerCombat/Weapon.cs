@@ -23,7 +23,7 @@ public class Weapon : MonoBehaviour, ITick
     public Transform muzzle;
     public Bullet BulletPrefab;
     public GameObject ShootEffect;
-    public GameObject HitEffect;
+
     [Header("Bullet Visual")]
     [SerializeField] private float bulletSpeed = 40f;
     [SerializeField] private float bulletLifetime = 1f;
@@ -68,7 +68,7 @@ public class Weapon : MonoBehaviour, ITick
         {
             fireRateMultiplier = 3f;
             pelletCount = 14;
-            spreadMultiplier = 10f;
+            spreadMultiplier = 5f;
             damageMultiply = -0.65f;
             rangeMultiplier = -0.25f;
         }
@@ -88,6 +88,7 @@ public class Weapon : MonoBehaviour, ITick
     }
 
     #region Tick
+    float attackTimer;
     public void Tick(float dt)
     {
         if (pm == null) return;
@@ -193,8 +194,8 @@ public class Weapon : MonoBehaviour, ITick
     private void PlayHitEffect(AttackResult result)
     {
         if (!result.DidHit) return;
-        if (HitEffect == null) return;
-        GameObject o = PoolingSystem.instance.GetFromPool(HitEffect);
+        if (pm.clonedPack.Media.HitEffect == null) return;
+        GameObject o = PoolingSystem.instance.GetFromPool(pm.clonedPack.Media.HitEffect);
         if (o == null) return;
         o.transform.position = result.HitPoint;
 

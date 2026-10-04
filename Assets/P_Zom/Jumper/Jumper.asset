@@ -17,7 +17,10 @@ MonoBehaviour:
   prefab: {fileID: 1191015796755749475, guid: 051018212312ad64a81aa026ca065247, type: 3}
   attribute:
     template: {fileID: 11400000, guid: d7ef0e50dbc26244fbb1ea6e9e5851c9, type: 2}
+    tag: 0
     HP_Current: 0
+    CritRate: 0.1
+    CritDamage: 2
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -60,7 +63,7 @@ MonoBehaviour:
       TotalBonus: 1
   Media: {fileID: 11400000, guid: e2889cbc5f9e62b4292541a9aa4e3667, type: 2}
   CurrencyAtKill: 10
-  AppearFromWave: 3
+  AppearFromWave: 4
   CountPerSpawner: 4
   _rateToAppear: 1
   _biteAccuracy: 0.5

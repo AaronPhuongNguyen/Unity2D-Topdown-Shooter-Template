@@ -5,10 +5,10 @@ public class HealDemo : MonoBehaviour, ITick
 {
     PlayerManager pm => PlayerManager.instance;
 
-    public const float SkillCooldown = 40f;
-    public const float HealValue = 3f;
+    public const float SkillCooldown = 60f;
+    public const float HealValue = 0.03f;
     public const float HealDuration = 8f;
-    public const float Recovery = 0.01f;
+    public const float Recovery = 0.1f;
     public Image UI;
 
     private float CD;
@@ -25,6 +25,7 @@ public class HealDemo : MonoBehaviour, ITick
         isExpired = false;
 
         pm.attribute.OnDealDamage += Lifesteal;
+        pm.attribute.Heal(HealValue * pm.attribute.HP_Lost);
 
         if (UI != null) UI.fillAmount = 0;
     }
@@ -46,7 +47,7 @@ public class HealDemo : MonoBehaviour, ITick
 
         if (healDuration > 0 && !isExpired)
         {
-            pm.attribute.Heal((HealValue / HealDuration / 100) * pm.attribute.HP_Max * delta);
+            pm.attribute.Heal(HealValue * pm.attribute.HP_Max * delta);
             healDuration -= delta;
             RemoveEffect();
         }
@@ -84,6 +85,6 @@ public class HealDemo : MonoBehaviour, ITick
     private void Lifesteal(float v)
     {
         if (healDuration <= 0f) return;
-        pm.attribute.Heal(v * Recovery + pm.attribute.HP_Current * Recovery);
+        pm.attribute.Heal(v * Recovery);
     }
 }

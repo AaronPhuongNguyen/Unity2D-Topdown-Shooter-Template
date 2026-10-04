@@ -482,7 +482,6 @@ GameObject:
   - component: {fileID: 5205005229410236368}
   - component: {fileID: 7244348577406268404}
   - component: {fileID: 2042474348528131717}
-  - component: {fileID: 1459295512101138924}
   - component: {fileID: 967398478182381395}
   - component: {fileID: 187754163518266985}
   - component: {fileID: 2440875546067092243}
@@ -575,20 +574,6 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &1459295512101138924
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9179845207231992246}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da5516bb1730cef4a89c21eb78db7c2b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prefab: {fileID: 9191306370210630647, guid: ff72eab521c6c4840ae8786901209ff0, type: 3}
-  defaultSlideForce: 3
 --- !u!114 &967398478182381395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -605,8 +590,7 @@ MonoBehaviour:
   muzzle: {fileID: 3401477344332366387}
   BulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
-  HitEffect: {fileID: 7097382205211673216, guid: 776a3e57ac07f26469243e1bbb92ea8f, type: 3}
-  bulletSpeed: 80
+  bulletSpeed: 120
   bulletLifetime: 1
   TargetScale: {x: 0.5, y: 0.5, z: 0}
 --- !u!114 &187754163518266985

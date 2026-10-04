@@ -9,7 +9,7 @@ public class Detector : MonoBehaviour, ITick
     private Transform currentTarget;
     private int foundTarget;
 
-    [SerializeField] private float searchInterval = 0f;
+    [SerializeField] private float searchInterval = 1f;
     private float searchTimer;
     #endregion
 
@@ -44,11 +44,11 @@ public class Detector : MonoBehaviour, ITick
         {
             searchTimer -= delta;
             if (searchTimer > 0f) return;
-            searchTimer = searchInterval;
         }
 
         SearchTarget();
         pm.Target = FindNearestTarget();
+        searchTimer = searchInterval;
     }
 
     private void SearchTarget()

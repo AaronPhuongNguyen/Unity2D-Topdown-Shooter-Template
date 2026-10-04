@@ -46,6 +46,9 @@ public class DamagePopupManager : MonoBehaviour
     public static void Show(Vector3 worldPos, float damage) =>
         instance?.SpawnPopup(worldPos, FormatNumber(damage), instance.normalColor);
 
+    public static void Show(Vector3 worldPos, float damage, Color color) =>
+        instance?.SpawnPopup(worldPos, FormatNumber(damage), color);
+
     public static void Show(Vector3 worldPos, float damage, bool isCrit) =>
         instance?.SpawnPopup(worldPos, FormatNumber(damage), isCrit ? instance.critColor : instance.normalColor);
 

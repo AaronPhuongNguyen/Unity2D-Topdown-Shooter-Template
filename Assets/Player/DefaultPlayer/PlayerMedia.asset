@@ -15,3 +15,4 @@ MonoBehaviour:
   Corpse: {fileID: 11400000, guid: ee8d2ffa938a88e40a49a912a10812b2, type: 2}
   Blood: {fileID: 11400000, guid: 0cfb1709f92f49e468a992a7df271fac, type: 2}
   Audio: {fileID: 11400000, guid: ed1940a137a5d5549815a3be7da91488, type: 2}
+  HitEffect: {fileID: 7097382205211673216, guid: 776a3e57ac07f26469243e1bbb92ea8f, type: 3}

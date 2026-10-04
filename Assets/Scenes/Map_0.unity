@@ -2787,6 +2787,7 @@ GameObject:
   m_Component:
   - component: {fileID: 429566561}
   - component: {fileID: 429566562}
+  - component: {fileID: 429566563}
   m_Layer: 0
   m_Name: PlayerManager
   m_TagString: Untagged
@@ -2823,13 +2824,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DebugMode: 1
+  AutoAttack: 0
   package: {fileID: 11400000, guid: 554ff44035f258e448c985470afd086d, type: 2}
   EnemyMask:
     serializedVersion: 2
     m_Bits: 64
   IndicatorPrefab: {fileID: 7358377081612034780, guid: b6915015fc3c0b74eb2aea451ab3de04, type: 3}
   CurrentHP: 0
-  AutoAttack: 0
   Target: {fileID: 0}
   ManualAttacking: 0
   ManualAttackDirection: {x: 0, y: 0}
@@ -2843,6 +2844,22 @@ MonoBehaviour:
   rot: {fileID: 0}
   mot: {fileID: 0}
   combatDuration: 0
+  StaggerChance: 0.5
+  bleedChance: 0.5
+--- !u!114 &429566563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 429566560}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da5516bb1730cef4a89c21eb78db7c2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 9191306370210630647, guid: ff72eab521c6c4840ae8786901209ff0, type: 3}
+  defaultSlideForce: 3
 --- !u!1 &446473926
 GameObject:
   m_ObjectHideFlags: 0

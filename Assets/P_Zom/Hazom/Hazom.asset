@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   HP_Base: 300
   ATK_Base: 20
-  SPEED_Base: 8
-  DEF_Base: 100
+  SPEED_Base: 9
+  DEF_Base: 300
   ASPD_Base: 4
   SIGHT_Base: 2

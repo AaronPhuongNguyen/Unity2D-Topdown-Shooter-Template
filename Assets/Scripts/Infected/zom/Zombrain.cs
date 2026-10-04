@@ -157,16 +157,16 @@ public class Zombrain : HurtBox, ITick
     {
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetInt(200, 600) * dm.CurrentDifficulty;
+        lastHPBonus = RNG.GetInt(80, 240) * dm.CurrentDifficulty;
         lastHPP = 0.25f * dm.CurrentDifficulty;
 
-        lastATKBonus = RNG.GetInt(20, 60) * dm.CurrentDifficulty;
+        lastATKBonus = RNG.GetInt(10, 30) * dm.CurrentDifficulty;
         lastATKK = 0.25f * dm.CurrentDifficulty;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
         lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastSPEEDBonus = RNG.GetInt(1, 2) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastScale = RNG.GetVector2(0, 0.25f) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(dm.CurrentDifficulty);
 
         if (isAlpha)
         {
@@ -363,7 +363,7 @@ public class Zombrain : HurtBox, ITick
         if (RNG.GetPercent() < package.BiteAccuracy)
         {
             AttackResult rs = Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
-            if (rs.DidHit) PlayHitSound();
+            HandleHitEffect(rs);
         }
 
         if (anim != null) anim.SetBool(AttackHash, CanAttack && isAttacking);
@@ -374,6 +374,17 @@ public class Zombrain : HurtBox, ITick
     protected virtual void OnHit(float damage)
     {
 
+    }
+    protected virtual void HandleHitEffect(AttackResult result)
+    {
+        if (!result.DidHit) return;
+        if (package.Media.HitEffect == null) return;
+        GameObject o = PoolingSystem.instance.GetFromPool(package.Media.HitEffect);
+        if (o == null) return;
+        o.transform.position = result.HitPoint;
+
+        DamagePopupManager.Show(result.HitPoint, result.Damage, Color.red);
+        PlayHitSound();
     }
     #endregion
 

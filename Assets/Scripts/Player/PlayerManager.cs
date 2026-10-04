@@ -4,7 +4,8 @@ using UnityEngine;
 [DefaultExecutionOrder(-5)]
 public class PlayerManager : MonoBehaviour, ITick
 {
-    [SerializeField] bool DebugMode;
+    public bool DebugMode;
+    public bool AutoAttack = false;
     public PlayerPackage package;
     public UnitAttribute attribute => clonedPack?.attribute;
 
@@ -15,12 +16,8 @@ public class PlayerManager : MonoBehaviour, ITick
     #endregion
 
     #region Runtime Status
-    [HideInInspector] public bool AutoAttack = false;
     [HideInInspector] public Transform Target;
 
-    // Manual attack-joystick state - only meaningful while AutoAttack is
-    // false. ManualAttacking is the "is the stick currently held/aimed"
-    // flag; ManualAttackDirection is the last nonzero aim direction while held.
     [HideInInspector] public bool ManualAttacking;
     [HideInInspector] public Vector2 ManualAttackDirection;
 
@@ -34,16 +31,37 @@ public class PlayerManager : MonoBehaviour, ITick
     [HideInInspector] public RecoverOverTime rot;
     [HideInInspector] public MoneyOverTime mot;
 
-    // Manual input always takes priority when held, whether AutoAttack is on
-    // or off - covers both playstyles (pure manual, and "lazy with manual
-    // override") with one condition. Falls back to auto-target only when the
-    // stick isn't held AND AutoAttack is enabled.
     public bool IsAttacking => CurrentHP > 0 && (ManualAttacking || (AutoAttack && Target != null));
     public bool IsMoving => MoveInput != Vector2.zero && !IsAttacking && CurrentHP > 0;
     public bool IsIdle => !IsAttacking && !IsMoving && CurrentHP > 0;
 
     [HideInInspector] public float combatDuration;
     private CorpseEmitter ce;
+    #endregion
+
+    #region Stagger
+    [SerializeField, Range(0, 1)] private float StaggerChance = 0.5f;
+    private const float StaggerSlowPercent = 0.25f;
+    private const float StaggerDuration = 1.5f;
+
+    private float staggerTimer;
+    private float appliedStaggerMultiplier = 1f;
+    #endregion
+
+    #region Bleed
+    [Header("Bleed")]
+    [Tooltip("Chance on taking damage to apply/refresh a Bleed stack.")]
+    [Range(0f, 1f)][SerializeField] private float bleedChance = 0.5f;
+
+    private const float BleedDuration = 3f;
+    private const float BleedFlatDamagePerStack = 5f;
+    private const float BleedPercentMaxHPPerStack = 0.01f;
+    private const int BleedMaxStacks = 8;
+
+    private float bleedTimer;
+    private float bleedTickInterval = 1f;
+    private float bleedTickTimer;
+    private int bleedStacks;
     #endregion
 
     #region Singleton
@@ -92,6 +110,8 @@ public class PlayerManager : MonoBehaviour, ITick
 
         pc?.Tick(delta);
         NaturalHealing(delta);
+        TickStagger(delta);
+        TickBleed(delta);
 
         if (clonedPack != null && CurrentHP != attribute.HP_Current)
             CurrentHP = attribute.HP_Current;
@@ -145,6 +165,10 @@ public class PlayerManager : MonoBehaviour, ITick
         if (!Controlling.TryGetComponent(out mot))
             mot = Controlling.AddComponent<MoneyOverTime>();
 
+        // Was checking `this` (PlayerManager's own GameObject) instead of
+        // Controlling - always failed to find an existing CorpseEmitter,
+        // so a new one got AddComponent'd onto the pooled Controlling
+        // object on every single respawn, stacking duplicates across lives.
         if (!Controlling.TryGetComponent(out ce))
         {
             ce = Controlling.AddComponent<CorpseEmitter>();
@@ -160,9 +184,21 @@ public class PlayerManager : MonoBehaviour, ITick
         clonedPack.attribute = clonedPack.attribute.Clone();
         attribute.Reset();
         attribute.tag = UnitTag.Friendly;
-        attribute.OnTakeDamage += SetCombat;
+
+        // SetCombat is no longer subscribed directly to OnTakeDamage - it
+        // was firing with the raw damage amount as its argument (e.g.
+        // combatDuration = 20), immediately overwritten by OnDamageTaken's
+        // explicit SetCombat(0.5f) call right after. Both ran on every hit
+        // for no benefit; OnDamageTaken now owns setting combat state alone.
+        attribute.OnTakeDamage += OnDamageTaken;
         attribute.OnDeath += PlayDeathSound;
         attribute.OnDeath += AfterDeath;
+
+        staggerTimer = 0f;
+        appliedStaggerMultiplier = 1f;
+        bleedTimer = 0f;
+        bleedTickTimer = 0f;
+        bleedStacks = 0;
 
         EventBus.RaisePlayerRespawn();
     }
@@ -189,17 +225,25 @@ public class PlayerManager : MonoBehaviour, ITick
     [ContextMenu("Set Game Started")]
     public void SetGameStarted() => EventBus.RaiseGameStart();
 
-    public void SetCombat(float v) => combatDuration = 0.5f;
+    public void SetCombat(float v)
+    {
+        combatDuration = v > 0 ? v : 0.2f; // default
+    }
 
     private void AfterDeath()
     {
         Debug.Log("Death!");
 
         LastDeathAtSpot = Controlling.transform.position;
+        ce.SpawnCorpse(LastDeathAtSpot, Controlling.transform.localScale);
 
         attribute.OnDeath -= AfterDeath;
         attribute.OnDeath -= PlayDeathSound;
-        attribute.OnTakeDamage -= SetCombat;
+        attribute.OnTakeDamage -= OnDamageTaken;
+
+        RemoveStagger();
+        bleedTimer = 0f;
+        bleedStacks = 0;
 
         PoolingSystem.instance.DestroyObject(Controlling);
 
@@ -227,6 +271,105 @@ public class PlayerManager : MonoBehaviour, ITick
     {
         if (AudioManager.instance == null || clip == null || Controlling == null) return;
         AudioManager.instance.PlayAudio(clip, Controlling.transform.position);
+    }
+
+    private void PlayHitEffect()
+    {
+        if (Controlling == null) return;
+        if (PoolingSystem.instance == null) return;
+
+        GameObject prefab = clonedPack?.Media?.HitEffect;
+        if (prefab == null) return;
+
+        GameObject o = PoolingSystem.instance.GetFromPool(prefab);
+        if (o == null) return;
+        o.transform.position = Controlling.transform.position;
+    }
+    #endregion
+
+    #region Status Effects (on hit)
+    private void OnDamageTaken(float damage)
+    {
+        if (attribute.IsDead) return;
+
+        SetCombat(0.5f);
+        PlayHitEffect();
+
+        if (RNG.GetPercent() <= StaggerChance)
+            ApplyStagger();
+
+        if (RNG.GetPercent() <= bleedChance)
+            ApplyBleed();
+    }
+    #endregion
+
+    #region Stagger
+    private void ApplyStagger()
+    {
+        float newMultiplier = 1f - StaggerSlowPercent;
+
+        attribute.SPEED_Ampl.TotalBonus /= appliedStaggerMultiplier;
+        attribute.SPEED_Ampl.TotalBonus *= newMultiplier;
+
+        appliedStaggerMultiplier = newMultiplier;
+        staggerTimer = StaggerDuration;
+    }
+
+    private void TickStagger(float delta)
+    {
+        if (staggerTimer <= 0f) return;
+
+        staggerTimer -= delta;
+        if (staggerTimer > 0f) return;
+
+        RemoveStagger();
+    }
+
+    private void RemoveStagger()
+    {
+        if (appliedStaggerMultiplier == 1f) return;
+        if (attribute != null)
+            attribute.SPEED_Ampl.TotalBonus /= appliedStaggerMultiplier;
+
+        appliedStaggerMultiplier = 1f;
+        staggerTimer = 0f;
+    }
+    #endregion
+
+    #region Bleed
+    private void ApplyBleed()
+    {
+        bleedStacks = Mathf.Min(bleedStacks + 1, BleedMaxStacks);
+
+        if (bleedTimer <= 0f)
+            bleedTickTimer = bleedTickInterval;
+
+        bleedTimer = BleedDuration;
+    }
+
+    private void TickBleed(float delta)
+    {
+        if (bleedTimer <= 0f) return;
+
+        bleedTimer -= delta;
+        bleedTickTimer -= delta;
+
+        if (bleedTimer <= 0f)
+        {
+            bleedTimer = 0f;
+            bleedStacks = 0;
+            return;
+        }
+
+        if (bleedTickTimer > 0f) return;
+        bleedTickTimer += bleedTickInterval;
+
+        float perStackDamage = BleedFlatDamagePerStack * DomainManager.instance.CurrentDifficulty + (attribute.HP_Max * BleedPercentMaxHPPerStack);
+        float totalBleedDamage = perStackDamage * bleedStacks;
+
+        attribute.TakeDamage(totalBleedDamage);
+        SetCombat(0.5f);
+        PlayHitEffect(); // reuses the same null-safe helper instead of duplicating pooling logic
     }
     #endregion
 
