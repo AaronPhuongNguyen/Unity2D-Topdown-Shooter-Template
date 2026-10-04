@@ -33,10 +33,6 @@ public class Zombrain : HurtBox, ITick
     protected float findPreyInterval;
     protected PlayerManager pm => PlayerManager.instance;
 
-    // True while this instance is spawned/active and subscribed to events.
-    // Prevents Despawn()/Reboot() from running their cleanup twice on the
-    // same object (which was causing HiveBrain to fail removing an already
-    // -removed Zombrain after a restart).
     protected bool isActive;
 
     [Header("Separation")]
@@ -52,24 +48,20 @@ public class Zombrain : HurtBox, ITick
     private float lastHPP, lastATKK;
     private Vector3 lastScale, lastCachedScaled;
 
-    // Tracks the chase-speed boost separately from lastSPEEDBonus (the
-    // spawn-time random bonus) - Move() adds/removes only its own delta
-    // instead of overwriting FlatBonus wholesale, which used to erase
-    // lastSPEEDBonus's contribution.
     private float appliedChaseBonus;
 
-    // --- Perf caches -----------------------------------------------------
-    // Cached once per Tick() so we don't hit Time.time (a property call)
-    // repeatedly across the same frame's worth of sub-methods.
     private float _now;
-
-    // Cached squared sight radius, refreshed only when rotateInterval
-    // refreshes (every 0.1-0.3s) instead of every single TryAttack() call.
-    // Lets TargetInRange() avoid a sqrt via Vector2.Distance.
     private float _sqrSight;
 
-    // Cached transform to avoid repeated native transform property hops.
     protected Transform _t;
+    #endregion
+
+    #region Hit Stagger
+    [Header("Hit Stagger")]
+    private const float HitStaggerSlowPercent = -0.25f;
+    private const float HitStaggerDuration = 1.5f;
+
+    private float hitStaggerTimer;
     #endregion
 
     #region Lifecycle
@@ -87,13 +79,9 @@ public class Zombrain : HurtBox, ITick
         Move();
         TryAttack();
         UpdateAnimator();
+        TickHitStagger(dt);
     }
 
-    /// <returns>True if this instance was newly spawned/counted; false if it
-    /// was rejected (bad package) or was already active. HiveBrain uses this
-    /// to decide whether to start tracking the object in its `zoms` list -
-    /// tracking it after a failed/duplicate spawn would let it be ticked
-    /// and eventually despawned without ever having been counted.</returns>
     public virtual bool SpawnObject(ZomPackage zp)
     {
         if (!CanSpawn(zp)) return false;
@@ -121,7 +109,6 @@ public class Zombrain : HurtBox, ITick
 
         Target = null;
 
-        // Reset perf caches on respawn so pooled instances don't reuse stale state.
         rotateInterval = 0f;
         attackInterval = 0f;
         attackStagger = 0f;
@@ -130,6 +117,8 @@ public class Zombrain : HurtBox, ITick
         _sqrSight = attribute.SIGHT_Current * attribute.SIGHT_Current;
         appliedChaseBonus = 0f;
         SpeedHelper = 0f;
+
+        hitStaggerTimer = 0f;
 
         if (dm != null) dm.HandleSpawn(package);
         if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
@@ -151,6 +140,7 @@ public class Zombrain : HurtBox, ITick
         if (dm != null) dm.HandleKill(package);
 
         RemoveBonus();
+        RemoveHitStagger();
         CleanUpAndReturnToHive();
     }
     protected virtual void GetBonus()
@@ -161,15 +151,15 @@ public class Zombrain : HurtBox, ITick
 
         bool isAlpha = RNG.GetPercent() < 0.1f;
 
-        lastHPBonus = RNG.GetInt(100, 300) * diffScale;
-        lastHPP = 0.5f * diffScale;
+        lastHPBonus = RNG.GetInt(200, 600) * diffScale;
+        lastHPP = 0.8f * diffScale;
 
-        lastATKBonus = RNG.GetInt(20, 60) * diffScale;
-        lastATKK = 0.25f * diffScale;
+        lastATKBonus = RNG.GetInt(10, 30) * diffScale;
+        lastATKK = 0.2f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
         lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(diffScale);
-        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Clamp01(diffScale);
+        lastSPEEDBonus = RNG.GetInt(3, 6) * Mathf.Clamp01(diffScale);
         lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(diffScale);
 
         if (isAlpha)
@@ -320,7 +310,6 @@ public class Zombrain : HurtBox, ITick
             );
             separationInterval = _now + 0.2f;
         }
-        // function: When not in player sight, speeded up to make the game faster instead of waiting for it to slowly come
         SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 3f) ? 60f : 0f;
         if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
         {
@@ -378,7 +367,7 @@ public class Zombrain : HurtBox, ITick
 
     protected virtual void OnHit(float damage)
     {
-
+        ApplyHitStagger();
     }
     protected virtual void HandleHitEffect(AttackResult result)
     {
@@ -390,6 +379,33 @@ public class Zombrain : HurtBox, ITick
 
         DamagePopupManager.Show(result.HitPoint, result.Damage, Color.red);
         PlayHitSound();
+    }
+    #endregion
+
+    #region Hit Stagger
+    bool staggerApplied = false;
+    protected virtual void ApplyHitStagger()
+    {
+        if (attribute == null || attribute.IsDead) return;
+        hitStaggerTimer = HitStaggerDuration;
+        if (staggerApplied) return;
+
+        attribute.SPEED_Ampl.TotalBonus += HitStaggerSlowPercent;
+        staggerApplied = true;
+    }
+    private void TickHitStagger(float delta)
+    {
+        if (hitStaggerTimer > 0) hitStaggerTimer -= delta;
+        else if (hitStaggerTimer <= 0 && staggerApplied) RemoveHitStagger();
+    }
+
+    private void RemoveHitStagger()
+    {
+        if (!staggerApplied) return;
+        if (attribute != null)
+            attribute.SPEED_Ampl.TotalBonus -= HitStaggerSlowPercent;
+        hitStaggerTimer = 0f;
+        staggerApplied = false;
     }
     #endregion
 
@@ -408,11 +424,6 @@ public class Zombrain : HurtBox, ITick
         Target = SearchForPrey();
     }
 
-    /// <summary>
-    /// Scans for the nearest valid prey: must carry a HurtBox whose
-    /// UnitAttribute.tag is Friendly, and must not be on this object's own
-    /// layer (so zombies never target each other via this path).
-    /// </summary>
     protected virtual Transform SearchForPrey()
     {
         int count = Physics2D.OverlapCircleNonAlloc(_t.position, preySearchRadius, preyBuffer, hb.enemyMask);

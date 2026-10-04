@@ -12,6 +12,15 @@ using UnityEngine;
 ///   material across all bullet prefab variants) so trails from many
 ///   simultaneous bullets batch together instead of each being a unique
 ///   draw call - the actual mobile-perf-relevant part.
+///
+/// Sound timing: a bullet now knows whether its shot hit or missed.
+/// - Hit: the hit sound plays instantly at launch (impact is "confirmed"
+///   the moment the shot is fired - matches hit feedback already being
+///   immediate elsewhere, e.g. damage popups).
+/// - Miss: no sound at launch; the miss sound only plays once the bullet
+///   visually arrives at its flight-end point, so "whiff" audio feedback
+///   is timed to when the player actually sees the shot land/pass through,
+///   not an instant sound at the moment of firing.
 /// </summary>
 public class Bullet : MonoBehaviour, ITick
 {
@@ -24,6 +33,7 @@ public class Bullet : MonoBehaviour, ITick
     private float speed;
     private float lifeRemaining;
     private bool isLaunched;
+    private bool didHit;
     #endregion
 
     #region Lifecycle
@@ -46,12 +56,13 @@ public class Bullet : MonoBehaviour, ITick
     #endregion
 
     #region Public API
-    public void Launch(Vector2 target, float bulletSpeed, float lifetime)
+    public void Launch(Vector2 target, float bulletSpeed, float lifetime, bool hit)
     {
         targetPoint = target;
         speed = bulletSpeed;
         lifeRemaining = lifetime;
         isLaunched = true;
+        didHit = hit;
 
         Vector2 dir = (targetPoint - (Vector2)transform.position).normalized;
         if (dir != Vector2.zero)
@@ -60,14 +71,16 @@ public class Bullet : MonoBehaviour, ITick
             transform.rotation = Quaternion.Euler(0, 0, angle);
         }
 
-        // Prevents a pooled bullet's reactivation from drawing a stray
-        // trail segment connecting its old despawn point to this new
-        // muzzle position - this is the #1 visual bug with pooled trails.
         if (trail != null)
         {
             trail.Clear();
             trail.emitting = true;
         }
+
+        // Hit sound plays immediately - impact is "decided" the instant
+        // the shot is fired, no need to wait for the visual bullet to travel.
+        if (didHit && PlayerManager.instance != null)
+            PlayerManager.instance.PlayHitSound();
     }
     #endregion
 
@@ -84,6 +97,12 @@ public class Bullet : MonoBehaviour, ITick
 
         if (lifeRemaining <= 0 || reachedTarget)
         {
+            // Miss sound is deferred to here - only plays once the bullet
+            // visually reaches the end of its flight path (whether that's
+            // because it reached targetPoint, or its lifetime simply ran out).
+            if (!didHit && PlayerManager.instance != null)
+                PlayerManager.instance.PlayMiscSound();
+
             Despawn();
         }
     }
@@ -94,10 +113,6 @@ public class Bullet : MonoBehaviour, ITick
     {
         isLaunched = false;
 
-        // Stop emitting before returning to pool - Clear() on next Launch
-        // handles the rest, but stopping emission now prevents one extra
-        // stray segment if something inspects the object between despawn
-        // and reuse.
         if (trail != null)
             trail.emitting = false;
 

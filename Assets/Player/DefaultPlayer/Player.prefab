@@ -586,13 +586,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5465436ccab470c4c97209292b2d17fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 0
+  Type: 2
   muzzle: {fileID: 3401477344332366387}
-  BulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
-  bulletSpeed: 120
-  bulletLifetime: 1
   TargetScale: {x: 0.5, y: 0.5, z: 0}
+  bulletSpeed: 150
+  bulletLifetime: 1
+  rifleFireRate: 1
+  rifleSpread: 1
+  rifleDamageBonus: 0
+  rifleRangeBonus: 0
+  rifleBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
+  rifleShootSound: {fileID: 8300000, guid: d0a88e91a4e38924c8d65fa2a3ba4e6a, type: 3}
+  shotgunFireRate: 5
+  shotgunPelletCount: 10
+  shotgunSpread: 4
+  shotgunDamageBonus: -0.9
+  shotgunRangeBonus: -0.2
+  shotgunBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
+  shotgunShootSound: {fileID: 8300000, guid: da2250a7d0f72fe458f2dd972d66bdb3, type: 3}
+  sniperFireRate: 10
+  sniperSpread: 0.1
+  sniperDamageBonus: 2
+  sniperRangeBonus: 0.25
+  sniperPierceTargets: 0
+  sniperPierceFalloff: 0.5
+  sniperBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
+  sniperShootSound: {fileID: 8300000, guid: 90037283433a56b419bf817b11b80870, type: 3}
 --- !u!114 &187754163518266985
 MonoBehaviour:
   m_ObjectHideFlags: 0

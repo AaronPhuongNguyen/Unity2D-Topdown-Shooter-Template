@@ -1,3 +1,4 @@
+using Server;
 using UnityEngine;
 
 [DefaultExecutionOrder(100)]
@@ -51,6 +52,9 @@ public class CamManager : MonoBehaviour, ILateTick
     {
         if (!CanMove()) return;
         MoveCamera(delta);
+
+        TickShake(delta);
+        ApplyShake();
     }
 
     private void MoveCamera(float delta)
@@ -84,11 +88,51 @@ public class CamManager : MonoBehaviour, ILateTick
         ZoomValue -= v;
         Zoom();
     }
-    private void Zoom()
+    public void Zoom()
     {
         if (cam == null) return;
         ZoomValue = Mathf.Clamp(ZoomValue, ZoomLimit.x, ZoomLimit.y);
         cam.orthographicSize = ZoomValue;
+    }
+    #endregion
+
+    #region Shake
+    [Header("Shake")]
+    [SerializeField] private float shakeFalloff = 4f; // how fast magnitude decays per second
+
+    private float shakeMagnitude;
+    private Vector3 shakeOffset;
+    public bool ShakeEnabled = true;
+
+    /// <summary>
+    /// Call from anywhere: CamManager.instance.Shake(0.3f) for a hit,
+    /// CamManager.instance.Shake(0.8f) for something bigger (explosion, death, etc.)
+    /// </summary>
+    public void Shake(float magnitude)
+    {
+        if (!ShakeEnabled) return;
+        // Take the stronger of the two rather than adding - a second small
+        // shake while a big one is still playing shouldn't make it worse,
+        // and this avoids needing separate stacking/duration bookkeeping.
+        shakeMagnitude = Mathf.Max(shakeMagnitude, magnitude);
+    }
+
+    private void TickShake(float delta)
+    {
+        if (shakeMagnitude <= 0f)
+        {
+            shakeOffset = Vector3.zero;
+            return;
+        }
+
+        shakeOffset = (Vector3)RNG.GetInsideCircle(shakeMagnitude);
+        shakeMagnitude = Mathf.MoveTowards(shakeMagnitude, 0f, shakeFalloff * delta);
+    }
+
+    private void ApplyShake()
+    {
+        if (shakeOffset == Vector3.zero) return;
+        cam.transform.position += shakeOffset;
     }
     #endregion
     #endregion

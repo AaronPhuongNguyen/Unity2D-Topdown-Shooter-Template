@@ -9,7 +9,7 @@ public class Detector : MonoBehaviour, ITick
     private Transform currentTarget;
     private int foundTarget;
 
-    [SerializeField] private float searchInterval = 1f;
+    [SerializeField] private float searchInterval = 0.3f;
     private float searchTimer;
     #endregion
 

@@ -39,10 +39,19 @@ public class PlayerManager : MonoBehaviour, ITick
     private CorpseEmitter ce;
     #endregion
 
+    #region Attack Move Penalty
+    // Continuous (not timed) - applied every tick IsAttacking is true,
+    // removed the moment it's false. Tracked via a bool rather than a
+    // timer/stack, since this isn't a DoT-style effect, just a state-bound
+    // modifier that should always exactly match IsAttacking.
+    private const float AttackMoveSlowPercent = -0.15f;
+    private bool attackSlowApplied;
+    #endregion
+
     #region Stagger
     [SerializeField, Range(0, 1)] private float StaggerChance = 0.5f;
-    private const float StaggerSlowPercent = 0.25f;
-    private const float StaggerDuration = 1.5f;
+    private const float StaggerSlowPercent = 0.4f;
+    private const float StaggerDuration = 2f;
 
     private float staggerTimer;
     private float appliedStaggerMultiplier = 1f;
@@ -112,6 +121,7 @@ public class PlayerManager : MonoBehaviour, ITick
         NaturalHealing(delta);
         TickStagger(delta);
         TickBleed(delta);
+        TickAttackMovePenalty();
 
         if (clonedPack != null && CurrentHP != attribute.HP_Current)
             CurrentHP = attribute.HP_Current;
@@ -165,10 +175,6 @@ public class PlayerManager : MonoBehaviour, ITick
         if (!Controlling.TryGetComponent(out mot))
             mot = Controlling.AddComponent<MoneyOverTime>();
 
-        // Was checking `this` (PlayerManager's own GameObject) instead of
-        // Controlling - always failed to find an existing CorpseEmitter,
-        // so a new one got AddComponent'd onto the pooled Controlling
-        // object on every single respawn, stacking duplicates across lives.
         if (!Controlling.TryGetComponent(out ce))
         {
             ce = Controlling.AddComponent<CorpseEmitter>();
@@ -185,11 +191,6 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.Reset();
         attribute.tag = UnitTag.Friendly;
 
-        // SetCombat is no longer subscribed directly to OnTakeDamage - it
-        // was firing with the raw damage amount as its argument (e.g.
-        // combatDuration = 20), immediately overwritten by OnDamageTaken's
-        // explicit SetCombat(0.5f) call right after. Both ran on every hit
-        // for no benefit; OnDamageTaken now owns setting combat state alone.
         attribute.OnTakeDamage += OnDamageTaken;
         attribute.OnDeath += PlayDeathSound;
         attribute.OnDeath += AfterDeath;
@@ -199,6 +200,7 @@ public class PlayerManager : MonoBehaviour, ITick
         bleedTimer = 0f;
         bleedTickTimer = 0f;
         bleedStacks = 0;
+        attackSlowApplied = false;
 
         EventBus.RaisePlayerRespawn();
     }
@@ -242,6 +244,7 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.OnTakeDamage -= OnDamageTaken;
 
         RemoveStagger();
+        RemoveAttackMovePenalty();
         bleedTimer = 0f;
         bleedStacks = 0;
 
@@ -303,6 +306,37 @@ public class PlayerManager : MonoBehaviour, ITick
     }
     #endregion
 
+    #region Attack Move Penalty
+    private void TickAttackMovePenalty()
+    {
+        bool shouldApply = IsAttacking;
+
+        if (shouldApply == attackSlowApplied) return;
+
+        if (shouldApply)
+            ApplyAttackMovePenalty();
+        else
+            RemoveAttackMovePenalty();
+    }
+
+    private void ApplyAttackMovePenalty()
+    {
+        if (attackSlowApplied) return;
+
+        attribute.SPEED_Ampl.TotalBonus += AttackMoveSlowPercent;
+        attackSlowApplied = true;
+    }
+
+    private void RemoveAttackMovePenalty()
+    {
+        if (!attackSlowApplied) return;
+        if (attribute != null)
+            attribute.SPEED_Ampl.TotalBonus -= AttackMoveSlowPercent;
+
+        attackSlowApplied = false;
+    }
+    #endregion
+
     #region Stagger
     private void ApplyStagger()
     {
@@ -313,6 +347,8 @@ public class PlayerManager : MonoBehaviour, ITick
 
         appliedStaggerMultiplier = newMultiplier;
         staggerTimer = StaggerDuration;
+
+        CamManager.instance?.Shake(0.8f);
     }
 
     private void TickStagger(float delta)
@@ -345,6 +381,7 @@ public class PlayerManager : MonoBehaviour, ITick
             bleedTickTimer = bleedTickInterval;
 
         bleedTimer = BleedDuration;
+        CamManager.instance?.Shake(0.6f);
     }
 
     private void TickBleed(float delta)
@@ -369,7 +406,7 @@ public class PlayerManager : MonoBehaviour, ITick
 
         attribute.TakeDamage(totalBleedDamage);
         SetCombat(0.5f);
-        PlayHitEffect(); // reuses the same null-safe helper instead of duplicating pooling logic
+        PlayHitEffect();
         PlayDeathSound();
     }
     #endregion
