@@ -245,7 +245,7 @@ public class UpgradeValue
     public float Growth;
     public float lastGrowth;
 
-    public float PriceGrowthRate = 1.05f;
+    public float PriceGrowthRate = 1.15f;
 
     public UpgradeValue(int price, float growthValue, int maxUpgrade)
     {
