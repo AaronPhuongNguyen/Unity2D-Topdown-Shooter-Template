@@ -69,7 +69,7 @@ public class Weapon : MonoBehaviour, ITick
             fireRateMultiplier = 3f;
             pelletCount = 14;
             spreadMultiplier = 10f;
-            damageMultiply = -0.8f;
+            damageMultiply = -0.65f;
             rangeMultiplier = -0.25f;
         }
         else

@@ -15,7 +15,15 @@ public class PlayerManager : MonoBehaviour, ITick
     #endregion
 
     #region Runtime Status
+    [HideInInspector] public bool AutoAttack = false;
     [HideInInspector] public Transform Target;
+
+    // Manual attack-joystick state - only meaningful while AutoAttack is
+    // false. ManualAttacking is the "is the stick currently held/aimed"
+    // flag; ManualAttackDirection is the last nonzero aim direction while held.
+    [HideInInspector] public bool ManualAttacking;
+    [HideInInspector] public Vector2 ManualAttackDirection;
+
     [HideInInspector] public Vector2 MoveInput;
     [HideInInspector] public Vector2 Direction;
     [HideInInspector] public Vector2 LastDeathAtSpot;
@@ -26,7 +34,11 @@ public class PlayerManager : MonoBehaviour, ITick
     [HideInInspector] public RecoverOverTime rot;
     [HideInInspector] public MoneyOverTime mot;
 
-    public bool IsAttacking => Target != null && CurrentHP > 0;
+    // Manual input always takes priority when held, whether AutoAttack is on
+    // or off - covers both playstyles (pure manual, and "lazy with manual
+    // override") with one condition. Falls back to auto-target only when the
+    // stick isn't held AND AutoAttack is enabled.
+    public bool IsAttacking => CurrentHP > 0 && (ManualAttacking || (AutoAttack && Target != null));
     public bool IsMoving => MoveInput != Vector2.zero && !IsAttacking && CurrentHP > 0;
     public bool IsIdle => !IsAttacking && !IsMoving && CurrentHP > 0;
 
@@ -195,8 +207,6 @@ public class PlayerManager : MonoBehaviour, ITick
         EventBus.RaiseGameOver();
     }
 
-    // Was comparing against Time.time (ignores GameSpeed/pause); now an
-    // accumulator driven by the same delta everything else uses.
     private float healingTimer;
     private void NaturalHealing(float delta)
     {
@@ -230,6 +240,8 @@ public class PlayerManager : MonoBehaviour, ITick
     private void ResetRuntimeStatus()
     {
         Target = null;
+        ManualAttacking = false;
+        ManualAttackDirection = Vector2.zero;
         MoveInput = Vector2.zero;
         Direction = Vector2.zero;
         LastDeathAtSpot = Vector2.zero;

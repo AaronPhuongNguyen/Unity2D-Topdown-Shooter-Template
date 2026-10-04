@@ -7,8 +7,9 @@ public class CorpseEmitter : MonoBehaviour
     public GameObject prefab;
 
     [Header("Settings")]
-    [SerializeField] private float corpseLifetime = 120f;
     [SerializeField] private float defaultSlideForce = 3f;
+
+    private const float lifeTime = 45f;
     #endregion
 
     #region Cache
@@ -48,7 +49,7 @@ public class CorpseEmitter : MonoBehaviour
         }
 
         float force = slideForce >= 0f ? slideForce : defaultSlideForce;
-        c.StartCorrupt(corpseLifetime, owner.Access().Media.Corpse,owner.Access().Media.Blood,scale, deathDirection, force);
+        c.StartCorrupt(lifeTime, owner.Access().Media.Corpse,owner.Access().Media.Blood,scale, deathDirection, force);
     }
     #endregion
 }

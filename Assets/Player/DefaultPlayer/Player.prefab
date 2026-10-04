@@ -105,7 +105,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 1010793597
   m_SortingLayer: 2
-  m_SortingOrder: 5
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 98c4d526762f90b419af1f39ba4021d2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -133,6 +133,7 @@ MonoBehaviour:
   shadow_sr: {fileID: 1661438844419098474}
   Offset: {x: 0.3, y: -0.1, z: 0}
   shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+  shadowLayerName: Shadow
 --- !u!1 &873114648548800632
 GameObject:
   m_ObjectHideFlags: 0
@@ -318,6 +319,7 @@ MonoBehaviour:
   shadow_sr: {fileID: 3133570911296462859}
   Offset: {x: 0.3, y: -0.1, z: 0}
   shadowColor: {r: 0, g: 0, b: 0, a: 0.5}
+  shadowLayerName: Shadow
 --- !u!1 &2437655209947581218
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,7 +588,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 9191306370210630647, guid: ff72eab521c6c4840ae8786901209ff0, type: 3}
-  corpseLifetime: 120
   defaultSlideForce: 3
 --- !u!114 &967398478182381395
 MonoBehaviour:
@@ -605,8 +606,7 @@ MonoBehaviour:
   BulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
   HitEffect: {fileID: 7097382205211673216, guid: 776a3e57ac07f26469243e1bbb92ea8f, type: 3}
-  rateToSpawn: 1
-  bulletSpeed: 120
+  bulletSpeed: 80
   bulletLifetime: 1
   TargetScale: {x: 0.5, y: 0.5, z: 0}
 --- !u!114 &187754163518266985

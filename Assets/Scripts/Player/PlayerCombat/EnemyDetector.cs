@@ -9,13 +9,6 @@ public class Detector : MonoBehaviour, ITick
     private Transform currentTarget;
     private int foundTarget;
 
-    // Search cadence is now independent of ASPD_Current - that stat is
-    // attack speed, not "how often to look for a target", and reusing it
-    // here meant losing/switching targets could take up to a full attack
-    // cycle to notice. 0 = search every Tick (most responsive, fine for a
-    // single player-driven Detector); raise slightly (e.g. 0.05-0.1) only
-    // if profiling shows OverlapCircleNonAlloc actually costs something
-    // here - for one object this is effectively free.
     [SerializeField] private float searchInterval = 0f;
     private float searchTimer;
     #endregion
@@ -24,6 +17,22 @@ public class Detector : MonoBehaviour, ITick
     public void Tick(float delta)
     {
         if (pm == null) return;
+
+        // Detector's job is purely auto-targeting - it should stay idle
+        // whenever AutoAttack is off (pure manual mode) OR the player is
+        // actively overriding with the manual stick (hybrid mode), so it
+        // never fights pm.Target against the joystick's intent, and never
+        // burns a search while its result would be ignored anyway.
+        if (!pm.AutoAttack || pm.ManualAttacking)
+        {
+            if (currentTarget != null)
+            {
+                currentTarget = null;
+                pm.Target = null;
+            }
+            return;
+        }
+
         PerformSearch(delta);
     }
     #endregion
