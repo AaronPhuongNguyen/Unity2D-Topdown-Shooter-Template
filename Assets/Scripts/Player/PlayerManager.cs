@@ -370,6 +370,7 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.TakeDamage(totalBleedDamage);
         SetCombat(0.5f);
         PlayHitEffect(); // reuses the same null-safe helper instead of duplicating pooling logic
+        PlayDeathSound();
     }
     #endregion
 

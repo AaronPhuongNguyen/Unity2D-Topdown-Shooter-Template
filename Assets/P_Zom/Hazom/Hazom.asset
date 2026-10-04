@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Hazom
   m_EditorClassIdentifier: 
   HP_Base: 300
-  ATK_Base: 20
+  ATK_Base: 30
   SPEED_Base: 9
-  DEF_Base: 300
+  DEF_Base: 600
   ASPD_Base: 4
   SIGHT_Base: 2

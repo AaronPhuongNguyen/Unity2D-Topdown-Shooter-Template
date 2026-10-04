@@ -155,27 +155,32 @@ public class Zombrain : HurtBox, ITick
     }
     protected virtual void GetBonus()
     {
-        bool isAlpha = RNG.GetPercent() < 0.05f;
+        float diff = dm.CurrentDifficulty;
 
-        lastHPBonus = RNG.GetInt(80, 240) * dm.CurrentDifficulty;
-        lastHPP = 0.25f * dm.CurrentDifficulty;
+        float diffScale = diff * (1f + Mathf.Log(diff + 1f) * 0.3f);
 
-        lastATKBonus = RNG.GetInt(10, 30) * dm.CurrentDifficulty;
-        lastATKK = 0.25f * dm.CurrentDifficulty;
+        bool isAlpha = RNG.GetPercent() < 0.1f;
 
-        lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Clamp01(dm.CurrentDifficulty);
-        lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+        lastHPBonus = RNG.GetInt(100, 300) * diffScale;
+        lastHPP = 0.5f * diffScale;
+
+        lastATKBonus = RNG.GetInt(20, 60) * diffScale;
+        lastATKK = 0.25f * diffScale;
+
+        lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
+        lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(diffScale);
+        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Clamp01(diffScale);
+        lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(diffScale);
 
         if (isAlpha)
         {
-            lastHPBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastATKBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastDEFBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastSPEEDBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastAPBonus *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
-            lastScale *= RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(dm.CurrentDifficulty);
+            float alphaMul = RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(diffScale);
+            lastHPBonus *= alphaMul;
+            lastATKBonus *= alphaMul;
+            lastDEFBonus *= alphaMul;
+            lastSPEEDBonus *= alphaMul;
+            lastAPBonus *= alphaMul;
+            lastScale *= alphaMul;
         }
     }
     protected virtual void ApplyBonus()

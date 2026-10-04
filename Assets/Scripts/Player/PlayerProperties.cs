@@ -77,14 +77,14 @@ public class PlayerProperties : MonoBehaviour
 
     #region Upgrader
     private const int DefaultPoint = 3;
-    private const float Growth_HP = 20;
+    private const float Growth_HP = 10;
     private const float Growth_ATK = 2f;
     private const float Growth_DEF = 30f;
-    private const float Growth_SPEED = 1f;
+    private const float Growth_SPEED = 0.5f;
     private const float Growth_SIGHT = 1f;
     private const float Growth_AP = 0.01f;
     private const float Growth_HPP = 0.01f;
-    private const float Growth_CDR = 0.02f;
+    private const float Growth_CDR = 0.03f;
 
     private const float Cap_SPEED = 10f;
     private const float Cap_SIGHT = 20f;
@@ -110,10 +110,8 @@ public class PlayerProperties : MonoBehaviour
         interval = Time.time + 3f;
 
         int reward = RollReward();
-        float multiplier = Mathf.Max(reward, reward * DomainManager.instance.CurrentDifficulty);
-        int finalReward = Mathf.Min(20, Mathf.FloorToInt(multiplier));
 
-        Up_Point += finalReward;
+        Up_Point += reward;
         UpdateStatus();
     }
 
@@ -123,9 +121,9 @@ public class PlayerProperties : MonoBehaviour
         if (pity >= 10) { pity = 0; return 6; }
 
         pity++;
-        if (luck < 0.05f) { pity = 0; return 6; }
-        if (luck < 0.20f) return 5;
-        if (luck < 0.5f) return 4;
+        if (luck < 0.20f) { pity = 0; return 6; }
+        if (luck < 0.4f) return 5;
+        if (luck < 0.6f) return 4;
         return 3;
     }
 
@@ -179,7 +177,7 @@ public class PlayerProperties : MonoBehaviour
     [ContextMenu("AddStars")]
     private void AddStars() => Up_Point += 99;
     [ContextMenu("Auto Assign Point")]
-    private void Assign()
+    public void AutoAssign()
     {
         while (Up_Point > 0)
         {

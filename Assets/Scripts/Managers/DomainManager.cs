@@ -208,7 +208,7 @@ public class DomainManager : MonoBehaviour, ITick
     public int Killed;
     public int Currency;
     public int CurrentWave = 0;
-    public int MaxEnemyPerWave = 1000;
+    public int MaxEnemyPerWave = 400;
     public float CurrentDifficulty = 0;
     public const float WaveDuration = 90f;
     public const float PreparingTimeDefault = 5f;

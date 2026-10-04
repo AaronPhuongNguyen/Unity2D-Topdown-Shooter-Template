@@ -814,16 +814,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speaker: {fileID: 0}
   mixer: {fileID: 0}
+  sfxPriority: 8
   volume: 1
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:
-  - {fileID: 8300000, guid: 0b37bc28edb1bdb4ab799b740500653f, type: 3}
-  - {fileID: 8300000, guid: 50be7a944ae536a44928e5a71b8519ba, type: 3}
-  - {fileID: 8300000, guid: 5bc711c8397629b46a11a92c75993c6c, type: 3}
-  - {fileID: 8300000, guid: 3a7c969f2522dcf41b7e989c41b81344, type: 3}
-  shuffle: 1
+  - {fileID: 8300000, guid: 7b6b4fec91fa15940ad6dc1194c9b153, type: 3}
+  - {fileID: 8300000, guid: 04d29612a57912248be23670e1775d5d, type: 3}
+  shuffle: 0
   autoPlayMusicOnStart: 1
+  musicPriority: 16
   musicVolume: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

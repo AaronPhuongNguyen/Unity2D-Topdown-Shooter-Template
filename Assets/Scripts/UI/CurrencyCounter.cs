@@ -1,34 +1,29 @@
 using TMPro;
 using UnityEngine;
 
-public class CurrencyCounter : MonoBehaviour, ITick
+public class CurrencyCounter : MonoBehaviour, IUnscaledTick
 {
     public TextMeshProUGUI currencyShower;
     private DomainManager dm => DomainManager.instance;
 
-    private float currency = 1;
-
     private void OnEnable()
     {
         if (TickSystem.Instance != null)
-            TickSystem.Register((ITick)this);
+            TickSystem.Register((IUnscaledTick)this);
     }
 
     private void OnDisable()
     {
         if (TickSystem.Instance != null)
-            TickSystem.Unregister((ITick)this);
+            TickSystem.Unregister((IUnscaledTick)this);
     }
 
-    public void Tick(float delta)
+    public void UnscaledTick(float delta)
     {
         if (!gameObject.activeSelf) return;
         if (currencyShower == null) return;
         if (dm == null) return;
-        if (dm.Currency == currency) return;
 
-        currency = Mathf.Lerp(currency, dm.Currency, 2 * delta);
-
-        currencyShower.text = currency.ToString("F0");
+        currencyShower.text = dm.Currency.ToString("F0");
     }
 }
