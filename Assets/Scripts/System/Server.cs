@@ -75,7 +75,7 @@ namespace Server
         {
             if (attacker == null || victim == null || victim.IsDead)
             {
-                finalDamage = 0f;
+                finalDamage = damage;
                 return;
             }
 

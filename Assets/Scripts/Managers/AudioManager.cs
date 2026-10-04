@@ -11,7 +11,9 @@ public class AudioManager : MonoBehaviour
     [Header("SFX Speaker")]
     [SerializeField] private AudioSource speaker;
     [SerializeField] private AudioMixerGroup mixer;
+    [SerializeField] private int sfxPriority = 8;
     [Range(0, 1)] public float volume = 1;
+    
     #endregion
 
     #region Music
@@ -21,6 +23,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private List<AudioClip> musicList = new List<AudioClip>();
     [SerializeField] private bool shuffle = true;
     [SerializeField] private bool autoPlayMusicOnStart = true;
+    [SerializeField] private int musicPriority = 16;
     [Range(0, 1)] public float musicVolume = 0.5f;
 
     private int currentMusicIndex = -1;
@@ -50,7 +53,7 @@ public class AudioManager : MonoBehaviour
         EnableSpeaker(true);
         SetLoop(false);
         SetPlayOnAwake(false);
-        SetPriority(0);
+        SetPriority(sfxPriority);
 
         SyncAttribute();
 
@@ -83,7 +86,7 @@ public class AudioManager : MonoBehaviour
 
         musicSpeaker.loop = false; // handled manually so we can advance the playlist
         musicSpeaker.playOnAwake = false;
-        musicSpeaker.priority = 8; // lower priority than SFX by default
+        musicSpeaker.priority = musicPriority; // lower priority than SFX by default
     }
     #endregion
 
@@ -101,6 +104,12 @@ public class AudioManager : MonoBehaviour
         }
 
         speaker.PlayOneShot(clip);
+    }
+    public void PlayDirectAudio(AudioClip c)
+    {
+        if(speaker == null) return;
+        if (c == null) return;
+        speaker.PlayOneShot(c);
     }
 
     public void EnableSpeaker(bool v) => speaker.enabled = v;

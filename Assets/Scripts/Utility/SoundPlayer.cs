@@ -10,6 +10,6 @@ public class SoundPlayer : MonoBehaviour
     public void PlayClip(AudioClip overrideClip)
     {
         if (overrideClip == null || AudioManager.instance == null) return;
-        AudioManager.instance.PlayAudio(overrideClip);
+        AudioManager.instance.PlayDirectAudio(overrideClip);
     }
 }

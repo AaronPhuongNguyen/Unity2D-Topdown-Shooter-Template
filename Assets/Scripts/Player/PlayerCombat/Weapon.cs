@@ -25,7 +25,6 @@ public class Weapon : MonoBehaviour, ITick
     public GameObject ShootEffect;
     public GameObject HitEffect;
     [Header("Bullet Visual")]
-    [SerializeField] private float rateToSpawn = 0.5f;
     [SerializeField] private float bulletSpeed = 40f;
     [SerializeField] private float bulletLifetime = 1f;
     [Header("Indicator Settings")]
@@ -181,7 +180,6 @@ public class Weapon : MonoBehaviour, ITick
     {
         if (muzzle == null || BulletPrefab == null) return;
         if (PoolingSystem.instance == null) return;
-        if (RNG.GetFloat(0, 1) > rateToSpawn) return;
         GameObject o = PoolingSystem.instance.GetFromPool(BulletPrefab.gameObject);
         if (o == null) return;
         o.transform.position = muzzle.position;

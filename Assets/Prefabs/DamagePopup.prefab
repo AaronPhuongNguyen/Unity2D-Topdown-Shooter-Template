@@ -148,9 +148,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   label: {fileID: 5334500338780179446}
-  lifetime: 1.6
+  lifetime: 0.8
   jumpHeight: 30
-  jumpDuration: 0.6
+  jumpDuration: 0.15
   fallDistance: 30
   jumpCurve:
     serializedVersion: 2
