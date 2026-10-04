@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ZomAttributeDefault
   m_EditorClassIdentifier: 
   HP_Base: 80
-  ATK_Base: 10
+  ATK_Base: 5
   SPEED_Base: 8
   DEF_Base: 0
   ASPD_Base: 2

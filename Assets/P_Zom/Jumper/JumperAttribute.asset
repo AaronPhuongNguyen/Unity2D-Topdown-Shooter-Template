@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: JumperAttribute
   m_EditorClassIdentifier: 
   HP_Base: 60
-  ATK_Base: 15
+  ATK_Base: 10
   SPEED_Base: 9
   DEF_Base: 0
   ASPD_Base: 2
