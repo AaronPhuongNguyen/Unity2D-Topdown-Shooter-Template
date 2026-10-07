@@ -40,7 +40,7 @@ public class NatureGenerator : MonoBehaviour
     [SerializeField] private TerrainGenerator terrain;
     [SerializeField] private List<NatureEntry> entries = new List<NatureEntry>();
 
-    private const float loadingBudget = 500f;
+    private const float loadingBudget = 250f;
 
     private const int loadingSteps = 1000;
     #endregion

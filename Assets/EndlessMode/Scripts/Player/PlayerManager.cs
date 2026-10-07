@@ -348,7 +348,7 @@ public class PlayerManager : MonoBehaviour, ITick
         appliedStaggerMultiplier = newMultiplier;
         staggerTimer = StaggerDuration;
 
-        CamManager.instance?.Shake(0.8f);
+        CamManager.instance?.Shake(1.6f);
     }
 
     private void TickStagger(float delta)
@@ -381,7 +381,7 @@ public class PlayerManager : MonoBehaviour, ITick
             bleedTickTimer = bleedTickInterval;
 
         bleedTimer = BleedDuration;
-        CamManager.instance?.Shake(0.6f);
+        CamManager.instance?.Shake(0.8f);
     }
 
     private void TickBleed(float delta)

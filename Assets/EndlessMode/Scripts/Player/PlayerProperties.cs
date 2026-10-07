@@ -24,17 +24,28 @@ public class PlayerProperties : MonoBehaviour
         EventBus.OnGameRestart -= Refresh;
         EventBus.OnWaveCleared -= GetPoint;
     }
+    private void OnEnable() => UpdateVisual();
+    private void OnDisable() => UpdateVisual();
+
     #region Visual
     [Header("Point")]
     public TextMeshProUGUI UpgradePoint;
 
-    [Header("Properties")]
+    [Header("Text Mesh")]
     public TextMeshProUGUI HPShower;
     public TextMeshProUGUI ATKShower;
     public TextMeshProUGUI DEFShower;
     public TextMeshProUGUI SPEEDShower;
     public TextMeshProUGUI SIGHTShower;
     public TextMeshProUGUI CDRShower;
+
+    [Header("Upgrade Buttons")]
+    [SerializeField] private GameObject HPButton;
+    [SerializeField] private GameObject ATKButton;
+    [SerializeField] private GameObject DEFButton;
+    [SerializeField] private GameObject SPEEDButton;
+    [SerializeField] private GameObject SIGHTButton;
+    [SerializeField] private GameObject CDRButton;
 
     private void Refresh()
     {
@@ -72,6 +83,20 @@ public class PlayerProperties : MonoBehaviour
         if (SPEEDShower != null) SPEEDShower.text = a.SPEED_Current.ToString("F0");
         if (SIGHTShower != null) SIGHTShower.text = a.SIGHT_Current.ToString("F0");
         if (CDRShower != null) CDRShower.text = (a.CooldownReduction_Current * 100).ToString("F0") + "%";
+
+        RefreshButtons();
+    }
+
+    private void RefreshButtons()
+    {
+        bool hasPoint = Up_Point > 0;
+
+        if (HPButton != null) HPButton.SetActive(hasPoint);
+        if (ATKButton != null) ATKButton.SetActive(hasPoint);
+        if (DEFButton != null) DEFButton.SetActive(hasPoint);
+        if (SPEEDButton != null) SPEEDButton.SetActive(hasPoint && Up_SPEED < Cap_SPEED);
+        if (SIGHTButton != null) SIGHTButton.SetActive(hasPoint && Up_SIGHT < Cap_SIGHT);
+        if (CDRButton != null) CDRButton.SetActive(hasPoint && Up_CDR < Cap_CDR);
     }
     #endregion
 

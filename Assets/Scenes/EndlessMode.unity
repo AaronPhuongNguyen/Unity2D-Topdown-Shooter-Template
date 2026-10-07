@@ -655,7 +655,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeATK
         m_Mode: 1
@@ -1050,7 +1050,6 @@ GameObject:
   m_Component:
   - component: {fileID: 118959872}
   - component: {fileID: 118959873}
-  - component: {fileID: 118959874}
   - component: {fileID: 118959875}
   - component: {fileID: 118959876}
   m_Layer: 0
@@ -1119,26 +1118,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
---- !u!114 &118959874
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 118959871}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e6b9a2e388229347b31239ea2fa8f2b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pv: {fileID: 941407598}
-  UpgradePoint: {fileID: 613276546}
-  HPShower: {fileID: 2127461618}
-  ATKShower: {fileID: 1318724162}
-  DEFShower: {fileID: 1308626245}
-  SPEEDShower: {fileID: 1791297352}
-  SIGHTShower: {fileID: 361237894}
-  CDRShower: {fileID: 1083612124}
 --- !u!114 &118959875
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4175,11 +4154,11 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 422229319}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: AutoAssign
         m_Mode: 1
@@ -8506,7 +8485,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeSIGHT
         m_Mode: 1
@@ -8591,6 +8570,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1377711592}
   - {fileID: 1582249067}
   - {fileID: 805534124}
   - {fileID: 1946665588}
@@ -12369,7 +12349,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeHP
         m_Mode: 1
@@ -12711,6 +12691,68 @@ RectTransform:
   m_AnchoredPosition: {x: 500, y: -50}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1377711591
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1377711592}
+  - component: {fileID: 1377711593}
+  m_Layer: 0
+  m_Name: Event
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1377711592
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377711591}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 941407595}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1377711593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1377711591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e6b9a2e388229347b31239ea2fa8f2b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pv: {fileID: 941407598}
+  UpgradePoint: {fileID: 613276546}
+  HPShower: {fileID: 2127461618}
+  ATKShower: {fileID: 1318724162}
+  DEFShower: {fileID: 1308626245}
+  SPEEDShower: {fileID: 1791297352}
+  SIGHTShower: {fileID: 361237894}
+  CDRShower: {fileID: 1083612124}
+  HPButton: {fileID: 1334094709}
+  ATKButton: {fileID: 41903223}
+  DEFButton: {fileID: 2036741015}
+  SPEEDButton: {fileID: 2043406852}
+  SIGHTButton: {fileID: 939477284}
+  CDRButton: {fileID: 2140256844}
 --- !u!1 &1427631327
 GameObject:
   m_ObjectHideFlags: 0
@@ -13584,7 +13626,6 @@ MonoBehaviour:
   manualSize: {x: 20, y: 20}
   cellWorldSize: 1
   nature: {fileID: 1603287765}
-  loadingSteps: 100
 --- !u!114 &1603287765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13622,7 +13663,6 @@ MonoBehaviour:
     randomRotation: 0
     parent: {fileID: 1708795763}
     minSpacingCells: 0
-  loadingSteps: 100
 --- !u!1 &1654036480
 GameObject:
   m_ObjectHideFlags: 0
@@ -16311,7 +16351,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeDEF
         m_Mode: 1
@@ -16749,7 +16789,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeSPEED
         m_Mode: 1
@@ -17567,7 +17607,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 118959874}
+      - m_Target: {fileID: 1377711593}
         m_TargetAssemblyTypeName: PlayerProperties, Assembly-CSharp
         m_MethodName: UpgradeCooldownReduction
         m_Mode: 1

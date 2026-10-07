@@ -599,18 +599,18 @@ MonoBehaviour:
   rifleBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   rifleShootSound: {fileID: 8300000, guid: d0a88e91a4e38924c8d65fa2a3ba4e6a, type: 3}
   shotgunFireRate: 6
-  shotgunPelletCount: 12
-  shotgunSpread: 5
-  shotgunDamageBonus: -0.75
-  shotgunRangeBonus: -0.2
+  shotgunPelletCount: 14
+  shotgunSpread: 9
+  shotgunDamageBonus: -0.5
+  shotgunRangeBonus: -0.3
   shotgunBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   shotgunShootSound: {fileID: 8300000, guid: da2250a7d0f72fe458f2dd972d66bdb3, type: 3}
-  sniperFireRate: 10
-  sniperSpread: 0.15
-  sniperDamageBonus: 5
-  sniperRangeBonus: 0.25
+  sniperFireRate: 9
+  sniperSpread: 0.2
+  sniperDamageBonus: 3.5
+  sniperRangeBonus: 0.3
   sniperPierceTargets: 0
-  sniperPierceFalloff: 0.75
+  sniperPierceFalloff: 0.7
   sniperBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   sniperShootSound: {fileID: 8300000, guid: 90037283433a56b419bf817b11b80870, type: 3}
 --- !u!114 &187754163518266985

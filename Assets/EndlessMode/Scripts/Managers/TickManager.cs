@@ -89,7 +89,6 @@ public sealed class TickSystem : MonoBehaviour
             return;
         }
         _instance = this;
-        DontDestroyOnLoad(gameObject);
 
         ResetGameSpeed();
     }

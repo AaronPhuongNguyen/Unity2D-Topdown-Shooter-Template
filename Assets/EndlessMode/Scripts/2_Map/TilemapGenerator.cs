@@ -50,7 +50,7 @@ public class TerrainGenerator : MonoBehaviour
     [Tooltip("Runs right after the terrain finishes. Left empty = found automatically in the scene.")]
     [SerializeField] private NatureGenerator nature;
 
-    private const float loadingBudget = 500f;
+    private const float loadingBudget = 250f;
 
     private const int loadingSteps = 1000;
     #endregion
