@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Server;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -19,6 +20,7 @@ public class LoadingHandle : MonoBehaviour
     [SerializeField] private Canvas canvas;      // Screen Space - Overlay, high Sorting Order
     [SerializeField] private Slider slider;      // loading bar
     [SerializeField] private TextMeshProUGUI txtShower;   // shows "current / total"
+    [SerializeField] private GameObject confirmButton;
 
     [Header("Settings")]
     [Tooltip("How fast the bar fills (progress per second). Higher = snappier.")]
@@ -44,6 +46,7 @@ public class LoadingHandle : MonoBehaviour
     public event Action OnLoadFinished;
 
     private float sceneProgress;
+    private bool useButtonEnterGame = true;
     private int shownCurrent = -1, shownTotal = -1;   // last values written to the text
     private static readonly int UnscaledTimeId = Shader.PropertyToID("_UnscaledTime");
     private string loadingAssetName = "Loading Asset";
@@ -66,6 +69,7 @@ public class LoadingHandle : MonoBehaviour
         slider.value = 0f;
 
         canvas.enabled = false;     // keep this script's GameObject active; only hide the visuals
+        confirmButton.SetActive(false);
     }
 
     private void OnDestroy()
@@ -76,10 +80,11 @@ public class LoadingHandle : MonoBehaviour
     // ---------- public API ----------
 
     /// <summary>Loads a scene by name behind the loading screen.</summary>
-    public void LoadScene(string sceneName)
+    public void LoadScene(string sceneName,bool UseConfirmButton=true)
     {
         if (IsLoading) return;
         StartCoroutine(LoadRoutine(sceneName));
+        useButtonEnterGame = UseConfirmButton;
     }
 
     /// <summary>Register more work. Call before it starts (e.g. in Awake of the new scene).</summary>
@@ -120,6 +125,11 @@ public class LoadingHandle : MonoBehaviour
         shownTotal = TotalSteps;
         txtShower.text = $"{loadingAssetName}: {(Progress * 100f).ToString("F0")}%";
     }
+    private void CustomText(string txt = "Done")
+    {
+        if(txtShower == null) return;
+        txtShower.text = txt;
+    }
 
     private void Update()
     {
@@ -136,6 +146,8 @@ public class LoadingHandle : MonoBehaviour
 
     private IEnumerator LoadRoutine(string sceneName)
     {
+        slider.gameObject.SetActive(true);
+        txtShower.gameObject.SetActive(true);
         IsLoading = true;
         ResetSteps();
         loadingAssetName = "Loading World";
@@ -173,10 +185,22 @@ public class LoadingHandle : MonoBehaviour
 
         while (slider.value < 0.999f) yield return null;
 
-        yield return new WaitForSecondsRealtime(2);
-
-        canvas.enabled = false;
+        CustomText("Initializing Game...");
+        slider.gameObject.SetActive(false);
+        yield return new WaitForSecondsRealtime(RNG.GetFloat(1.5f,3f));        
+        
+        if (useButtonEnterGame)
+        {
+            confirmButton.SetActive(true);
+            txtShower.gameObject.SetActive(false);
+        }
+        else ConfirmEnterGame();
+    }
+    public void ConfirmEnterGame()
+    {
+        confirmButton.SetActive(false);
         IsLoading = false;
+        canvas.enabled = false;
         SetLoaded(true);
         OnLoadFinished?.Invoke();
     }

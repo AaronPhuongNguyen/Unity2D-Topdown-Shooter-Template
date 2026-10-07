@@ -30,20 +30,17 @@ public class GameManager : MonoBehaviour
     {
         SetState(GameState.Playing);
         Time.timeScale = 1f;
-        EventBus.RaiseGameStart();
     }
     public void PauseGame()
     {
         SetState(GameState.Paused);
         Time.timeScale = 0f;
-        EventBus.RaiseGamePause();
     }
     public void ResumeGame()
     {
         if (currentState != GameState.Paused) return;
         SetState(GameState.Playing);
         Time.timeScale = 1f;
-        EventBus.RaiseGameResume();
     }
     private void SetState(GameState newState)
     {
