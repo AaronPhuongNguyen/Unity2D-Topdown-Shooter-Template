@@ -220,7 +220,7 @@ public class DomainManager : MonoBehaviour, ITick
     private bool isGameRunning;
     private bool isNewWave = false;
 
-    private async void PrepareTheMatch()
+    private void PrepareTheMatch()
     {
         InitializeSeed();
 
@@ -230,10 +230,7 @@ public class DomainManager : MonoBehaviour, ITick
             Debug.LogError("DomainManager: No TerrainGenerator found in scene.");
             return;
         }
-        await terrainGen.Generate();
-
-        var natureGen = FindFirstObjectByType<NatureGenerator>();
-        natureGen.Generate();
+        terrainGen.Generate();
 
         SpawnBorders();
     }
@@ -271,7 +268,6 @@ public class DomainManager : MonoBehaviour, ITick
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
         HandleWave(1);
-        Time.timeScale = 1f;
     }
 
     private void HandleWave(int wave)

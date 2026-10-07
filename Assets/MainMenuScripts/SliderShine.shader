@@ -111,7 +111,7 @@ Shader "UI/SliderShine"
 
                 // Band centre travels from just past the right edge to just past the left edge.
                 float ext = _ShineWidth + abs(_Skew) * 0.5;
-                float pos = lerp(1.0 + ext, -ext, t);
+                float pos = lerp(-ext, 1.0 + ext, t);
 
                 // Soft-edged band.
                 float s = saturate(1.0 - abs(x - pos) / _ShineWidth);

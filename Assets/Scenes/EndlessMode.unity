@@ -13583,6 +13583,8 @@ MonoBehaviour:
   useDomainMapSize: 1
   manualSize: {x: 20, y: 20}
   cellWorldSize: 1
+  nature: {fileID: 1603287765}
+  loadingSteps: 100
 --- !u!114 &1603287765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13620,8 +13622,7 @@ MonoBehaviour:
     randomRotation: 0
     parent: {fileID: 1708795763}
     minSpacingCells: 0
-  preloadFraction: 0.5
-  ratePerSecond: 0.1
+  loadingSteps: 100
 --- !u!1 &1654036480
 GameObject:
   m_ObjectHideFlags: 0
@@ -15083,7 +15084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapCenter: {x: 0, y: 0}
-  mapSize: {x: 600, y: 600}
+  mapSize: {x: 1000, y: 1000}
   walkablePercent: 0.8
   borderPrefab: {fileID: 2891510971604309684, guid: 6058395fc955a2c4f821eeb3f0be8708, type: 3}
   borderContainer: {fileID: 126431505}

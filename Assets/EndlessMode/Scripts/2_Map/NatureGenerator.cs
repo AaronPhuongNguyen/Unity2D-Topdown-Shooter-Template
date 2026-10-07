@@ -1,6 +1,9 @@
 using Server;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 [Serializable]
@@ -20,57 +23,82 @@ public class NatureEntry
 
 /// <summary>
 /// Scatters nature props across the map based on what TerrainGenerator
-/// already painted, restricted to the map's walkable area only. Spawning
-/// is progressive rather than one big freeze: an initial chunk goes in
-/// immediately (synchronously), then the rest trickles in over time via
-/// TickSystem so the game is playable while the map keeps filling in.
-/// Reports progress to LoadingHandle: the preload chunk is always 1 step; the
-/// drip-feed batches only count if countDripInLoading is enabled.
+/// already painted, restricted to the map's walkable area only.
+///
+/// Speed model:
+///   1) PLAN runs on a background thread: finds walkable cells, shuffles them and decides
+///      every spawn (which entry/prefab, rotation, scale, spacing) using plain data only.
+///      The main thread just polls progress and yields, so the loading bar keeps moving.
+///   2) SPAWN is the only main-thread part (Instantiate), run in a per-frame time budget.
+/// Normally started by TerrainGenerator right after the terrain is finished.
+/// Progress goes to LoadingHandle as a fixed number of steps.
 /// </summary>
 [DisallowMultipleComponent]
-public class NatureGenerator : MonoBehaviour, IUnscaledTick
+public class NatureGenerator : MonoBehaviour
 {
     #region Inspector
     [SerializeField] private TerrainGenerator terrain;
     [SerializeField] private List<NatureEntry> entries = new List<NatureEntry>();
 
-    [Header("Progressive Loading")]
-    [Tooltip("Fraction of all candidate cells spawned immediately, before gameplay starts.")]
-    [Range(0f, 1f)][SerializeField] private float preloadFraction = 0.25f;
+    private const float loadingBudget = 500f;
 
-    [Tooltip("Fraction of all candidate cells spawned every second after preload, until complete.")]
-    [Range(0f, 1f)][SerializeField] private float ratePerSecond = 0.05f;
+    private const int loadingSteps = 1000;
+    #endregion
 
-    [Header("Loading Screen")]
-    [Tooltip("OFF: loading screen ends after the preload chunk, the rest streams in while playing.\nON: loading screen also waits for every drip batch (slower start, map fully filled).")]
-    [SerializeField] private bool countDripInLoading = false;
+    #region Types
+    // Plain-data copies of NatureEntry, safe to read from a worker thread (no Unity objects).
+    private struct PlanEntry
+    {
+        public int[] validPrefabs;      // indices into entries[e].prefabs that are not null
+        public bool[] allowedByLevel;   // [terrain level index] -> may spawn here
+        public float density;
+        public float scaleMin, scaleMax;
+        public bool randomRotation;
+        public int spacing;
+    }
+
+    private struct SpawnData
+    {
+        public int cell;                // x * height + y
+        public int entry;
+        public int prefab;
+        public float rotation;
+        public float scale;
+    }
     #endregion
 
     #region Cache
+    private const float PlanWeight = 0.3f;      // share of the progress bar for the background plan phase
+
     private DomainManager dm => DomainManager.instance;
 
     private bool[,] occupied;
     private Vector2Int gridSize;
 
-    // Shuffled candidate cells (walkable-area only), consumed progressively.
-    private List<Vector2Int> pendingCells;
-    private int totalCandidateCount;
+    // Plan inputs (set on the main thread before the worker starts)
+    private PlanEntry[] planEntries;
+    private int[,] planLevelGrid;
+    private Vector3 planOrigin, planDx, planDy;   // affine cell -> world, so no Tilemap calls on workers
+    private bool planHasWalkable;
+    private Vector2 planWalkMin, planWalkMax;
+    private int planSeed;
 
-    private float dripTimer;
-    private bool isLoading;
+    private volatile bool cancelRequested;
+    private int planProgress;                     // 0..1000, written by the worker (Volatile)
 
-    // Steps registered on LoadingHandle that haven't been reported yet.
-    private int pendingLoadingSteps;
+    private bool isGenerating;
+    private int pendingLoadingSteps;              // registered on LoadingHandle, not yet reported
+    private int spawnDone, spawnTotal;
 
     public bool IsComplete { get; private set; }
-    public float Progress => totalCandidateCount <= 0 ? 1f : 1f - ((float)(pendingCells?.Count ?? 0) / totalCandidateCount);
+    public float Progress => spawnTotal <= 0 ? (IsComplete ? 1f : 0f) : spawnDone / (float)spawnTotal;
     #endregion
 
     #region Loading Steps
     private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count);
+        LoadingHandle.Instance.AddTotalSteps(count, "Loading Nature");
         pendingLoadingSteps += count;
     }
 
@@ -83,201 +111,270 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
             LoadingHandle.Instance.CompleteStep(count);
     }
 
-    /// <summary>Reports everything still outstanding so the loading screen can never hang on us.</summary>
+    /// <summary>Reports everything still owed so the loading screen can never hang on us.</summary>
     private void FlushLoadingSteps() => ReportLoadingSteps(pendingLoadingSteps);
 
-    private int GetBatchCount() => Mathf.Max(1, Mathf.CeilToInt(totalCandidateCount * ratePerSecond));
-    #endregion
-
-    #region Lifecycle
-    private void OnApplicationQuit()
+    /// <summary>Turns "done of total" into whole steps and reports only the new ones.</summary>
+    private int ReportProgress(int done, int total, int steps, int alreadyReported)
     {
-        isLoading = false;
+        int target = (int)((long)done * steps / Mathf.Max(1, total));
+        if (target > alreadyReported)
+        {
+            ReportLoadingSteps(target - alreadyReported);
+            return target;
+        }
+        return alreadyReported;
     }
 
     private void OnDisable()
     {
-        isLoading = false;
+        // A disabled object's coroutines stop silently; stop the worker and settle our steps.
+        cancelRequested = true;
+        isGenerating = false;
         FlushLoadingSteps();
-        if (TickSystem.Instance != null)
-            TickSystem.Unregister((IUnscaledTick)this);
     }
     #endregion
 
     #region Generate
+    /// <summary>Fire-and-forget (Play mode only). To wait for it, use: yield return nature.GenerateRoutine();</summary>
     [ContextMenu("Generate")]
     public void Generate()
     {
-        FlushLoadingSteps();   // a previous run might still owe steps
+        if (isGenerating) return;
+        StartCoroutine(GenerateRoutine());
+    }
+
+    public IEnumerator GenerateRoutine()
+    {
+        if (isGenerating) yield break;
 
         if (terrain == null) terrain = FindFirstObjectByType<TerrainGenerator>();
         if (terrain == null || !terrain.IsGenerated)
         {
             Debug.LogWarning("[NatureGenerator] TerrainGenerator missing or not yet generated - generate terrain first.");
-            return;
+            yield break;
         }
+
+        isGenerating = true;
+        cancelRequested = false;
+        IsComplete = false;
+        spawnDone = spawnTotal = 0;
 
         gridSize = terrain.GridSize;
         occupied = new bool[gridSize.x, gridSize.y];
 
-        pendingCells = BuildWalkableCandidateList();
-        totalCandidateCount = pendingCells.Count;
-        IsComplete = false;
+        int steps = Mathf.Max(1, loadingSteps);
+        RegisterLoadingSteps(steps);
+        int reported = 0;
 
-        if (totalCandidateCount == 0)
+        PreparePlanInputs();
+
+        // ---------- Phase 1: plan every spawn on a background thread ----------
+        planProgress = 0;
+        Task<List<SpawnData>> planTask = Task.Run(Plan);
+
+        while (!planTask.IsCompleted)
         {
-            Debug.LogWarning("[NatureGenerator] No walkable candidate cells found - check DomainManager's walkablePercent / map bounds.");
-            IsComplete = true;
-            return;
+            float f = Volatile.Read(ref planProgress) / 1000f;
+            reported = ReportProgress((int)(f * PlanWeight * 1000f), 1000, steps, reported);
+            yield return null;                      // UI keeps rendering while the worker runs
         }
 
-        // Work out how many loading steps this run owes: 1 for the preload chunk,
-        // plus one per drip batch if the loading screen should wait for those too.
-        int preloadCount = Mathf.CeilToInt(totalCandidateCount * preloadFraction);
-        int remaining = Mathf.Max(0, totalCandidateCount - preloadCount);
-        int dripSteps = (countDripInLoading && remaining > 0)
-            ? Mathf.CeilToInt(remaining / (float)GetBatchCount())
-            : 0;
-        RegisterLoadingSteps(1 + dripSteps);
-
-        // Preload chunk: spawned synchronously, right now, before gameplay
-        // starts - this is the one-time freeze, sized small on purpose.
-        SpawnBatch(preloadCount);
-        ReportLoadingSteps(1);
-
-        if (pendingCells.Count > 0)
+        if (planTask.IsFaulted)
         {
-            isLoading = true;
-            dripTimer = 1f;
-            if (TickSystem.Instance != null)
-                TickSystem.Register((IUnscaledTick)this);
+            Debug.LogException(planTask.Exception);
+            Abort();
+            yield break;
         }
-        else
+        if (cancelRequested || terrain == null) { Abort(); yield break; }
+
+        List<SpawnData> spawns = planTask.Result;
+        spawnTotal = spawns.Count;
+
+        if (spawnTotal == 0)
         {
-            IsComplete = true;
+            Debug.LogWarning("[NatureGenerator] Nothing to spawn - check walkable bounds, allowed levels and densities.");
             FlushLoadingSteps();
-        }
-
-        Debug.Log($"[NatureGenerator] Preloaded {preloadCount}/{totalCandidateCount} cells. Remaining will stream in over time.");
-    }
-
-    /// <summary>
-    /// Ticks the drip-feed of remaining props. Runs on IUnscaledTick (real
-    /// time) rather than ITick, so the map keeps filling in on schedule
-    /// even if the game happens to be paused/slowed during loading.
-    /// </summary>
-    public void UnscaledTick(float delta)
-    {
-        if (!isLoading) return;
-
-        dripTimer -= delta;
-        if (dripTimer > 0f) return;
-        dripTimer = 1f;
-
-        SpawnBatch(GetBatchCount());
-
-        if (countDripInLoading)
-            ReportLoadingSteps(1);
-
-        if (pendingCells.Count == 0)
-        {
-            isLoading = false;
             IsComplete = true;
-            FlushLoadingSteps();    // covers any rounding leftovers
-            if (TickSystem.Instance != null)
-                TickSystem.Unregister((IUnscaledTick)this);
-            Debug.Log("[NatureGenerator] Nature scatter complete.");
+            isGenerating = false;
+            yield break;
         }
-    }
 
-    /// <summary>
-    /// Builds the full list of cells eligible for nature spawning: inside
-    /// the map's walkable bounds (DomainManager.WalkableMin/Max), then
-    /// shuffled once so both the preload chunk and each timed drip pull a
-    /// random spread across the whole map rather than filling top-to-bottom.
-    /// </summary>
-    private List<Vector2Int> BuildWalkableCandidateList()
-    {
-        var list = new List<Vector2Int>(gridSize.x * gridSize.y);
+        // ---------- Phase 2: Instantiate (main thread only) within the time budget ----------
+        int h = gridSize.y;
+        long budgetTicks = (long)(loadingBudget * System.Diagnostics.Stopwatch.Frequency / 1000.0);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-        bool hasWalkableBounds = dm != null;
-        Vector2 walkMin = hasWalkableBounds ? dm.WalkableMin : Vector2.zero;
-        Vector2 walkMax = hasWalkableBounds ? dm.WalkableMax : Vector2.zero;
-
-        for (int x = 0; x < gridSize.x; x++)
+        for (int s = 0; s < spawnTotal; s++)
         {
-            for (int y = 0; y < gridSize.y; y++)
-            {
-                if (hasWalkableBounds)
-                {
-                    Vector3 world = terrain.GridToWorld(x, y);
-                    if (world.x < walkMin.x || world.x > walkMax.x) continue;
-                    if (world.y < walkMin.y || world.y > walkMax.y) continue;
-                }
+            SpawnData d = spawns[s];
+            NatureEntry entry = entries[d.entry];
+            GameObject prefab = entry.prefabs[d.prefab];
 
-                list.Add(new Vector2Int(x, y));
+            if (prefab != null)
+            {
+                int x = d.cell / h;
+                int y = d.cell % h;
+                Vector3 pos = planOrigin + planDx * x + planDy * y;
+                Transform parent = entry.parent != null ? entry.parent : transform;
+                Quaternion rot = entry.randomRotation ? Quaternion.Euler(0f, 0f, d.rotation) : Quaternion.identity;
+
+                GameObject obj = Instantiate(prefab, pos, rot, parent);
+                obj.transform.localScale *= d.scale;
+            }
+
+            spawnDone = s + 1;
+
+            // Instantiate is the expensive part: check the clock every few spawns.
+            if ((spawnDone & 3) == 0 && sw.ElapsedTicks >= budgetTicks)
+            {
+                float p = PlanWeight + (1f - PlanWeight) * (spawnDone / (float)spawnTotal);
+                reported = ReportProgress((int)(p * 1000f), 1000, steps, reported);
+                yield return null;
+                if (cancelRequested) { Abort(); yield break; }
+                sw.Restart();
             }
         }
 
-        Shuffle(list);
-        return list;
+        FlushLoadingSteps();
+        IsComplete = true;
+        isGenerating = false;
+        Debug.Log($"[NatureGenerator] Nature scatter complete ({spawnTotal} props).");
     }
 
-    private void Shuffle(List<Vector2Int> list)
+    private void Abort()
     {
-        for (int i = list.Count - 1; i > 0; i--)
+        FlushLoadingSteps();
+        isGenerating = false;
+    }
+
+    /// <summary>Main thread: copies everything the worker needs into plain data.</summary>
+    private void PreparePlanInputs()
+    {
+        // Cell -> world is a straight affine map for a normal Grid, so workers never call the Tilemap.
+        planOrigin = terrain.GridToWorld(0, 0);
+        planDx = terrain.GridToWorld(1, 0) - planOrigin;
+        planDy = terrain.GridToWorld(0, 1) - planOrigin;
+
+        planHasWalkable = dm != null;
+        planWalkMin = planHasWalkable ? dm.WalkableMin : Vector2.zero;
+        planWalkMax = planHasWalkable ? dm.WalkableMax : Vector2.zero;
+
+        planLevelGrid = terrain.LevelGrid;
+        planSeed = dm != null ? dm.Seed : Environment.TickCount;
+
+        int levelCount = terrain.LevelCount;
+        planEntries = new PlanEntry[entries.Count];
+
+        for (int e = 0; e < entries.Count; e++)
         {
-            int j = RNG.GetInt(0, i + 1);
-            (list[i], list[j]) = (list[j], list[i]);
+            NatureEntry src = entries[e];
+
+            var valid = new List<int>();
+            if (src.prefabs != null)
+                for (int p = 0; p < src.prefabs.Count; p++)
+                    if (src.prefabs[p] != null) valid.Add(p);
+
+            var allowed = new bool[levelCount];
+            for (int l = 0; l < levelCount; l++)
+            {
+                TerrainLevel level = terrain.GetLevel(l);
+                allowed[l] = level != null && src.allowedLevelNames != null && src.allowedLevelNames.Contains(level.name);
+            }
+
+            planEntries[e] = new PlanEntry
+            {
+                validPrefabs = valid.ToArray(),
+                allowedByLevel = allowed,
+                density = src.density,
+                scaleMin = src.scaleRange.x,
+                scaleMax = src.scaleRange.y,
+                randomRotation = src.randomRotation,
+                spacing = src.minSpacingCells
+            };
         }
     }
 
-    private void SpawnBatch(int count)
+    /// <summary>
+    /// Runs on a thread-pool thread. Plain data only, own seeded System.Random:
+    /// same seed = same scatter, no shared RNG state.
+    /// </summary>
+    private List<SpawnData> Plan()
     {
-        int spawned = 0;
-        int index = pendingCells.Count - 1;
+        int w = gridSize.x;
+        int h = gridSize.y;
+        int total = w * h;
+        var rng = new System.Random(planSeed);
 
-        while (spawned < count && index >= 0)
+        // 1) walkable candidate cells
+        int[] cells = new int[total];
+        int n = 0;
+        for (int i = 0; i < total; i++)
         {
-            Vector2Int cell = pendingCells[index];
-            pendingCells.RemoveAt(index);
-            index--;
+            if (cancelRequested) return null;
 
-            TrySpawnAt(cell.x, cell.y);
-            spawned++;
+            int x = i / h;
+            int y = i % h;
+
+            bool walkable = true;
+            if (planHasWalkable)
+            {
+                float wx = planOrigin.x + planDx.x * x + planDy.x * y;
+                float wy = planOrigin.y + planDx.y * x + planDy.y * y;
+                walkable = wx >= planWalkMin.x && wx <= planWalkMax.x
+                        && wy >= planWalkMin.y && wy <= planWalkMax.y;
+            }
+            if (walkable) cells[n++] = i;
+
+            if ((i & 4095) == 0) Volatile.Write(ref planProgress, (int)(i * 300L / total));
         }
-    }
 
-    private void TrySpawnAt(int gridX, int gridY)
-    {
-        if (occupied[gridX, gridY]) return;
-        if (!terrain.TryGetLevelIndex(gridX, gridY, out int levelIndex)) return;
-
-        TerrainLevel level = terrain.GetLevel(levelIndex);
-        if (level == null) return;
-
-        for (int i = 0; i < entries.Count; i++)
+        // 2) shuffle so props spread across the whole map
+        for (int k = n - 1; k > 0; k--)
         {
-            NatureEntry entry = entries[i];
-            if (entry.prefabs == null || entry.prefabs.Count == 0) continue;
-            if (!entry.allowedLevelNames.Contains(level.name)) continue;
-            if (RNG.GetPercent() > entry.density) continue;
-
-            GameObject prefab = entry.prefabs[RNG.GetInt(0, entry.prefabs.Count)];
-            if (prefab == null) continue;
-
-            Vector3 pos = terrain.GridToWorld(gridX, gridY);
-            Transform parent = entry.parent != null ? entry.parent : transform;
-            GameObject obj = Instantiate(prefab, pos, Quaternion.identity, parent);
-
-            if (entry.randomRotation)
-                obj.transform.rotation = Quaternion.Euler(0f, 0f, RNG.GetFloat(0f, 360f));
-
-            obj.transform.localScale *= RNG.GetFloat(entry.scaleRange.x, entry.scaleRange.y);
-
-            MarkOccupied(gridX, gridY, entry.minSpacingCells);
-            break;
+            int j = rng.Next(k + 1);
+            (cells[k], cells[j]) = (cells[j], cells[k]);
         }
+        Volatile.Write(ref planProgress, 400);
+
+        // 3) decide spawns
+        var result = new List<SpawnData>(Mathf.Max(16, n / 4));
+        for (int k = 0; k < n; k++)
+        {
+            if (cancelRequested) return null;
+
+            int cell = cells[k];
+            int x = cell / h;
+            int y = cell % h;
+            if (occupied[x, y]) continue;
+
+            int level = planLevelGrid[x, y];
+
+            for (int e = 0; e < planEntries.Length; e++)
+            {
+                PlanEntry pe = planEntries[e];
+                if (pe.validPrefabs.Length == 0) continue;
+                if (!pe.allowedByLevel[level]) continue;
+                if (rng.NextDouble() > pe.density) continue;
+
+                result.Add(new SpawnData
+                {
+                    cell = cell,
+                    entry = e,
+                    prefab = pe.validPrefabs[rng.Next(pe.validPrefabs.Length)],
+                    rotation = pe.randomRotation ? (float)(rng.NextDouble() * 360.0) : 0f,
+                    scale = pe.scaleMin + (float)rng.NextDouble() * (pe.scaleMax - pe.scaleMin)
+                });
+
+                MarkOccupied(x, y, pe.spacing);
+                break;
+            }
+
+            if ((k & 4095) == 0) Volatile.Write(ref planProgress, 400 + (int)(k * 600L / Mathf.Max(1, n)));
+        }
+
+        Volatile.Write(ref planProgress, 1000);
+        return result;
     }
 
     private void MarkOccupied(int cx, int cy, int radius)
@@ -303,13 +400,12 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
     [ContextMenu("Clear")]
     public void Clear()
     {
-        isLoading = false;
+        cancelRequested = true;
+        StopAllCoroutines();
+        isGenerating = false;
         IsComplete = false;
-        pendingCells = null;
+        spawnDone = spawnTotal = 0;
         FlushLoadingSteps();
-
-        if (TickSystem.Instance != null)
-            TickSystem.Unregister((IUnscaledTick)this);
 
         for (int i = transform.childCount - 1; i >= 0; i--)
         {

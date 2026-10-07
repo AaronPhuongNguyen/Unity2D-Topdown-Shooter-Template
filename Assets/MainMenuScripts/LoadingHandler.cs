@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ public class LoadingHandle : MonoBehaviour
     [Header("UI (its own canvas)")]
     [SerializeField] private Canvas canvas;      // Screen Space - Overlay, high Sorting Order
     [SerializeField] private Slider slider;      // loading bar
+    [SerializeField] private TextMeshProUGUI txtShower;   // shows "current / total"
 
     [Header("Settings")]
     [Tooltip("How fast the bar fills (progress per second). Higher = snappier.")]
@@ -42,7 +44,9 @@ public class LoadingHandle : MonoBehaviour
     public event Action OnLoadFinished;
 
     private float sceneProgress;
+    private int shownCurrent = -1, shownTotal = -1;   // last values written to the text
     private static readonly int UnscaledTimeId = Shader.PropertyToID("_UnscaledTime");
+    private string loadingAssetName = "Loading Asset";
 
     // =====================================================================
 
@@ -79,9 +83,10 @@ public class LoadingHandle : MonoBehaviour
     }
 
     /// <summary>Register more work. Call before it starts (e.g. in Awake of the new scene).</summary>
-    public void AddTotalSteps(int count = 1)
+    public void AddTotalSteps(int count = 1, string loadingLog = "Loading Asset")
     {
         TotalSteps += Mathf.Max(0, count);
+        loadingAssetName = loadingLog;
     }
 
     /// <summary>Report finished work.</summary>
@@ -105,6 +110,17 @@ public class LoadingHandle : MonoBehaviour
         Time.timeScale = loaded ? 1f : 0f;
     }
 
+    /// <summary>Writes "current / total" to the label. Only touches the text when a number changed.</summary>
+    private void RefreshText(bool force = false)
+    {
+        if (txtShower == null) return;
+        if (!force && CurrentSteps == shownCurrent && TotalSteps == shownTotal) return;
+
+        shownCurrent = CurrentSteps;
+        shownTotal = TotalSteps;
+        txtShower.text = $"{loadingAssetName}: {(Progress * 100f).ToString("F0")}%";
+    }
+
     private void Update()
     {
         if (!canvas.enabled) return;
@@ -114,23 +130,25 @@ public class LoadingHandle : MonoBehaviour
 
         // Unscaled so the bar still moves if GameSpeed / timeScale is 0.
         slider.value = Mathf.MoveTowards(slider.value, Progress, fillSpeed * Time.unscaledDeltaTime);
+
+        RefreshText();
     }
 
     private IEnumerator LoadRoutine(string sceneName)
     {
         IsLoading = true;
-        SetLoaded(false);                 // freeze the game until everything is ready
+        ResetSteps();
+        loadingAssetName = "Loading World";
+        SetLoaded(false);
         sceneProgress = 0f;
         slider.value = 0f;
         canvas.enabled = true;
 
-        // 1) Load the scene data, hold activation until it's ready.
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
-        if (op == null)                   // invalid scene name / not in Build Settings
+        if (op == null)
         {
             Debug.LogError($"LoadingHandle: could not load scene '{sceneName}'.");
             canvas.enabled = false;
-            ResetSteps();
             IsLoading = false;
             SetLoaded(true);
             yield break;
@@ -139,28 +157,27 @@ public class LoadingHandle : MonoBehaviour
 
         while (op.progress < 0.9f)
         {
-            sceneProgress = Mathf.Clamp01(op.progress / 0.9f);
+            sceneProgress = op.progress;
+            RefreshText(true);
             yield return null;
         }
         sceneProgress = 1f;
-
-        // 2) Activate it.
+        RefreshText(true);
         op.allowSceneActivation = true;
-        while (!op.isDone) yield return null;
 
-        // 3) Let the new scene's Awake/Start register its steps.
+        while (!op.isDone) yield return null;   
+
         for (int i = 0; i < settleFrames; i++) yield return null;
 
-        // 4) Wait for all registered steps to finish.
         while (CurrentSteps < TotalSteps) yield return null;
 
-        // 5) Let the bar visually reach 100%.
         while (slider.value < 0.999f) yield return null;
 
+        yield return new WaitForSecondsRealtime(2);
+
         canvas.enabled = false;
-        ResetSteps();
         IsLoading = false;
-        SetLoaded(true);                  // everything ready: game runs
+        SetLoaded(true);
         OnLoadFinished?.Invoke();
     }
 }

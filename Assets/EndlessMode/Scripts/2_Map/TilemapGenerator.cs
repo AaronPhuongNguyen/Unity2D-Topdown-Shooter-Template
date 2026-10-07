@@ -1,6 +1,8 @@
 using Server;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Mathematics;
 using UnityEngine;
@@ -11,7 +13,14 @@ using UnityEngine.Tilemaps;
 /// ordered TerrainLevel bands. Caches the resulting level-per-cell grid so
 /// other generators (NatureGenerator, etc.) can query "what terrain is at
 /// this cell" without resampling noise themselves.
-/// Reports progress to LoadingHandle (2 steps: noise/levels computed, tiles painted).
+///
+/// Speed model:
+///   1) COMPUTE (noise, level, tile variation) runs on ALL CPU cores in the background
+///      (Parallel.For). The main thread only polls progress and yields each frame, so the
+///      loading bar keeps moving and nothing freezes.
+///   2) PAINT (Tilemap is main-thread only) runs in a per-frame time budget.
+/// Workflow: Terrain -> Nature (chained at the end) -> done.
+/// Progress goes to LoadingHandle as a fixed number of steps.
 /// </summary>
 [DisallowMultipleComponent]
 public class TerrainGenerator : MonoBehaviour
@@ -36,116 +45,235 @@ public class TerrainGenerator : MonoBehaviour
     [SerializeField] private bool useDomainMapSize = true;
     [SerializeField] private Vector2Int manualSize = new Vector2Int(20, 20);
     [SerializeField] private float cellWorldSize = 1f;
+
+    [Header("Next in workflow")]
+    [Tooltip("Runs right after the terrain finishes. Left empty = found automatically in the scene.")]
+    [SerializeField] private NatureGenerator nature;
+
+    private const float loadingBudget = 500f;
+
+    private const int loadingSteps = 1000;
     #endregion
 
     #region Cache
+    private const float ComputeWeight = 0.6f;   // share of the progress bar for the background compute phase
+
     private DomainManager dm => DomainManager.instance;
 
     private int[,] levelGrid;
+    private int[] tileIndex;            // per cell (x * height + y): which tile variation to use
     private Vector2Int gridSize;
     private Vector2Int gridOrigin;
     private float noiseOffsetX, noiseOffsetY;
+    private uint tileSeed;
+
+    private bool isGenerating;
+    private volatile bool cancelRequested;
+    private int computeColumnsDone;     // written by worker threads (Interlocked)
+    private int pendingLoadingSteps;    // registered on LoadingHandle, not yet reported
 
     public bool IsGenerated { get; private set; }
     public Vector2Int GridSize => gridSize;
     public Vector2Int GridOrigin => gridOrigin;
     public float CellWorldSize => cellWorldSize;
+    public int LevelCount => levels.Count;
+    /// <summary>Level index per cell [x, y]. Read-only use; safe to read from worker threads once IsGenerated.</summary>
+    public int[,] LevelGrid => levelGrid;
     #endregion
 
     #region Loading Steps
-    private const int LoadingSteps = 2;   // 1) noise + levels computed, 2) tiles painted
-
-    private static void RegisterSteps(int count)
+    private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count);
+        LoadingHandle.Instance.AddTotalSteps(count, "Loading Map");
+        pendingLoadingSteps += count;
     }
 
-    private static void ReportSteps(int count)
+    private void ReportLoadingSteps(int count)
     {
-        if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.CompleteStep(count);
+        count = Mathf.Min(count, pendingLoadingSteps);
+        if (count <= 0) return;
+        pendingLoadingSteps -= count;
+        if (LoadingHandle.Instance != null)
+            LoadingHandle.Instance.CompleteStep(count);
+    }
+
+    /// <summary>Reports everything still owed so the loading screen can never hang on us.</summary>
+    private void FlushLoadingSteps() => ReportLoadingSteps(pendingLoadingSteps);
+
+    /// <summary>Turns "done of total" into whole steps and reports only the new ones.</summary>
+    private int ReportProgress(int done, int total, int steps, int alreadyReported)
+    {
+        int target = (int)((long)done * steps / Mathf.Max(1, total));
+        if (target > alreadyReported)
+        {
+            ReportLoadingSteps(target - alreadyReported);
+            return target;
+        }
+        return alreadyReported;
+    }
+
+    private void OnDisable()
+    {
+        // A disabled object's coroutines stop silently; stop the workers and settle our steps.
+        cancelRequested = true;
+        isGenerating = false;
+        FlushLoadingSteps();
     }
     #endregion
 
     #region Generate
+    /// <summary>Fire-and-forget (Play mode only). To wait for it, use: yield return terrain.GenerateRoutine();</summary>
     [ContextMenu("Generate")]
-    public async Task Generate()
+    public void Generate()
     {
+        if (isGenerating) return;
+        StartCoroutine(GenerateRoutine());
+    }
+
+    /// <summary>Terrain, then Nature. Finishes when BOTH are done.</summary>
+    public IEnumerator GenerateRoutine()
+    {
+        if (isGenerating) yield break;
         if (tilemap == null)
         {
             Debug.LogWarning("[TerrainGenerator] No Tilemap assigned.");
-            return;
+            yield break;
         }
-        if (!CanGenerate()) return;
-        await GenerateAsync();
-    }
+        if (!CanGenerate()) yield break;
 
-    private async Task GenerateAsync()
-    {
-        // Register up front so the loading bar knows the work exists immediately.
-        RegisterSteps(LoadingSteps);
-        int stepsReported = 0;
+        isGenerating = true;
+        cancelRequested = false;
+        IsGenerated = false;
 
-        try
+        levels.Sort((a, b) => a.maxThreshold.CompareTo(b.maxThreshold));
+
+        gridSize = GetTileCount();
+        gridOrigin = new Vector2Int(-gridSize.x / 2, -gridSize.y / 2);
+
+        // Seed-derived values: same seed = same map, without touching the global RNG other systems rely on.
+        uint seed = dm != null ? (uint)Mathf.Max(1, dm.Seed) : (uint)DateTime.Now.Ticks;
+        var seededRandom = new Unity.Mathematics.Random(seed);
+        noiseOffsetX = seededRandom.NextFloat(-10000f, 10000f);
+        noiseOffsetY = seededRandom.NextFloat(-10000f, 10000f);
+        tileSeed = seed;
+
+        int w = gridSize.x;
+        int h = gridSize.y;
+        levelGrid = new int[w, h];
+        tileIndex = new int[w * h];
+
+        int steps = Mathf.Max(1, loadingSteps);
+        RegisterLoadingSteps(steps);
+        int reported = 0;
+
+        tilemap.ClearAllTiles();
+
+        // ---------- Phase 1: compute on all cores, main thread just polls ----------
+        computeColumnsDone = 0;
+        Task compute = Task.Run(ComputeAll);
+
+        while (!compute.IsCompleted)
         {
-            levels.Sort((a, b) => a.maxThreshold.CompareTo(b.maxThreshold));
+            float f = Volatile.Read(ref computeColumnsDone) / (float)w;
+            reported = ReportProgress((int)(f * ComputeWeight * 1000f), 1000, steps, reported);
+            yield return null;                      // UI keeps rendering while the cores work
+        }
 
-            gridSize = GetTileCount();
-            gridOrigin = new Vector2Int(-gridSize.x / 2, -gridSize.y / 2);
+        if (compute.IsFaulted)
+        {
+            Debug.LogException(compute.Exception);
+            Abort();
+            yield break;
+        }
+        if (cancelRequested || tilemap == null) { Abort(); yield break; }
 
-            // Seed-derived noise offset so each run's map layout differs with
-            // the seed, without touching the global RNG state other systems rely on.
-            uint seed = dm != null ? (uint)Mathf.Max(1, dm.Seed) : (uint)DateTime.Now.Ticks;
-            var seededRandom = new Unity.Mathematics.Random(seed);
-            noiseOffsetX = seededRandom.NextFloat(-10000f, 10000f);
-            noiseOffsetY = seededRandom.NextFloat(-10000f, 10000f);
+        // ---------- Phase 2: paint (main thread only), a column at a time within the time budget ----------
+        var column = new TileBase[h];
+        long budgetTicks = (long)(loadingBudget * System.Diagnostics.Stopwatch.Frequency / 1000.0);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            int total = gridSize.x * gridSize.y;
-            levelGrid = new int[gridSize.x, gridSize.y];
+        for (int x = 0; x < w; x++)
+        {
+            for (int y = 0; y < h; y++)
+                column[y] = levels[levelGrid[x, y]].tiles[tileIndex[x * h + y]];
 
-            Vector3Int[] positions = new Vector3Int[total];
-            TileBase[] tileArray = new TileBase[total];
+            tilemap.SetTilesBlock(new BoundsInt(gridOrigin.x + x, gridOrigin.y, 0, 1, h, 1), column);
 
-            int index = 0;
-            for (int x = 0; x < gridSize.x; x++)
+            if (sw.ElapsedTicks >= budgetTicks)
             {
-                for (int y = 0; y < gridSize.y; y++)
-                {
-                    float n = SampleNoise(x, y);
-                    int levelIndex = GetLevelIndex(n);
-                    levelGrid[x, y] = levelIndex;
-
-                    TerrainLevel level = levels[levelIndex];
-                    positions[index] = new Vector3Int(gridOrigin.x + x, gridOrigin.y + y, 0);
-                    tileArray[index] = level.tiles[RNG.GetInt(0, level.tiles.Count)];
-                    index++;
-                }
+                float p = ComputeWeight + (1f - ComputeWeight) * ((x + 1) / (float)w);
+                reported = ReportProgress((int)(p * 1000f), 1000, steps, reported);
+                yield return null;
+                if (tilemap == null || cancelRequested) { Abort(); yield break; }
+                sw.Restart();
             }
+        }
 
-            ReportSteps(1);                 // step 1: noise + levels done
-            stepsReported++;
+        tileIndex = null;                           // free memory, only needed for painting
+        IsGenerated = true;
+        isGenerating = false;
+        FlushLoadingSteps();                        // rounding leftovers: terrain's share is now 100%
 
-            tilemap.ClearAllTiles();
-            await Task.Delay(10);
-            if (this == null || tilemap == null) return;
-
-            tilemap.SetTiles(positions, tileArray);
-            IsGenerated = true;
-
-            ReportSteps(1);                 // step 2: tiles painted
-            stepsReported++;
-
-            Debug.Log($"[TerrainGenerator] Generated {gridSize.x}x{gridSize.y} tiles, {levels.Count} levels, seed: {dm?.Seed}.");
+        Debug.Log($"[TerrainGenerator] Generated {w}x{h} tiles, {levels.Count} levels, seed: {dm?.Seed}.");
 
 #if UNITY_EDITOR
-            UnityEditor.SceneView.RepaintAll();
+        UnityEditor.SceneView.RepaintAll();
 #endif
-        }
-        finally
+
+        // ---------- Next: Nature. Same frame, so LoadingHandle never sees a gap. ----------
+        if (nature == null) nature = FindFirstObjectByType<NatureGenerator>();
+        if (nature != null)
+            yield return nature.GenerateRoutine();
+        else
+            Debug.LogWarning("[TerrainGenerator] No NatureGenerator found - skipping nature step.");
+    }
+
+    private void Abort()
+    {
+        FlushLoadingSteps();
+        isGenerating = false;
+    }
+
+    /// <summary>
+    /// Runs on a thread-pool thread. Only touches plain managed data (no Unity objects),
+    /// each column writes its own slice, so Parallel.For needs no locks.
+    /// </summary>
+    private void ComputeAll()
+    {
+        int w = gridSize.x;
+        int h = gridSize.y;
+        uint seed = tileSeed;
+
+        Parallel.For(0, w, x =>
         {
-            // Early return or exception: report whatever is left so the loading screen never hangs.
-            ReportSteps(LoadingSteps - stepsReported);
+            if (cancelRequested) return;
+
+            for (int y = 0; y < h; y++)
+            {
+                int li = GetLevelIndex(SampleNoise(x, y));
+                levelGrid[x, y] = li;
+
+                // Deterministic per-cell hash instead of a shared RNG: thread-safe and seed-stable.
+                int tileCount = levels[li].tiles.Count;
+                tileIndex[x * h + y] = (int)(Hash(x, y, seed) % (uint)tileCount);
+            }
+
+            Interlocked.Increment(ref computeColumnsDone);
+        });
+    }
+
+    private static uint Hash(int x, int y, uint seed)
+    {
+        unchecked
+        {
+            uint hsh = seed ^ (uint)(x * 73856093) ^ (uint)(y * 19349663);
+            hsh ^= hsh >> 16;
+            hsh *= 0x7feb352dU;
+            hsh ^= hsh >> 15;
+            hsh *= 0x846ca68bU;
+            hsh ^= hsh >> 16;
+            return hsh;
         }
     }
 
@@ -217,6 +345,11 @@ public class TerrainGenerator : MonoBehaviour
     [ContextMenu("Clear")]
     public void Clear()
     {
+        cancelRequested = true;
+        StopAllCoroutines();
+        isGenerating = false;
+        FlushLoadingSteps();
+
         if (tilemap == null) tilemap = GetComponent<Tilemap>();
         tilemap.ClearAllTiles();
         IsGenerated = false;
@@ -236,6 +369,7 @@ public class TerrainGenerator : MonoBehaviour
     public TerrainLevel GetLevel(int levelIndex) =>
         (levelIndex >= 0 && levelIndex < levels.Count) ? levels[levelIndex] : null;
 
+    /// <summary>Main thread only (uses the Tilemap).</summary>
     public Vector3 GridToWorld(int gridX, int gridY)
     {
         Vector3Int cell = new Vector3Int(gridOrigin.x + gridX, gridOrigin.y + gridY, 0);
