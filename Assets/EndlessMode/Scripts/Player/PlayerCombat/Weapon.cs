@@ -258,7 +258,8 @@ public class Weapon : MonoBehaviour, ITick
         AttackResult last = results.Length > 0 ? results[results.Length - 1] : default;
         PlayBulletVisual(dir, last, range, sniperBulletPrefab);
 
-        CamManager.instance?.Shake(0.4f);
+        float shakeValue = last.IsCrit ? 1f : 0.2f;
+        CamManager.instance?.Shake(shakeValue);
     }
     #endregion
 

@@ -147,19 +147,19 @@ public class Zombrain : HurtBox, ITick
     {
         float diff = dm.CurrentDifficulty;
 
-        float diffScale = diff * (1f + Mathf.Log(diff + 1f) * 0.3f);
+        float diffScale = diff * (1f + Mathf.Log(diff + 1f) * 0.35f);
 
         bool isAlpha = RNG.GetPercent() < 0.1f;
 
-        lastHPBonus = RNG.GetInt(200, 600) * diffScale;
+        lastHPBonus = RNG.GetInt(300, 900) * diffScale;
         lastHPP = 0.8f * diffScale;
 
-        lastATKBonus = RNG.GetInt(10, 30) * diffScale;
+        lastATKBonus = RNG.GetInt(5, 15) * diffScale;
         lastATKK = 0.2f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetInt(200, 600) * Mathf.Clamp01(diffScale);
-        lastSPEEDBonus = RNG.GetInt(3, 6) * Mathf.Clamp01(diffScale);
+        lastDEFBonus = RNG.GetInt(150, 450) * Mathf.Clamp01(diffScale);
+        lastSPEEDBonus = RNG.GetInt(3, 5) * Mathf.Clamp01(diffScale);
         lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(diffScale);
 
         if (isAlpha)
