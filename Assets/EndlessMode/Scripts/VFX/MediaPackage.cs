@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName ="Package/Media")]
+[CreateAssetMenu(menuName ="Endless/Package/Media")]
 public class MediaPackage : ScriptableObject
 {
     public SpritePackage Corpse;

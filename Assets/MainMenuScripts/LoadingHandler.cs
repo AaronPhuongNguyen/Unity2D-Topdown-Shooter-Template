@@ -42,6 +42,7 @@ public class LoadingHandle : MonoBehaviour
     public event Action OnLoadFinished;
 
     private float sceneProgress;
+    private static readonly int UnscaledTimeId = Shader.PropertyToID("_UnscaledTime");
 
     // =====================================================================
 
@@ -107,6 +108,9 @@ public class LoadingHandle : MonoBehaviour
     private void Update()
     {
         if (!canvas.enabled) return;
+
+        // Shader _Time freezes at timeScale 0, so feed it real time for the slider shine.
+        Shader.SetGlobalFloat(UnscaledTimeId, Time.unscaledTime);
 
         // Unscaled so the bar still moves if GameSpeed / timeScale is 0.
         slider.value = Mathf.MoveTowards(slider.value, Progress, fillSpeed * Time.unscaledDeltaTime);

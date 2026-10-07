@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName ="DataBase/Zom")]
+[CreateAssetMenu(menuName ="Endless/DataBase/Zom")]
 public class ZomDataBase : ScriptableObject
 {
     public List<ZomPackage> packages;

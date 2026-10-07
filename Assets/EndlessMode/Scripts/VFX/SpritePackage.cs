@@ -2,7 +2,7 @@ using Server;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Package/Sprites")]
+[CreateAssetMenu(menuName = "Endless/Package/Sprites")]
 public class SpritePackage : ScriptableObject
 {
     public List<Sprite> sprites;

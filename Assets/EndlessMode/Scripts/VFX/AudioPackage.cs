@@ -2,7 +2,7 @@ using Server;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Package/Audio")]
+[CreateAssetMenu(menuName = "Endless/Package/Audio")]
 public class AudioPackage : ScriptableObject
 {
     public List<AudioClip> AttackSounds;

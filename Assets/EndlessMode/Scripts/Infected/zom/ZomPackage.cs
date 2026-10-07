@@ -1,7 +1,7 @@
 
 using UnityEngine;
 
-[CreateAssetMenu(menuName ="Package/Zom")]
+[CreateAssetMenu(menuName ="Endless/Package/Zom")]
 public class ZomPackage:UnitPackage
 {
     public int CurrencyAtKill = 12;

@@ -11,6 +11,7 @@ using UnityEngine.Tilemaps;
 /// ordered TerrainLevel bands. Caches the resulting level-per-cell grid so
 /// other generators (NatureGenerator, etc.) can query "what terrain is at
 /// this cell" without resampling noise themselves.
+/// Reports progress to LoadingHandle (2 steps: noise/levels computed, tiles painted).
 /// </summary>
 [DisallowMultipleComponent]
 public class TerrainGenerator : MonoBehaviour
@@ -51,6 +52,22 @@ public class TerrainGenerator : MonoBehaviour
     public float CellWorldSize => cellWorldSize;
     #endregion
 
+    #region Loading Steps
+    private const int LoadingSteps = 2;   // 1) noise + levels computed, 2) tiles painted
+
+    private static void RegisterSteps(int count)
+    {
+        if (count <= 0 || LoadingHandle.Instance == null) return;
+        LoadingHandle.Instance.AddTotalSteps(count);
+    }
+
+    private static void ReportSteps(int count)
+    {
+        if (count <= 0 || LoadingHandle.Instance == null) return;
+        LoadingHandle.Instance.CompleteStep(count);
+    }
+    #endregion
+
     #region Generate
     [ContextMenu("Generate")]
     public async Task Generate()
@@ -66,52 +83,70 @@ public class TerrainGenerator : MonoBehaviour
 
     private async Task GenerateAsync()
     {
-        levels.Sort((a, b) => a.maxThreshold.CompareTo(b.maxThreshold));
+        // Register up front so the loading bar knows the work exists immediately.
+        RegisterSteps(LoadingSteps);
+        int stepsReported = 0;
 
-        gridSize = GetTileCount();
-        gridOrigin = new Vector2Int(-gridSize.x / 2, -gridSize.y / 2);
-
-        // Seed-derived noise offset so each run's map layout differs with
-        // the seed, without touching the global RNG state other systems rely on.
-        uint seed = dm != null ? (uint)Mathf.Max(1, dm.Seed) : (uint)DateTime.Now.Ticks;
-        var seededRandom = new Unity.Mathematics.Random(seed);
-        noiseOffsetX = seededRandom.NextFloat(-10000f, 10000f);
-        noiseOffsetY = seededRandom.NextFloat(-10000f, 10000f);
-
-        int total = gridSize.x * gridSize.y;
-        levelGrid = new int[gridSize.x, gridSize.y];
-
-        Vector3Int[] positions = new Vector3Int[total];
-        TileBase[] tileArray = new TileBase[total];
-
-        int index = 0;
-        for (int x = 0; x < gridSize.x; x++)
+        try
         {
-            for (int y = 0; y < gridSize.y; y++)
+            levels.Sort((a, b) => a.maxThreshold.CompareTo(b.maxThreshold));
+
+            gridSize = GetTileCount();
+            gridOrigin = new Vector2Int(-gridSize.x / 2, -gridSize.y / 2);
+
+            // Seed-derived noise offset so each run's map layout differs with
+            // the seed, without touching the global RNG state other systems rely on.
+            uint seed = dm != null ? (uint)Mathf.Max(1, dm.Seed) : (uint)DateTime.Now.Ticks;
+            var seededRandom = new Unity.Mathematics.Random(seed);
+            noiseOffsetX = seededRandom.NextFloat(-10000f, 10000f);
+            noiseOffsetY = seededRandom.NextFloat(-10000f, 10000f);
+
+            int total = gridSize.x * gridSize.y;
+            levelGrid = new int[gridSize.x, gridSize.y];
+
+            Vector3Int[] positions = new Vector3Int[total];
+            TileBase[] tileArray = new TileBase[total];
+
+            int index = 0;
+            for (int x = 0; x < gridSize.x; x++)
             {
-                float n = SampleNoise(x, y);
-                int levelIndex = GetLevelIndex(n);
-                levelGrid[x, y] = levelIndex;
+                for (int y = 0; y < gridSize.y; y++)
+                {
+                    float n = SampleNoise(x, y);
+                    int levelIndex = GetLevelIndex(n);
+                    levelGrid[x, y] = levelIndex;
 
-                TerrainLevel level = levels[levelIndex];
-                positions[index] = new Vector3Int(gridOrigin.x + x, gridOrigin.y + y, 0);
-                tileArray[index] = level.tiles[RNG.GetInt(0, level.tiles.Count)];
-                index++;
+                    TerrainLevel level = levels[levelIndex];
+                    positions[index] = new Vector3Int(gridOrigin.x + x, gridOrigin.y + y, 0);
+                    tileArray[index] = level.tiles[RNG.GetInt(0, level.tiles.Count)];
+                    index++;
+                }
             }
-        }
 
-        tilemap.ClearAllTiles();
-        await Task.Delay(10);
-        if (this == null || tilemap == null) return;
+            ReportSteps(1);                 // step 1: noise + levels done
+            stepsReported++;
 
-        tilemap.SetTiles(positions, tileArray);
-        IsGenerated = true;
+            tilemap.ClearAllTiles();
+            await Task.Delay(10);
+            if (this == null || tilemap == null) return;
 
-        Debug.Log($"[TerrainGenerator] Generated {gridSize.x}x{gridSize.y} tiles, {levels.Count} levels, seed: {dm?.Seed}.");
+            tilemap.SetTiles(positions, tileArray);
+            IsGenerated = true;
+
+            ReportSteps(1);                 // step 2: tiles painted
+            stepsReported++;
+
+            Debug.Log($"[TerrainGenerator] Generated {gridSize.x}x{gridSize.y} tiles, {levels.Count} levels, seed: {dm?.Seed}.");
 
 #if UNITY_EDITOR
-        UnityEditor.SceneView.RepaintAll();
+            UnityEditor.SceneView.RepaintAll();
 #endif
+        }
+        finally
+        {
+            // Early return or exception: report whatever is left so the loading screen never hangs.
+            ReportSteps(LoadingSteps - stepsReported);
+        }
     }
 
     private float SampleNoise(int x, int y)

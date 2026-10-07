@@ -24,6 +24,8 @@ public class NatureEntry
 /// is progressive rather than one big freeze: an initial chunk goes in
 /// immediately (synchronously), then the rest trickles in over time via
 /// TickSystem so the game is playable while the map keeps filling in.
+/// Reports progress to LoadingHandle: the preload chunk is always 1 step; the
+/// drip-feed batches only count if countDripInLoading is enabled.
 /// </summary>
 [DisallowMultipleComponent]
 public class NatureGenerator : MonoBehaviour, IUnscaledTick
@@ -38,6 +40,10 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
 
     [Tooltip("Fraction of all candidate cells spawned every second after preload, until complete.")]
     [Range(0f, 1f)][SerializeField] private float ratePerSecond = 0.05f;
+
+    [Header("Loading Screen")]
+    [Tooltip("OFF: loading screen ends after the preload chunk, the rest streams in while playing.\nON: loading screen also waits for every drip batch (slower start, map fully filled).")]
+    [SerializeField] private bool countDripInLoading = false;
     #endregion
 
     #region Cache
@@ -53,8 +59,34 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
     private float dripTimer;
     private bool isLoading;
 
+    // Steps registered on LoadingHandle that haven't been reported yet.
+    private int pendingLoadingSteps;
+
     public bool IsComplete { get; private set; }
     public float Progress => totalCandidateCount <= 0 ? 1f : 1f - ((float)(pendingCells?.Count ?? 0) / totalCandidateCount);
+    #endregion
+
+    #region Loading Steps
+    private void RegisterLoadingSteps(int count)
+    {
+        if (count <= 0 || LoadingHandle.Instance == null) return;
+        LoadingHandle.Instance.AddTotalSteps(count);
+        pendingLoadingSteps += count;
+    }
+
+    private void ReportLoadingSteps(int count)
+    {
+        count = Mathf.Min(count, pendingLoadingSteps);
+        if (count <= 0) return;
+        pendingLoadingSteps -= count;
+        if (LoadingHandle.Instance != null)
+            LoadingHandle.Instance.CompleteStep(count);
+    }
+
+    /// <summary>Reports everything still outstanding so the loading screen can never hang on us.</summary>
+    private void FlushLoadingSteps() => ReportLoadingSteps(pendingLoadingSteps);
+
+    private int GetBatchCount() => Mathf.Max(1, Mathf.CeilToInt(totalCandidateCount * ratePerSecond));
     #endregion
 
     #region Lifecycle
@@ -66,6 +98,7 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
     private void OnDisable()
     {
         isLoading = false;
+        FlushLoadingSteps();
         if (TickSystem.Instance != null)
             TickSystem.Unregister((IUnscaledTick)this);
     }
@@ -75,6 +108,8 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
     [ContextMenu("Generate")]
     public void Generate()
     {
+        FlushLoadingSteps();   // a previous run might still owe steps
+
         if (terrain == null) terrain = FindFirstObjectByType<TerrainGenerator>();
         if (terrain == null || !terrain.IsGenerated)
         {
@@ -96,10 +131,19 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
             return;
         }
 
+        // Work out how many loading steps this run owes: 1 for the preload chunk,
+        // plus one per drip batch if the loading screen should wait for those too.
+        int preloadCount = Mathf.CeilToInt(totalCandidateCount * preloadFraction);
+        int remaining = Mathf.Max(0, totalCandidateCount - preloadCount);
+        int dripSteps = (countDripInLoading && remaining > 0)
+            ? Mathf.CeilToInt(remaining / (float)GetBatchCount())
+            : 0;
+        RegisterLoadingSteps(1 + dripSteps);
+
         // Preload chunk: spawned synchronously, right now, before gameplay
         // starts - this is the one-time freeze, sized small on purpose.
-        int preloadCount = Mathf.CeilToInt(totalCandidateCount * preloadFraction);
         SpawnBatch(preloadCount);
+        ReportLoadingSteps(1);
 
         if (pendingCells.Count > 0)
         {
@@ -111,6 +155,7 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
         else
         {
             IsComplete = true;
+            FlushLoadingSteps();
         }
 
         Debug.Log($"[NatureGenerator] Preloaded {preloadCount}/{totalCandidateCount} cells. Remaining will stream in over time.");
@@ -129,13 +174,16 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
         if (dripTimer > 0f) return;
         dripTimer = 1f;
 
-        int batchCount = Mathf.CeilToInt(totalCandidateCount * ratePerSecond);
-        SpawnBatch(batchCount);
+        SpawnBatch(GetBatchCount());
+
+        if (countDripInLoading)
+            ReportLoadingSteps(1);
 
         if (pendingCells.Count == 0)
         {
             isLoading = false;
             IsComplete = true;
+            FlushLoadingSteps();    // covers any rounding leftovers
             if (TickSystem.Instance != null)
                 TickSystem.Unregister((IUnscaledTick)this);
             Debug.Log("[NatureGenerator] Nature scatter complete.");
@@ -258,6 +306,7 @@ public class NatureGenerator : MonoBehaviour, IUnscaledTick
         isLoading = false;
         IsComplete = false;
         pendingCells = null;
+        FlushLoadingSteps();
 
         if (TickSystem.Instance != null)
             TickSystem.Unregister((IUnscaledTick)this);

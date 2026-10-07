@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName ="Template/Attribute")]
+[CreateAssetMenu(menuName ="Endless/Template/Attribute")]
 public class UnitAttributeTemplate:ScriptableObject
 {
     [Header("Base Value")]
