@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: GNZA
   m_EditorClassIdentifier: 
-  HP_Base: 1200
-  ATK_Base: 40
+  HP_Base: 2000
+  ATK_Base: 20
   SPEED_Base: 10
   DEF_Base: 200
   ASPD_Base: 2

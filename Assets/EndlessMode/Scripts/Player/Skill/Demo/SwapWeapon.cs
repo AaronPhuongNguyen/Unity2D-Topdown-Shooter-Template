@@ -38,19 +38,20 @@ public class SwapWeapon : MonoBehaviour
         wp.SetType(type);
         CurrentType = type; // only commit the tracked state once the equip actually succeeded
     }
+    private int _i;
 
-    /// <summary>
-    /// Cycles through Rifle -> Shotgun -> Sniper -> Rifle.
-    /// </summary>
     public void Toggle()
     {
-        WeaponType next = CurrentType switch
+        _i = (_i + 1) % 3;
+
+        WeaponType next = _i switch
         {
-            WeaponType.Rifle => WeaponType.Shotgun,
-            WeaponType.Shotgun => WeaponType.Sniper,
-            WeaponType.Sniper => WeaponType.Rifle,
-            _ => WeaponType.Rifle
+            0 => WeaponType.Rifle,
+            1 => WeaponType.Shotgun,
+            2 => WeaponType.Sniper,
+            _ => WeaponType.Rifle // fallback, won't hit if %3 is correct
         };
+
         Equip(next);
         CamManager.instance.ZoomIn(99);
     }
