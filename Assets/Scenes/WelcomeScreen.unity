@@ -225,68 +225,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!1 &380678832
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 380678833}
-  - component: {fileID: 380678834}
-  - component: {fileID: 380678835}
-  m_Layer: 0
-  m_Name: GameManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &380678833
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380678832}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &380678834
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380678832}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ef5dca9093e2b94dac3e242a0fc0ffe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentState: 0
---- !u!114 &380678835
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 380678832}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4463b46ef9f39548876d0b9c919b0ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetFPS: 60
-  forcePeriodically: 1
-  checkInterval: 1
-  syncFixedTimestep: 1
 --- !u!1 &730559535
 GameObject:
   m_ObjectHideFlags: 0
@@ -540,12 +478,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speaker: {fileID: 0}
   mixer: {fileID: 0}
+  sfxPriority: 8
   volume: 1
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList: []
   shuffle: 1
   autoPlayMusicOnStart: 1
+  musicPriority: 16
   musicVolume: 0.5
 --- !u!1 &1708378322
 GameObject:
@@ -766,4 +706,3 @@ SceneRoots:
   - {fileID: 730559538}
   - {fileID: 1708378325}
   - {fileID: 1281791177}
-  - {fileID: 380678833}
