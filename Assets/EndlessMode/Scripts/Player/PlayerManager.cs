@@ -49,8 +49,8 @@ public class PlayerManager : MonoBehaviour, ITick
     #endregion
 
     #region Stagger
-    [SerializeField, Range(0, 1)] private float StaggerChance = 0.5f;
-    private const float StaggerSlowPercent = 0.4f;
+    [SerializeField, Range(0, 1)] private float StaggerChance = 0.2f;
+    private const float StaggerSlowPercent = 0.3f;
     private const float StaggerDuration = 2f;
 
     private float staggerTimer;
@@ -60,12 +60,12 @@ public class PlayerManager : MonoBehaviour, ITick
     #region Bleed
     [Header("Bleed")]
     [Tooltip("Chance on taking damage to apply/refresh a Bleed stack.")]
-    [Range(0f, 1f)][SerializeField] private float bleedChance = 0.5f;
+    [Range(0f, 1f)][SerializeField] private float bleedChance = 0.75f;
 
     private const float BleedDuration = 3f;
     private const float BleedFlatDamagePerStack = 5f;
     private const float BleedPercentMaxHPPerStack = 0.01f;
-    private const int BleedMaxStacks = 8;
+    private const int BleedMaxStacks = 20;
 
     private float bleedTimer;
     private float bleedTickInterval = 1f;

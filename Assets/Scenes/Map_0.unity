@@ -1997,7 +1997,7 @@ MonoBehaviour:
   popupPrefab: {fileID: 4156791558043456627, guid: 89271fa3f1a563e44a8f1a71af0636a1, type: 3}
   worldCamera: {fileID: 519420031}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
-  critColor: {r: 1, g: 0.6, b: 0, a: 1}
+  critColor: {r: 0.8867924, g: 0.53207546, b: 0, a: 1}
   healColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   jitterRadius: 75
 --- !u!1 &200665120
@@ -4308,7 +4308,7 @@ MonoBehaviour:
   rot: {fileID: 0}
   mot: {fileID: 0}
   combatDuration: 0
-  StaggerChance: 0.5
+  StaggerChance: 0.2
   bleedChance: 0.75
 --- !u!114 &429566563
 MonoBehaviour:
@@ -10792,7 +10792,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2470c28f9827f4d4fb1b8d11a15dcd3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  checkInterval: 0.5
+  checkInterval: 1
 --- !u!1 &1222140953
 GameObject:
   m_ObjectHideFlags: 0
@@ -11754,7 +11754,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   mixer: {fileID: 0}
   sfxPriority: 8
-  volume: 1
+  volume: 0.25
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:
