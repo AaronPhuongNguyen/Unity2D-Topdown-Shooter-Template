@@ -52,15 +52,31 @@ public class CharacterSetUp : MonoBehaviour
             return;
         }
 
-        // Start on the first valid option of everything.
-        ChooseBody(0);
-        ChooseHead(0);
-        ChooseHair(0);
-        ChooseBodyColor(0);
-        ChooseHeadColor(0);
-        ChooseHairColor(0);
+        // Pick the first valid option of everything, then draw once.
+        InitDefaults();
+        Refresh();
 
         if (nameField != null) nameField.SetTextWithoutNotify(player.Name);
+    }
+
+    /// <summary>Sets real IDs and colors directly, so no ID is ever left at 0.</summary>
+    private void InitDefaults()
+    {
+        PickFirst(VisualSlot.Body, ref bodyIndex, ref player.BodyID);
+        PickFirst(VisualSlot.Head, ref headIndex, ref player.HeadID);
+        PickFirst(VisualSlot.Hair, ref hairIndex, ref player.HairID);
+
+        bodyColorIndex = headColorIndex = hairColorIndex = 0;
+        player.BodyColor = ToPart(db.SelectSkinColor(0));
+        player.HeadColor = ToPart(db.SelectSkinColor(0));
+        player.HairColor = ToPart(db.SelectHairColor(0));
+    }
+
+    private void PickFirst(VisualSlot slot, ref int index, ref int id)
+    {
+        index = 0;
+        VisualPack pack = db.Select(slot, 0, gender);
+        if (pack != null) id = pack.ID;
     }
 
     #region Name
@@ -84,7 +100,7 @@ public class CharacterSetUp : MonoBehaviour
         player.Gender = gender;
 
         // Keep the current part if it is still valid for the new gender,
-        // otherwise fall back to the first valid one.
+        // otherwise move to the next valid one.
         ReselectPart(VisualSlot.Body, ref bodyIndex, ref player.BodyID);
         ReselectPart(VisualSlot.Head, ref headIndex, ref player.HeadID);
         ReselectPart(VisualSlot.Hair, ref hairIndex, ref player.HairID);
@@ -144,6 +160,8 @@ public class CharacterSetUp : MonoBehaviour
     public void ChooseBodyColor(int step)
     {
         if (db == null) return;
+        if (db.SkinColorCount < 2)
+            Debug.LogWarning("CharacterSetUp: Skin Colors has fewer than 2 entries, so cycling can't change anything.", db);
         bodyColorIndex += step;
         SetBodyColor(db.SelectSkinColor(bodyColorIndex), false);
     }
@@ -287,9 +305,10 @@ public class CharacterSetUp : MonoBehaviour
     {
         if (db == null || player == null) return;
 
-        ApplyToImage(bodyImage, db.GetBodyByID(player.BodyID), ToColor(player.BodyColor));
-        ApplyToImage(headImage, db.GetHeadByID(player.HeadID), ToColor(player.HeadColor));
-        ApplyToImage(hairImage, db.GetHairByID(player.HairID), ToColor(player.HairColor));
+        // A bad ID (for example 0) falls back to the first valid pack instead of hiding the part.
+        ApplyToImage(bodyImage, db.GetByIDOrDefault(VisualSlot.Body, player.BodyID, gender), ToColor(player.BodyColor));
+        ApplyToImage(headImage, db.GetByIDOrDefault(VisualSlot.Head, player.HeadID, gender), ToColor(player.HeadColor));
+        ApplyToImage(hairImage, db.GetByIDOrDefault(VisualSlot.Hair, player.HairID, gender), ToColor(player.HairColor));
     }
 
     /// <summary>
@@ -329,6 +348,10 @@ public class CharacterSetUp : MonoBehaviour
 
     /// <summary>A missing part (old save) becomes white, the default skin.</summary>
     public static Color ToColor(PlayerData.ColorBodyPart p)
-        => p == null ? Color.white : new Color(p.Red, p.Green, p.Blue, p.Alpha);
+    {
+        if (p == null) return Color.white;
+        if (p.Red == 0f && p.Green == 0f && p.Blue == 0f && p.Alpha == 0f) return Color.white;
+        return new Color(p.Red, p.Green, p.Blue, p.Alpha);
+    }
     #endregion
 }

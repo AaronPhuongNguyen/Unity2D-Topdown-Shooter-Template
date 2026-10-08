@@ -8,6 +8,7 @@ public class VisualDatabaseBuilder : EditorWindow
 {
     private VisualDataBase db;
     private string root = "Assets/SurvivalMode/Sprites";   // contains Body / Head / Hair
+    private int startID = 1;                               // first ID given to a brand-new database
     private const int SpritesPerPack = 3;                  // Right, Back, Front
 
     [MenuItem("Survival/Visual Database Builder")]
@@ -31,6 +32,7 @@ public class VisualDatabaseBuilder : EditorWindow
 
         db = (VisualDataBase)EditorGUILayout.ObjectField("Database", db, typeof(VisualDataBase), false);
         root = EditorGUILayout.TextField("Sprites Root", root);
+        startID = EditorGUILayout.IntField("First ID (new packs)", startID);
 
         EditorGUI.BeginDisabledGroup(db == null);
         if (GUILayout.Button("Build ALL (Body + Head + Hair)", GUILayout.Height(30)))
@@ -82,7 +84,7 @@ public class VisualDatabaseBuilder : EditorWindow
                 byRight.Add(p.Visual.Right, p);
         }
 
-        int nextID = usedIDs.Count == 0 ? 1 : usedIDs.Max() + 1;
+        int nextID = usedIDs.Count == 0 ? startID : usedIDs.Max() + 1;
         var result = new List<VisualPack>(packCount);
         int added = 0, kept = 0;
 

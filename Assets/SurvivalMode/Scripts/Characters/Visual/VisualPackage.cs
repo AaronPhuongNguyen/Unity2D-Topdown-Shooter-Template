@@ -59,11 +59,40 @@ public class VisualDataBase : ScriptableObject
 
     #region NEW: Colors (palette cycling, save/load, apply)
     // ---- Cycle through the palette (any int is valid, empty palette -> default) ----
+    // Right-click the asset header in the Inspector > "Fill Default Palettes"
+    [ContextMenu("Fill Default Palettes")]
+    private void FillDefaultPalettes()
+    {
+        SkinColors = new Color[]
+        {
+            new Color32(255, 255, 255, 255),   // pale (default)
+            new Color32(245, 222, 200, 255),
+            new Color32(220, 180, 140, 255),
+            new Color32(180, 130, 90, 255),
+            new Color32(130, 90, 60, 255),
+            new Color32(90, 60, 40, 255),
+        };
+        HairColors = new Color[]
+        {
+            new Color32(255, 255, 255, 255),   // original sprite color
+            new Color32(35, 35, 38, 255),      // black
+            new Color32(110, 70, 40, 255),     // brown
+            new Color32(240, 205, 110, 255),   // blonde
+            new Color32(190, 90, 40, 255),     // ginger
+            new Color32(140, 140, 145, 255),   // gray
+        };
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+    }
     public Color SelectColor(ColorSlot slot, int index)
     {
         Color[] palette = GetPalette(slot);
         if (palette == null || palette.Length == 0) return DefaultOf(slot);
-        return palette[Wrap(index, palette.Length)];
+
+        Color c = palette[Wrap(index, palette.Length)];
+        if (c.a < 0.004f) c.a = 1f;   // Inspector-added colors often have alpha 0 = invisible
+        return c;
     }
 
     public Color SelectSkinColor(int index) => SelectColor(ColorSlot.Skin, index);
