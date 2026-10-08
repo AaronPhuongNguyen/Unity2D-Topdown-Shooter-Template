@@ -4,12 +4,18 @@ using UnityEngine.UI;
 
 public class WorldScriptReader : MonoBehaviour
 {
-    public const int MinSize = 300;
-    public const int MaxSize = 1500;
-    public const int DefaultSize = 900;
+    public const uint MinSize = 300;
+    public const uint MaxSize = 1500;
+    public const uint DefaultSize = 900;
+
+    // Difficulty multipliers, indexed by dropdown order: Easy, Medium, Hard, Insane
+    private static readonly float[] DifficultyValues = { 0.5f, 1f, 2f, 4f};
 
     [Header("World Scripted")]
-    [SerializeField] private WorldScript ws;
+    [SerializeField] private WorldScript ws = new WorldScript();
+
+    [Header("Create World")]
+    [SerializeField] private bool loadAfterCreate = true;
 
     [Header("UI References")]
     [SerializeField] private TMP_InputField nameField;
@@ -18,17 +24,15 @@ public class WorldScriptReader : MonoBehaviour
     [SerializeField] private Toggle keepInventoryToggle;
     [SerializeField] private TMP_Dropdown difficultyDropdown; // order: Easy, Medium, Hard
 
-    GameManager gm;
-
     private void Awake()
     {
-        ws = new WorldScript();
+        if (ws == null) ws = new WorldScript();
         SyncUIFromData();
     }
 
     #region Script
-    //OnValueChanged
-    // input field OnValueChanged
+
+    // Hook to the name field's OnValueChanged
     public void InputName()
     {
         string value = nameField.text.Trim();
@@ -42,36 +46,32 @@ public class WorldScriptReader : MonoBehaviour
             ws.Seed = seed;
     }
 
-    public void InputWorldSize() //Int 300 will cast 300x300.
+    public void InputWorldSize() // 300 means a 300x300 world.
     {
-        int size = DefaultSize;
-        if (int.TryParse(sizeField.text, out int parsed))
-            size = Mathf.Clamp(parsed, MinSize, MaxSize);
+        uint size = DefaultSize;
+        if (uint.TryParse(sizeField.text, out uint parsed))
+            size = (uint)Mathf.Clamp((int)System.Math.Min(parsed, int.MaxValue),
+                                     (int)MinSize, (int)MaxSize);
 
-        ws.WorldSize = new Vector2(size, size);
+        ws.WorldSize = size;
     }
 
     // Hook this to the size field's OnEndEdit so the text shows the clamped value.
     public void RefreshWorldSizeText()
     {
-        sizeField.SetTextWithoutNotify(((int)ws.WorldSize.x).ToString());
+        InputWorldSize();
+        sizeField.SetTextWithoutNotify(ws.WorldSize.ToString());
     }
 
-    //Toggle
     public void InputKeepInventory()
     {
         ws.KeepInventory = keepInventoryToggle.isOn;
     }
 
-    //Dropdown
     public void InputDifficulty()
     {
-        ws.Difficulty = difficultyDropdown.value switch
-        {
-            0 => SurvivalDifficulty.Easy,
-            1 => SurvivalDifficulty.Medium,
-            _ => SurvivalDifficulty.Hardcode
-        };
+        int i = Mathf.Clamp(difficultyDropdown.value, 0, DifficultyValues.Length - 1);
+        ws.Difficulty = DifficultyValues[i];
     }
 
     public void SetNewGame()
@@ -79,15 +79,47 @@ public class WorldScriptReader : MonoBehaviour
         ws.IsNew = true;
     }
 
+    // Hook to the ConfirmCreateWorld button's OnClick.
+    public void ConfirmCreateWorld()
+    {
+        if (WorldManager.instance == null)
+        {
+            Debug.LogError("WorldScriptReader: no WorldManager in the scene.");
+            return;
+        }
+
+        // Make sure ws matches the UI even if the player never left a field.
+        InputName();
+        InputSeed();
+        RefreshWorldSizeText();   // also runs InputWorldSize()
+        InputKeepInventory();
+        InputDifficulty();
+        SetNewGame();
+
+        WorldManager.instance.CreateWorld(ws);
+
+        if (loadAfterCreate)
+            WorldManager.instance.Continue();
+    }
     #endregion
 
-    // Push the WorldScript defaults into the UI without firing the change events.
+    // Push the WorldScript values into the UI without firing the change events.
     private void SyncUIFromData()
     {
-        if(nameField!=null) nameField.SetTextWithoutNotify(ws.WorldName);
-        if(seedField!=null) seedField.SetTextWithoutNotify(ws.Seed.ToString());
-        if(sizeField!=null) sizeField.SetTextWithoutNotify(((int)ws.WorldSize.x).ToString());
-        if(keepInventoryToggle!=null) keepInventoryToggle.SetIsOnWithoutNotify(ws.KeepInventory);
-        if(difficultyDropdown !=null) difficultyDropdown.SetValueWithoutNotify((int)ws.Difficulty - 1);
+        if (nameField != null) nameField.SetTextWithoutNotify(ws.WorldName);
+        if (seedField != null) seedField.SetTextWithoutNotify(ws.Seed.ToString());
+        if (sizeField != null) sizeField.SetTextWithoutNotify(ws.WorldSize.ToString());
+        if (keepInventoryToggle != null) keepInventoryToggle.SetIsOnWithoutNotify(ws.KeepInventory);
+        if (difficultyDropdown != null)
+            difficultyDropdown.SetValueWithoutNotify(DifficultyIndex(ws.Difficulty));
     }
+
+    private static int DifficultyIndex(float difficulty)
+    {
+        for (int i = 0; i < DifficultyValues.Length; i++)
+            if (Mathf.Approximately(DifficultyValues[i], difficulty))
+                return i;
+        return 0;
+    }
+
 }
