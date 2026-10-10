@@ -88,6 +88,19 @@ public static class SaveSystem
         }
     }
 
+    public static void PrimarySave<T>(T data,string fileName="Data")
+    {
+        try
+        {
+            string json = JsonConvert.SerializeObject(data, JsonSettings);
+            WriteAtomic(GetPath(fileName), Encode(json));
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[SaveSystem] Save failed: {e}");
+        }
+    }
+
     public static void Delete(string slot = "save")
     {
         string path = GetPath(slot);

@@ -51,4 +51,10 @@ public static class EventBus
         OnGameOver = null;
     }
     #endregion
+
+    #region Special
+    public static event Action<UnitAttribute, UnitAttribute, float> OnDamageDealt; // attacker, victim, damage
+    public static void RaiseDamageDealt(UnitAttribute attacker, UnitAttribute victim, float damage)
+        => OnDamageDealt?.Invoke(attacker, victim, damage);
+    #endregion
 }

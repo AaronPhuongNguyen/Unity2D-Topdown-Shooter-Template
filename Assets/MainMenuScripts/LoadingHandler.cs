@@ -80,9 +80,10 @@ public class LoadingHandle : MonoBehaviour
     // ---------- public API ----------
 
     /// <summary>Loads a scene by name behind the loading screen.</summary>
-    public void LoadScene(string sceneName,bool UseConfirmButton=true)
+    public void LoadScene(string sceneName,bool UseConfirmButton=true,string loadingContext ="Loading World")
     {
         if (IsLoading) return;
+        loadingAssetName = loadingContext;
         StartCoroutine(LoadRoutine(sceneName));
         useButtonEnterGame = UseConfirmButton;
     }

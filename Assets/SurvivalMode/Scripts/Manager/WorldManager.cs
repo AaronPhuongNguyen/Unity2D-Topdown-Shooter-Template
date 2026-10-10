@@ -28,10 +28,7 @@ public class WorldManager : MonoBehaviour
 
     [Header("Survival World")]
     public SaveData data;
-
-    [Header("Scene Settings")]
-    [SerializeField] private string gameSceneName = "SurvivalMode";
-    [SerializeField] private bool useConfirmButton = true;
+    
 
     /// <summary>True when a save exists and it actually contains a created world.</summary>
     public bool HasSave => data != null && data.WorldScript != null;
@@ -56,8 +53,6 @@ public class WorldManager : MonoBehaviour
             Debug.LogError("WorldManager: LoadingHandle is missing, cannot load scene.");
             return false;
         }
-
-        LoadingHandle.Instance.LoadScene(gameSceneName, useConfirmButton);
         return true;
     }
 

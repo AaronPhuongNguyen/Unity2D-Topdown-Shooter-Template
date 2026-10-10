@@ -116,7 +116,11 @@ public class AudioManager : MonoBehaviour
     public void SetLoop(bool v) => speaker.loop = v;
     public void SetPlayOnAwake(bool v) => speaker.playOnAwake = v;
     public void SetPriority(int v) => speaker.priority = v;
-    public void SetVolume(float v) => speaker.volume = v;
+    public void SetVolume(float v)
+    {
+        volume = Mathf.Clamp01(v);
+        speaker.volume = volume;
+    }
     #endregion
 
     #region Music Functions
@@ -150,14 +154,18 @@ public class AudioManager : MonoBehaviour
 
     public void PauseMusic() => musicSpeaker?.Pause();
     public void ResumeMusic() => musicSpeaker?.UnPause();
-    public void SetMusicVolume(float v) => musicVolume = Mathf.Clamp01(v);
+    public void SetMusicVolume(float v)
+    {
+        musicVolume = Mathf.Clamp01(v);
+        musicSpeaker.volume = musicVolume;
+    }
     #endregion
 
     #region Misc Features
     private void SyncAttribute()
     {
         if (Time.time < checkInterval) return;
-        checkInterval = Time.time + 0.5f;
+        checkInterval = Time.time + 1f;
 
         if (speaker.volume != volume) speaker.volume = volume;
         if (musicSpeaker != null && musicSpeaker.volume != musicVolume) musicSpeaker.volume = musicVolume;

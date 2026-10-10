@@ -84,6 +84,7 @@ namespace Server
 
             victim.OnTakeDamage?.Invoke(damage);
             attacker.OnDealDamage?.Invoke(damage);
+            EventBus.RaiseDamageDealt(attacker, victim, damage); // new
 
             finalDamage = damage;
         }

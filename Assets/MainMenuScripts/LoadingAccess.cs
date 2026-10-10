@@ -7,6 +7,8 @@ using UnityEngine;
 public class LoadingAccess : MonoBehaviour
 {
     [SerializeField] private string sceneName;
+    [SerializeField] private string LoadingText = "Loading World";
+    [SerializeField] private bool UseConfirmButton = true;
 
     /// <summary>Loads the scene set in the Inspector.</summary>
     public void Load() => Load(sceneName);
@@ -26,6 +28,6 @@ public class LoadingAccess : MonoBehaviour
             return;
         }
 
-        LoadingHandle.Instance.LoadScene(name);
+        LoadingHandle.Instance.LoadScene(name,UseConfirmButton,LoadingText);
     }
 }

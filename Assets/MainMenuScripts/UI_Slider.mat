@@ -34,7 +34,7 @@ Material:
     - _Pause: 0.3
     - _ShineWidth: 0.25
     - _Skew: 0.1
-    - _Speed: 0.5
+    - _Speed: 5
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0

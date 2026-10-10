@@ -281,6 +281,7 @@ GameObject:
   m_Component:
   - component: {fileID: 47656719}
   - component: {fileID: 47656720}
+  - component: {fileID: 47656721}
   m_Layer: 5
   m_Name: Confirm
   m_TagString: Untagged
@@ -389,10 +390,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1369243478}
-        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-        m_MethodName: SetActive
-        m_Mode: 6
+      - m_Target: {fileID: 2141884197}
+        m_TargetAssemblyTypeName: WorldScriptReader, Assembly-CSharp
+        m_MethodName: ConfirmCreateWorld
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -401,6 +402,33 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
+      - m_Target: {fileID: 47656721}
+        m_TargetAssemblyTypeName: LoadingAccess, Assembly-CSharp
+        m_MethodName: Load
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+--- !u!114 &47656721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 47656718}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2686375dce6cfda468b8bc9b38e0f43e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneName: SurvivalMode
+  LoadingText: Loading Survial Mode
+  UseConfirmButton: 1
 --- !u!1 &56857650
 GameObject:
   m_ObjectHideFlags: 0
@@ -1203,6 +1231,7 @@ GameObject:
   m_Component:
   - component: {fileID: 250490700}
   - component: {fileID: 250490701}
+  - component: {fileID: 250490702}
   m_Layer: 0
   m_Name: SurvivalModeManager
   m_TagString: Untagged
@@ -1267,8 +1296,21 @@ MonoBehaviour:
         Green: 0
         Blue: 0
         Alpha: 0
-  gameSceneName: SurvivalMode
-  useConfirmButton: 1
+--- !u!114 &250490702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250490699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2686375dce6cfda468b8bc9b38e0f43e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneName: SurvivalMode
+  LoadingText: Loading Survival Mode
+  UseConfirmButton: 0
 --- !u!1 &262790334
 GameObject:
   m_ObjectHideFlags: 0
@@ -5732,6 +5774,7 @@ GameObject:
   - component: {fileID: 921819222}
   - component: {fileID: 921819221}
   - component: {fileID: 921819220}
+  - component: {fileID: 921819223}
   m_Layer: 5
   m_Name: Endless
   m_TagString: Untagged
@@ -5854,10 +5897,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1369243480}
+      - m_Target: {fileID: 921819223}
         m_TargetAssemblyTypeName: LoadingAccess, Assembly-CSharp
         m_MethodName: Load
-        m_Mode: 5
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -5866,6 +5909,21 @@ MonoBehaviour:
           m_StringArgument: EndlessMode
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &921819223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921819218}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2686375dce6cfda468b8bc9b38e0f43e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneName: EndlessMode
+  LoadingText: Loading Endless Mode
+  UseConfirmButton: 1
 --- !u!1 &937024568
 GameObject:
   m_ObjectHideFlags: 0
@@ -8576,6 +8634,30 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 7416738}
+        m_TargetAssemblyTypeName: WorldManagerReader, Assembly-CSharp
+        m_MethodName: Continue
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 250490702}
+        m_TargetAssemblyTypeName: LoadingAccess, Assembly-CSharp
+        m_MethodName: Load
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1369243478
 GameObject:
   m_ObjectHideFlags: 0
@@ -8585,7 +8667,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1369243479}
-  - component: {fileID: 1369243480}
   m_Layer: 5
   m_Name: Mode Handler
   m_TagString: Untagged
@@ -8617,19 +8698,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1369243480
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1369243478}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2686375dce6cfda468b8bc9b38e0f43e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sceneName: 
 --- !u!1 &1374192231
 GameObject:
   m_ObjectHideFlags: 0
@@ -12219,10 +12287,9 @@ MonoBehaviour:
   backgroundImage: {fileID: 2032904591}
   particleRoot: {fileID: 949961929}
   backgrounds:
-  - {fileID: 21300000, guid: 1a5e2a6e590d3c74e9bb1fbb88d0307c, type: 3}
-  - {fileID: 21300000, guid: 994a73992009c954a860d22cfba3519a, type: 3}
   - {fileID: 21300000, guid: be9952216e2b1d54699b9052fbbd656a, type: 3}
   - {fileID: 21300000, guid: e74209ca8f0f5744899f5bc4bdd1e52e, type: 3}
+  - {fileID: 21300000, guid: 1a5e2a6e590d3c74e9bb1fbb88d0307c, type: 3}
   defaultBackground: 0
   overscan: 1.2
   panDurationRange: {x: 5, y: 10}
@@ -12388,7 +12455,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1872047824}
   m_OnClick:
     m_PersistentCalls:
@@ -13627,7 +13694,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -14410,7 +14477,19 @@ MonoBehaviour:
   m_CharacterLimit: 8
   m_OnEndEdit:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2141884197}
+        m_TargetAssemblyTypeName: WorldScriptReader, Assembly-CSharp
+        m_MethodName: RefreshWorldSizeText
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls: []
@@ -14600,7 +14679,7 @@ GameObject:
   - component: {fileID: 2136723805}
   - component: {fileID: 2136723804}
   m_Layer: 5
-  m_Name: WorldName
+  m_Name: SetName
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14706,7 +14785,19 @@ MonoBehaviour:
       m_Calls: []
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 12246083}
+        m_TargetAssemblyTypeName: CharacterSetUp, Assembly-CSharp
+        m_MethodName: SetName
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_OnTouchScreenKeyboardStatusChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -15096,18 +15187,6 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 2118002157}
-        m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
-        m_MethodName: PlayDirectAudio
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 8300000, guid: e08d1b424d836d64a9e044e9393e2a26, type: 3}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
