@@ -7579,7 +7579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 300982226fc6dcd43867732e19752a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wavesPerSpawn: 4
+  wavesPerSpawn: 2
   npcList:
   - name: Kafka
     prefab: {fileID: 1864921463154914027, guid: fbb58be6ab0f0d24098e228dc5b7e674, type: 3}
@@ -11260,7 +11260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab31a600a2eba4a4384419cf2f136912, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bossWaveInterval: 10
+  bossWaveInterval: 6
   bossWaveDuration: 300
   spawnSuppressionDuration: 300
 --- !u!1 &1113999071

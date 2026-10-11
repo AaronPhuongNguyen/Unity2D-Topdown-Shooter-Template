@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5562632942724262435}
   - component: {fileID: 7152433936220595372}
   - component: {fileID: 5838335900662919584}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Kafka
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -119,7 +119,7 @@ MonoBehaviour:
   calmTime: 0.8
   fleeDirections: 16
   fleeLookAhead: 3.5
-  fleeSpeedBonus: 3
+  fleeSpeedBonus: 2
   continuityBonus: 0.3
   wallPenalty: 5
   edgeMargin: 3
@@ -137,9 +137,9 @@ MonoBehaviour:
   indicatorPrefab: {fileID: 7358377081612034780, guid: 1580f80df68d0ff40b939c9ec7909021, type: 3}
   indicatorPulseMultiplier: 0.5
   indicatorReturnSpeed: 1
-  hpGrowthPerDifficulty: 25
-  atkGrowthPerDifficulty: 1
-  defPerDifficulty: 25
+  hpGrowthPerDifficulty: 80
+  atkGrowthPerDifficulty: 8
+  defPerDifficulty: 50
   speedPerDif: 0.5
 --- !u!114 &5838335900662919584
 MonoBehaviour:
@@ -173,7 +173,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7416084440610428882}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Muzzle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -206,7 +206,7 @@ GameObject:
   - component: {fileID: 2159472496782049188}
   - component: {fileID: 8562150169703101512}
   - component: {fileID: 3496908157226765466}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -312,7 +312,7 @@ GameObject:
   - component: {fileID: 6078851846247527297}
   - component: {fileID: 3334043055434502102}
   - component: {fileID: 2791974965670902429}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Shadow
   m_TagString: Untagged
   m_Icon: {fileID: 0}

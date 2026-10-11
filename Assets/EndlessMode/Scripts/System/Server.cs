@@ -121,8 +121,12 @@ namespace Server
 
         public static int GetInt(int min, int max) => _state.NextInt(min, max);
         public static float GetFloat(float min, float max) => _state.NextFloat(min, max);
-        public static float GetPercent() => GetFloat(0, 10000f) / 10000f;
-        public static Vector2 GetVector2(float min, float max) => _state.NextFloat2(min, max);
+        public static float GetPercent() => GetFloat(0, 4096f) / 4096f;
+        public static Vector2 GetVector2(float min, float max)
+        {
+            float v = GetFloat(min, max);
+            return new Vector2(v, v);
+        }
         public static Vector2 GetInsideCircle(float radius)
         {
             float angle = GetFloat(0, Mathf.PI * 2f);
