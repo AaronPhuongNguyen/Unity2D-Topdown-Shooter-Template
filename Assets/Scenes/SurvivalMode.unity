@@ -153,6 +153,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 490649751}
+  - {fileID: 1911475183}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &420179878
@@ -167,6 +168,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 577e29e237f5eaf41a2075262a21acdf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  grid: {fileID: 490649752}
+  terrain: {fileID: 1911475184}
+  buildOnStart: 1
+  markWorldCreated: 1
+  menuSceneName: MainMenu
+  logSteps: 1
 --- !u!1 &490649750
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,7 +220,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fallbackSize: {x: 200, y: 200}
   cellWorldSize: 1
-  generateOnStart: 1
+  generateOnStart: 0
   groundTypes:
   - name: Dirt
     blocksPath: 0
@@ -228,7 +235,7 @@ MonoBehaviour:
     allowStructure: 1
     structureNeedsFloor: 1
   defaultGroundID: 0
-  drawGizmos: 1
+  drawGizmos: 0
   drawMapBounds: 1
   gizmoRadius: 40
   debugFollow: {fileID: 584983504}
@@ -371,6 +378,122 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
+--- !u!1 &1911475182
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1911475183}
+  - component: {fileID: 1911475184}
+  m_Layer: 0
+  m_Name: TerrainManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1911475183
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1911475182}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 420179877}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1911475184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1911475182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f97cd60cabc7a114dad1d1ffec79f4f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tilemap: {fileID: 0}
+  grid: {fileID: 490649752}
+  generateOnStart: 0
+  fallbackSeed: 1062008
+  terrainTypes:
+  - name: Water
+    id: 0
+    maxElevation: 0.3
+    gridGroundID: 1
+    isWater: 1
+    isBank: 0
+    debugColor: {r: 0.15, g: 0.4, b: 0.95, a: 1}
+    tiles: []
+  - name: Sand
+    id: 1
+    maxElevation: 0.36
+    gridGroundID: 0
+    isWater: 0
+    isBank: 1
+    debugColor: {r: 0.95, g: 0.85, b: 0.5, a: 1}
+    tiles: []
+  - name: Dirt
+    id: 2
+    maxElevation: 0.5
+    gridGroundID: 0
+    isWater: 0
+    isBank: 0
+    debugColor: {r: 0.55, g: 0.35, b: 0.18, a: 1}
+    tiles: []
+  - name: Grass
+    id: 3
+    maxElevation: 0.8
+    gridGroundID: 0
+    isWater: 0
+    isBank: 0
+    debugColor: {r: 0.25, g: 0.75, b: 0.25, a: 1}
+    tiles: []
+  - name: Stone
+    id: 4
+    maxElevation: 1
+    gridGroundID: 0
+    isWater: 0
+    isBank: 0
+    debugColor: {r: 0.55, g: 0.55, b: 0.6, a: 1}
+    tiles: []
+  noiseSettings:
+    scale: 120
+    octaves: 5
+    persistence: 0.5
+    lacunarity: 2
+    edgeFalloff: 0.25
+  rivers:
+    enabled: 1
+    count: 6
+    minLength: 300
+    maxLength: 900
+    startMinElevation: 0.55
+    stepSize: 1
+    turnStrength: 0.35
+    turnNoiseScale: 0.02
+    downhillBias: 0.15
+    minRadius: 1.5
+    maxRadius: 3.5
+    bankWidth: 1
+  drawMapOverlay: 1
+  overlayAlpha: 0.6
+  flipOverlayY: 0
+  drawLocalCells: 1
+  gizmoRadius: 12
+  debugFollow: {fileID: 0}
+  debugCell: {x: 0, y: 0, z: 0}
+  debugInfo: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -353,6 +353,50 @@ public class GridGenerator : MonoBehaviour
 
         RecalculateCanPlace(ref cell);
     }
+    public bool IsGenerating => isGenerating;
+    public int GroundTypeCount => groundTypes != null ? groundTypes.Count : 0;
+
+    /// <summary>Raised after ApplyGroundMapRoutine finishes.</summary>
+    public event Action OnGroundMapApplied;
+
+    /// <summary>
+    /// Bulk-sets the ground type of every cell. map index = x * height + y,
+    /// where x/y are relative to MinCell. Runs in a per-frame time budget.
+    /// </summary>
+    public IEnumerator ApplyGroundMapRoutine(ushort[] map, Action<float> progress = null)
+    {
+        if (!IsGenerated || map == null || map.Length != gridSize.x * gridSize.y)
+        {
+            Debug.LogWarning("[GridGenerator] ApplyGroundMap: grid not generated or map size mismatch.", this);
+            yield break;
+        }
+
+        int w = gridSize.x, h = gridSize.y;
+        long budget = (long)(100.0 * System.Diagnostics.Stopwatch.Frequency / 1000.0);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
+        for (int x = 0; x < w; x++)
+        {
+            for (int y = 0; y < h; y++)
+            {
+                Vector3Int pos = new Vector3Int(gridOrigin.x + x, gridOrigin.y + y, 0);
+                if (!cells.TryGetValue(pos, out GridCell c)) continue;
+                ApplyGround(ref c, map[x * h + y]);
+                cells[pos] = c;
+            }
+
+            if (sw.ElapsedTicks >= budget)
+            {
+                progress?.Invoke((x + 1) / (float)w);
+                yield return null;
+                sw.Restart();
+            }
+        }
+
+        progress?.Invoke(1f);
+        RefreshDebugInfo();
+        OnGroundMapApplied?.Invoke();
+    }
     #endregion
 
     #region Rules (canPlace / path / view)
