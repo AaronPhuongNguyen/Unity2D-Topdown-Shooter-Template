@@ -208,14 +208,14 @@ public class LoadingHandle : MonoBehaviour
 
         while (CurrentSteps < TotalSteps) yield return null;
 
-        while (slider.value < 0.999f) yield return null;
-
-        CustomText("Initializing Game...");
-        slider.gameObject.SetActive(false);
-        yield return new WaitForSecondsRealtime(RNG.GetFloat(3f, 6f));
+        while (slider.value < 0.999f) yield return null;        
 
         if (useButtonEnterGame)
         {
+            CustomText("Initializing Game...");
+            slider.gameObject.SetActive(false);
+            yield return new WaitForSecondsRealtime(RNG.GetFloat(3f, 6f));
+
             EnsureEventSystem();   // the new scene may not have one
             confirmButton.SetActive(true);
             txtShower.gameObject.SetActive(false);

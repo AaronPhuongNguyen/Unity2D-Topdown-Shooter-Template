@@ -36,6 +36,9 @@ public class Spawner : MonoBehaviour
     #region Main Functions
     public void SpawnPerWave(int wave)
     {
+        if (BossManager.instance != null && BossManager.instance.SpawningSuppressed)
+            return; // boss wave — normal zombies stay out
+
         if (_dtb == null || _dtb.packages.Count == 0 || !CanSpawn(_dtb)) return;
 
         List<ZomPackage> eligible = GetEligiblePackages(wave);

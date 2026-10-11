@@ -44,9 +44,9 @@ public class Zombrain : HurtBox, ITick
     private static readonly int AttackHash = Animator.StringToHash("IsAttacking");
     private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
 
-    private float lastHPBonus, lastATKBonus, lastDEFBonus, lastAPBonus, lastSPEEDBonus;
-    private float lastHPP, lastATKK;
-    private Vector3 lastScale, lastCachedScaled;
+    protected float lastHPBonus, lastATKBonus, lastDEFBonus, lastAPBonus, lastSPEEDBonus;
+    protected float lastHPP, lastATKK;
+    protected Vector3 lastScale, lastCachedScaled;
 
     private float appliedChaseBonus;
 

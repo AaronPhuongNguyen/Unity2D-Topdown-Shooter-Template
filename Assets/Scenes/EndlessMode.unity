@@ -8307,6 +8307,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 788339513}
+        m_TargetAssemblyTypeName: LoadingAccess, Assembly-CSharp
+        m_MethodName: Load
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &788339513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11342,6 +11354,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1107232266}
   m_CullTransparentMesh: 1
+--- !u!1 &1110344429
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1110344430}
+  - component: {fileID: 1110344431}
+  m_Layer: 0
+  m_Name: Boss
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1110344430
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110344429}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1881132707}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1110344431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110344429}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab31a600a2eba4a4384419cf2f136912, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossWaveInterval: 10
+  bossWaveDuration: 300
+  spawnSuppressionDuration: 300
 --- !u!1 &1113999071
 GameObject:
   m_ObjectHideFlags: 0
@@ -12062,6 +12121,68 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1194319580}
   m_CullTransparentMesh: 1
+--- !u!1 &1202947892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1202947893}
+  - component: {fileID: 1202947894}
+  - component: {fileID: 1202947895}
+  m_Layer: 0
+  m_Name: BossSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1202947893
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202947892}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 500, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1603287763}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1202947894
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202947892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a62346f4c5a6f247ae6dd1dad5a4b50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossDatabase: {fileID: 11400000, guid: d813b1da1b0d2cd488f39d8bdcb86005, type: 2}
+  spawnRadius: 10
+  spawnOrigin: {fileID: 1202947893}
+  spawner: {fileID: 0}
+--- !u!114 &1202947895
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202947892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b77d21d4daceb6499c50712055d3f11, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Original: {x: 1, y: 1}
 --- !u!1 &1215537388
 GameObject:
   m_ObjectHideFlags: 0
@@ -15217,6 +15338,7 @@ Transform:
   - {fileID: 1708795763}
   - {fileID: 126431505}
   - {fileID: 2033324727}
+  - {fileID: 1202947893}
   m_Father: {fileID: 1313200930}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1603287764
@@ -17106,6 +17228,7 @@ Transform:
   - {fileID: 2145791899}
   - {fileID: 429566561}
   - {fileID: 197138794}
+  - {fileID: 1110344430}
   m_Father: {fileID: 1313200930}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1881132708
@@ -18191,7 +18314,7 @@ MonoBehaviour:
   hpBar: {fileID: 556441104}
   slerpBar: {fileID: 218758355}
   barCountText: {fileID: 2097247851}
-  hpPerBar: 50
+  hpPerBar: 100
   slerpDelay: 0.1
   slerpSpeed: 5
   frontSpeed: 15

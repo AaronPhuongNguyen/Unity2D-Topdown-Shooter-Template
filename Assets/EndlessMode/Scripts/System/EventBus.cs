@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 public static class EventBus
 {
@@ -56,5 +55,11 @@ public static class EventBus
     public static event Action<UnitAttribute, UnitAttribute, float> OnDamageDealt; // attacker, victim, damage
     public static void RaiseDamageDealt(UnitAttribute attacker, UnitAttribute victim, float damage)
         => OnDamageDealt?.Invoke(attacker, victim, damage);
+
+    public static event Action<int> OnBossWaveStarted;
+    public static event Action OnBossWaveEnded;
+
+    public static void RaiseBossWaveStarted(int wave) => OnBossWaveStarted?.Invoke(wave);
+    public static void RaiseBossWaveEnded() => OnBossWaveEnded?.Invoke();
     #endregion
 }

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 528739e318df2c84da5cd9be809a139e, type: 3}
+  m_Name: Boss Data
+  m_EditorClassIdentifier: 
+  list:
+  - name: Big Meat
+    ID: 0
+    prefab: {fileID: 4593744226995595169, guid: a25b821e37ad74d448ee948cac90850b, type: 3}
+    package: {fileID: 11400000, guid: 58450f0a4152c9147856b7b0648acd1a, type: 2}
+    minWave: 0
+    weight: 0

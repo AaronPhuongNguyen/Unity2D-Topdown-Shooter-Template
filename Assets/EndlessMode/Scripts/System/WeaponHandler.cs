@@ -14,30 +14,125 @@ public struct AttackResult
 
 public static class Attack
 {
-    public static AttackResult Shoot(GameObject o, UnitAttribute ua, float range, Vector2 dir)
-    {
-        return Shoot(o, ua, range, dir, LayerMask.GetMask("Default"));
-    }
+    private static int DefaultMask => LayerMask.GetMask("Default");
 
-    public static AttackResult Shoot(GameObject o, UnitAttribute ua, float range, Vector2 dir, LayerMask enemymask)
+    #region Shoot (single target)
+    // --- With explicit base damage (crit is still rolled on top) ---
+
+    public static AttackResult Shoot(GameObject o, float damage, UnitAttribute ua, float range, Vector2 dir)
+        => Shoot(o, damage, ua, range, dir, DefaultMask);
+
+    public static AttackResult Shoot(GameObject o, float damage, UnitAttribute ua, float range, Vector2 dir, LayerMask enemymask)
     {
-        if (o == null || ua == null || range == 0) return default;
+        if (o == null || ua == null || range == 0f) return default;
 
         RaycastHit2D hit = Physics2D.Raycast(o.transform.position, dir, range, enemymask);
         if (hit.collider == null) return default;
 
         if (!hit.collider.TryGetComponent<HurtBox>(out HurtBox target)) return default;
 
-        UnitPackage targetPackage = target.Access();
-        UnitAttribute hitUnit = targetPackage?.attribute;
-
+        UnitAttribute hitUnit = target.Access()?.attribute;
         if (hitUnit == null) return default;
 
-        float damage = ua.ATK_Current;
-        bool isCrit = RNG.GetPercent() <= ua.CritRate;
-        if (isCrit) damage *= ua.CritDamage;
+        return Resolve(damage, ua, hitUnit, hit);
+    }
 
-        Combat.DealDamage(damage,out float finalDamage, ua, hitUnit);
+    // --- Convenience: base damage = attacker's ATK_Current ---
+
+    public static AttackResult Shoot(GameObject o, UnitAttribute ua, float range, Vector2 dir)
+        => Shoot(o, ua != null ? ua.ATK_Current : 0f, ua, range, dir, DefaultMask);
+
+    public static AttackResult Shoot(GameObject o, UnitAttribute ua, float range, Vector2 dir, LayerMask enemymask)
+        => Shoot(o, ua != null ? ua.ATK_Current : 0f, ua, range, dir, enemymask);
+    #endregion
+
+    #region ShootPierce (multi target)
+    // --- With explicit base damage ---
+
+    public static AttackResult[] ShootPierce(
+        GameObject o,
+        float damage,
+        UnitAttribute ua,
+        float range,
+        Vector2 dir,
+        int maxTargets = 0,
+        float damageFalloff = 1f)
+        => ShootPierce(o, damage, ua, range, dir, (LayerMask)DefaultMask, maxTargets, damageFalloff);
+
+    public static AttackResult[] ShootPierce(
+        GameObject o,
+        float damage,
+        UnitAttribute ua,
+        float range,
+        Vector2 dir,
+        LayerMask enemymask,
+        int maxTargets = 0,
+        float damageFalloff = 1f)
+    {
+        if (o == null || ua == null || range == 0f) return System.Array.Empty<AttackResult>();
+        if (dir.sqrMagnitude < 0.0001f) return System.Array.Empty<AttackResult>();
+        dir = dir.normalized;
+
+        Vector2 origin = o.transform.position;
+        RaycastHit2D[] hits = Physics2D.RaycastAll(origin, dir, range, enemymask);
+        if (hits == null || hits.Length == 0) return System.Array.Empty<AttackResult>();
+
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        List<AttackResult> results = new List<AttackResult>();
+        HashSet<UnitAttribute> alreadyHit = new HashSet<UnitAttribute>();
+        float currentDamageMul = 1f;
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            RaycastHit2D hit = hits[i];
+            if (hit.collider == null) continue;
+            if (!hit.collider.TryGetComponent<HurtBox>(out HurtBox target)) continue;
+
+            UnitAttribute hitUnit = target.Access()?.attribute;
+            if (hitUnit == null) continue;
+            if (!alreadyHit.Add(hitUnit)) continue;
+
+            results.Add(Resolve(damage * currentDamageMul, ua, hitUnit, hit));
+            currentDamageMul *= damageFalloff;
+
+            if (maxTargets > 0 && results.Count >= maxTargets) break;
+        }
+
+        return results.ToArray();
+    }
+
+    // --- Convenience: base damage = attacker's ATK_Current ---
+
+    public static AttackResult[] ShootPierce(
+        GameObject o,
+        UnitAttribute ua,
+        float range,
+        Vector2 dir,
+        LayerMask enemymask,
+        int maxTargets = 0,
+        float damageFalloff = 1f)
+        => ShootPierce(o, ua != null ? ua.ATK_Current : 0f, ua, range, dir, enemymask, maxTargets, damageFalloff);
+
+    public static AttackResult[] ShootPierce(
+        GameObject o,
+        UnitAttribute ua,
+        float range,
+        Vector2 dir,
+        int maxTargets = 0,
+        float damageFalloff = 1f)
+        => ShootPierce(o, ua != null ? ua.ATK_Current : 0f, ua, range, dir, (LayerMask)DefaultMask, maxTargets, damageFalloff);
+    #endregion
+
+    #region Shared
+    // Rolls crit, applies damage and builds the result. Single place for the
+    // hit logic so Shoot and ShootPierce can't drift apart.
+    private static AttackResult Resolve(float baseDamage, UnitAttribute ua, UnitAttribute hitUnit, RaycastHit2D hit)
+    {
+        bool isCrit = RNG.GetPercent() <= ua.CritRate;
+        float damage = isCrit ? baseDamage * ua.CritDamage : baseDamage;
+
+        Combat.DealDamage(damage, out float finalDamage, ua, hitUnit);
 
         return new AttackResult
         {
@@ -49,78 +144,5 @@ public static class Attack
             Damage = finalDamage
         };
     }
-    public static AttackResult[] ShootPierce(
-        GameObject o,
-        UnitAttribute ua,
-        float range,
-        Vector2 dir,
-        LayerMask enemymask,
-        int maxTargets = 0,
-        float damageFalloff = 1f)
-    {
-        if (o == null || ua == null || range == 0f) return System.Array.Empty<AttackResult>();
-
-        if (dir.sqrMagnitude < 0.0001f) return System.Array.Empty<AttackResult>();
-        dir = dir.normalized;
-
-        Vector2 origin = o.transform.position;
-
-        RaycastHit2D[] hits = Physics2D.RaycastAll(origin, dir, range, enemymask);
-
-        if (hits == null || hits.Length == 0) return System.Array.Empty<AttackResult>();
-
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-        List<AttackResult> results = new List<AttackResult>();
-        HashSet<UnitAttribute> alreadyHit = new HashSet<UnitAttribute>();
-
-        float currentDamageMul = 1f;
-
-        for (int i = 0; i < hits.Length; i++)
-        {
-            RaycastHit2D hit = hits[i];
-            if (hit.collider == null) continue;
-
-            if (!hit.collider.TryGetComponent<HurtBox>(out HurtBox target)) continue;
-
-            UnitPackage targetPackage = target.Access();
-            UnitAttribute hitUnit = targetPackage?.attribute;
-            if (hitUnit == null) continue;
-
-            if (!alreadyHit.Add(hitUnit)) continue;
-
-            float damage = ua.ATK_Current * currentDamageMul;
-            bool isCrit = RNG.GetPercent() <= ua.CritRate;
-            if (isCrit) damage *= ua.CritDamage;
-
-            Combat.DealDamage(damage, out float finalDamage, ua, hitUnit);
-
-            results.Add(new AttackResult
-            {
-                DidHit = true,
-                IsCrit = isCrit,
-                Target = hit.collider.gameObject,
-                HitPoint = hit.point,
-                HitUnit = hitUnit,
-                Damage = finalDamage
-            });
-
-            currentDamageMul *= damageFalloff;
-
-            if (maxTargets > 0 && results.Count >= maxTargets)
-                break;
-        }
-
-        return results.ToArray();
-    }
-    public static AttackResult[] ShootPierce(
-        GameObject o,
-        UnitAttribute ua,
-        float range,
-        Vector2 dir,
-        int maxTargets = 0,
-        float damageFalloff = 1f)
-    {
-        return ShootPierce(o, ua, range, dir, LayerMask.GetMask("Default"), maxTargets, damageFalloff);
-    }
+    #endregion
 }
