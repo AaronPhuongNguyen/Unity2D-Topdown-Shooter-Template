@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: BigMeat 1
   m_EditorClassIdentifier: 
-  HP_Base: 30000
-  ATK_Base: 150
+  HP_Base: 20000
+  ATK_Base: 100
   SPEED_Base: 15
   DEF_Base: 200
   ASPD_Base: 0.3

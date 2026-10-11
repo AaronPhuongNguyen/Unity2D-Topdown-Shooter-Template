@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4faf6421f159d643b8bcf88355485a4, type: 3}
+  m_Name: Kafka
+  m_EditorClassIdentifier: 
+  packName: Kafka
+  packID: NPC_Kafka
+  prefab: {fileID: 1864921463154914027, guid: fbb58be6ab0f0d24098e228dc5b7e674, type: 3}
+  attribute:
+    template: {fileID: 11400000, guid: 2ba9deba1fac40a4a8deb8ae617e7057, type: 2}
+    tag: 0
+    HP_Current: 0
+    IsInvincible: 0
+    CritRate: 0.2
+    CritDamage: 2
+    HP_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ATK_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SPEED_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DEF_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ASPD_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+  Media: {fileID: 11400000, guid: a8b122bd651fbe44ab31822fa83544e4, type: 2}

@@ -7535,6 +7535,55 @@ MonoBehaviour:
   showZomCount: 1
   showRemainingTime: 1
   showWave: 1
+--- !u!1 &751549787
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 751549788}
+  - component: {fileID: 751549789}
+  m_Layer: 0
+  m_Name: NPCManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &751549788
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751549787}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1881132707}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &751549789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751549787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 300982226fc6dcd43867732e19752a4e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wavesPerSpawn: 4
+  npcList:
+  - name: Kafka
+    prefab: {fileID: 1864921463154914027, guid: fbb58be6ab0f0d24098e228dc5b7e674, type: 3}
+    package: {fileID: 11400000, guid: 9fe3dd6700fe7584886c7b485468536d, type: 2}
 --- !u!1 &756637121
 GameObject:
   m_ObjectHideFlags: 0
@@ -11178,7 +11227,7 @@ GameObject:
   - component: {fileID: 1110344430}
   - component: {fileID: 1110344431}
   m_Layer: 0
-  m_Name: Boss
+  m_Name: BossManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -16062,7 +16111,7 @@ Tilemap:
   m_TileColorArray: []
   m_TileObjectToInstantiateArray: []
   m_AnimationFrameRate: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.995283, b: 0.995283, a: 1}
   m_Origin: {x: 0, y: 0, z: 0}
   m_Size: {x: 0, y: 0, z: 1}
   m_TileAnchor: {x: 0.5, y: 0.5, z: 0}
@@ -17194,6 +17243,7 @@ Transform:
   - {fileID: 429566561}
   - {fileID: 197138794}
   - {fileID: 1110344430}
+  - {fileID: 751549788}
   m_Father: {fileID: 1313200930}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1881132708

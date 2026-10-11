@@ -178,7 +178,7 @@ public class Zombrain : HurtBox, ITick
         attribute.HP_Ampl.FlatBonus += lastHPBonus;
         attribute.HP_Ampl.TotalBonus += lastHPP;
         attribute.ATK_Ampl.FlatBonus += lastATKBonus;
-        attribute.HP_Ampl.TotalBonus += lastATKK;
+        attribute.ATK_Ampl.TotalBonus += lastATKK;   // was HP_Ampl (bug)
         attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus += lastAPBonus;
@@ -191,7 +191,7 @@ public class Zombrain : HurtBox, ITick
         attribute.HP_Ampl.FlatBonus -= lastHPBonus;
         attribute.HP_Ampl.TotalBonus -= lastHPP;
         attribute.ATK_Ampl.FlatBonus -= lastATKBonus;
-        attribute.HP_Ampl.TotalBonus -= lastATKK;
+        attribute.ATK_Ampl.TotalBonus -= lastATKK;   // was HP_Ampl (bug)
         attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
@@ -412,16 +412,37 @@ public class Zombrain : HurtBox, ITick
     #region Sense
     [Header("Prey Search")]
     [SerializeField] protected float preySearchRadius = 15f;
+    [Tooltip("Zombie only switches if the new target is at least this much closer (0.8 = 20% closer). Prevents flip-flopping.")]
+    [SerializeField, Range(0.1f, 1f)] protected float retargetThreshold = 0.8f;
 
     private Collider2D[] preyBuffer = new Collider2D[8];
 
     protected virtual void FindPrey()
     {
-        if (Target != null) return;
-        if (_now < findPreyInterval) return;
-        findPreyInterval = _now + RNG.GetFloat(0.3f, 1f);
+        // Drop dead / destroyed / pooled-away targets immediately
+        if (Target != null && !Target.gameObject.activeInHierarchy)
+            Target = null;
 
-        Target = SearchForPrey();
+        if (_now < findPreyInterval) return;
+
+        // Re-scan less often when we already have a target
+        findPreyInterval = _now + (Target == null
+            ? RNG.GetFloat(0.3f, 1f)
+            : RNG.GetFloat(0.5f, 1.2f));
+
+        Transform best = SearchForPrey();
+        if (best == null || best == Target) return;
+
+        if (Target != null)
+        {
+            // Only switch if the new one is clearly closer than the current one
+            float curSqr = ((Vector2)Target.position - (Vector2)_t.position).sqrMagnitude;
+            float newSqr = ((Vector2)best.position - (Vector2)_t.position).sqrMagnitude;
+            if (newSqr > curSqr * retargetThreshold * retargetThreshold) return;
+        }
+
+        Target = best;
+        rotateInterval = 0f; // force direction/distance refresh right away
     }
 
     protected virtual Transform SearchForPrey()
@@ -449,6 +470,7 @@ public class Zombrain : HurtBox, ITick
             UnitPackage package = hurtBox.Access();
             if (package?.attribute == null) continue;
             if (package.attribute.tag != UnitTag.Friendly) continue;
+            if (package.attribute.IsDead) continue;
 
             Vector2 delta = (Vector2)col.transform.position - (Vector2)_t.position;
             float distSqr = delta.sqrMagnitude;
