@@ -254,15 +254,21 @@ MonoBehaviour:
   separationStrength: 1.5
   preySearchRadius: 15
   chargeCooldown: 3
-  backStepDuration: 2
-  chargeDuration: 0.5
+  backStepDuration: 1
+  chargeDuration: 0.7
   chargeSpeedBonus: 90
   chargeRangeMultiplier: 3
-  chargeDamageMultiplier: 1.5
-  impactRangeMultiplier: 2
-  recoverMin: 1
-  recoverMax: 2
-  staggerMultiplier: 0.25
+  chargeDamageMultiplier: 4
+  impactRangeMultiplier: 1.5
+  aimAccuracy: 1
+  leadSeconds: 0.25
+  slamRadiusMultiplier: 1.5
+  chainChance: 0.5
+  maxCharges: 3
+  chainBackStepDuration: 0.35
+  recoverMin: 0.3
+  recoverMax: 0.6
+  staggerMultiplier: 0.5
 --- !u!114 &785369671631075427
 MonoBehaviour:
   m_ObjectHideFlags: 0

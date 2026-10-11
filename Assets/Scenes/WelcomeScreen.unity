@@ -355,7 +355,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -466,8 +466,6 @@ GameObject:
   - component: {fileID: 1281791177}
   - component: {fileID: 1281791178}
   - component: {fileID: 1281791179}
-  - component: {fileID: 1281791181}
-  - component: {fileID: 1281791180}
   m_Layer: 0
   m_Name: Welcome
   m_TagString: Untagged
@@ -527,42 +525,6 @@ MonoBehaviour:
   targetSceneName: MainMenu
   useAsync: 0
   delayBeforeLoad: 0
---- !u!114 &1281791180
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1281791176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec74ff006252df24d87112deb0fb32e7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  clip: {fileID: 8300000, guid: 53ec64ba19e319b4b878fe935b2d2d01, type: 3}
---- !u!114 &1281791181
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1281791176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0044c061fcd0710408f9fd5ad312740a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speaker: {fileID: 0}
-  mixer: {fileID: 0}
-  sfxPriority: 8
-  volume: 1
-  musicSpeaker: {fileID: 0}
-  musicMixer: {fileID: 0}
-  musicList: []
-  shuffle: 1
-  autoPlayMusicOnStart: 1
-  musicPriority: 16
-  musicVolume: 0.5
 --- !u!1 &1708378322
 GameObject:
   m_ObjectHideFlags: 0

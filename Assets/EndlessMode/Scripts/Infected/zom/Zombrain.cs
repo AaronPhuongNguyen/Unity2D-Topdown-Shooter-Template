@@ -147,24 +147,24 @@ public class Zombrain : HurtBox, ITick
     {
         float diff = dm.CurrentDifficulty;
 
-        float diffScale = diff * (1f + Mathf.Log(diff + 1f) * 0.35f);
+        float diffScale = diff * (1 + Mathf.Log(diff) * 0.5f);
 
         bool isAlpha = RNG.GetPercent() < 0.1f;
 
-        lastHPBonus = RNG.GetInt(300, 900) * diffScale;
-        lastHPP = 0.8f * diffScale;
+        lastHPBonus = RNG.GetInt(300, 1200) * diffScale;
+        lastHPP = 0.4f * diffScale;
 
-        lastATKBonus = RNG.GetInt(5, 15) * diffScale;
+        lastATKBonus = RNG.GetInt(25, 100) * diffScale;
         lastATKK = 0.2f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetInt(150, 450) * Mathf.Clamp01(diffScale);
-        lastSPEEDBonus = RNG.GetInt(3, 5) * Mathf.Clamp01(diffScale);
-        lastScale = RNG.GetVector2(0, 0.3f) * Mathf.Clamp01(diffScale);
+        lastDEFBonus = RNG.GetInt(150, 600) * Mathf.Clamp01(diffScale);
+        lastSPEEDBonus = RNG.GetInt(3, 6) * Mathf.Clamp01(diffScale);
+        lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Clamp01(diffScale);
 
         if (isAlpha)
         {
-            float alphaMul = RNG.GetFloat(1.5f, 3f) * Mathf.Clamp01(diffScale);
+            float alphaMul = RNG.GetFloat(2f, 4f) * Mathf.Clamp01(diffScale);
             lastHPBonus *= alphaMul;
             lastATKBonus *= alphaMul;
             lastDEFBonus *= alphaMul;

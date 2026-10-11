@@ -101,10 +101,10 @@ public class PlayerProperties : MonoBehaviour
     #endregion
 
     #region Upgrader
-    private const int DefaultPoint = 3;
+    private const int DefaultPoint = 4;
     private const float Growth_HP = 20;
     private const float Growth_ATK = 1f;
-    private const float Growth_DEF = 30f;
+    private const float Growth_DEF = 50f;
     private const float Growth_SPEED = 0.5f;
     private const float Growth_SIGHT = 1f;
     private const float Growth_AP = 0.01f;
@@ -143,13 +143,13 @@ public class PlayerProperties : MonoBehaviour
     private int RollReward()
     {
         float luck = RNG.GetPercent();
-        if (pity >= 10) { pity = 0; return 6; }
+        if (pity >= 10) { pity = 0; return 8; }
 
         pity++;
-        if (luck < 0.20f) { pity = 0; return 6; }
-        if (luck < 0.4f) return 5;
-        if (luck < 0.6f) return 4;
-        return 3;
+        if (luck < 0.20f) { pity = 0; return 7; }
+        if (luck < 0.4f) return 6;
+        if (luck < 0.6f) return 5;
+        return 4;
     }
 
     public void UpgradeHP()

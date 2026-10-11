@@ -18,7 +18,7 @@ public class DashSkill : MonoBehaviour, ITick
     DomainManager dm => DomainManager.instance;
 
     public const float DashDuration = 0.3f;
-    public const float SkillCooldown = 3f;
+    public const float SkillCooldown = 5f;
 
     [Tooltip("Total distance covered over the dash duration (world units).")]
     [SerializeField] private float dashDistance = 5f;
@@ -92,7 +92,7 @@ public class DashSkill : MonoBehaviour, ITick
         float step = Mathf.Min(delta, dashTimeLeft);
         Transform t = pm.Controlling.transform;
 
-        Vector2 p = (Vector2)t.position + dashDir * (dashDistance / DashDuration) * step;
+        Vector2 p = (Vector2)t.position + (dashDir * pm.attribute.SPEED_Current / 9) * (dashDistance / DashDuration) * step;
         if (dm != null) p = dm.ClampToMap(p);
         t.position = new Vector3(p.x, p.y, t.position.z);
 

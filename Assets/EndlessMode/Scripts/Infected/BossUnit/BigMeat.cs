@@ -1,31 +1,27 @@
 using Server;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// First boss: a huge, tanky brute.
+/// First boss: a huge, tanky brute. Hard-hitting version.
 ///
 /// Motions:
 ///   1. Walk       - chases the target (inherited Zombrain behaviour).
 ///   2. Attack     - basic bite at normal range (attribute.SIGHT_Current).
-///   3. Charge     - steps backward for 2s, then rushes at the target for up to
-///                   0.5s, slams on impact, then is stunned/exhausted for
-///                   0.5-1.5s (random). 3s cooldown after that.
-///
-/// Aim: the rush follows Zombrain.Direction / DistanceToTarget, which only
-/// refresh every 0.1-0.3s (DefineDirection). That delay is what keeps the
-/// charge from being pixel-perfect, so moving players can dodge it.
+///   3. Charge     - short backstep, then a rush that leads (predicts) the
+///                   target, ends in an area slam. It can CHAIN into another
+///                   charge right away. Only the player's dash (invincibility)
+///                   avoids the slam, because it hits everything in a radius.
+///                   After the chain it is exhausted for a short random time.
 ///
 /// Two attack ranges:
 ///   - Basic range  = SIGHT_Current
 ///   - Charge range = SIGHT_Current * chargeRangeMultiplier (default 3x).
 ///
-/// Hit stagger: this boss only takes half the slow AND half the duration
-/// of a normal zombie (see staggerMultiplier).
-///
 /// Animator parameters (add to the controller):
 ///   bool    IsWalking      (existing; forced false during the charge skill)
 ///   bool    IsAttacking    (existing; refreshed every frame, see UpdateAnimator)
-///   bool    IsBackStepping (new) - the 2s retreat wind-up
+///   bool    IsBackStepping (new) - the retreat wind-up
 ///   bool    IsCharging     (new) - the rush
 ///   trigger ChargeStrike   (new) - fired once when the slam lands
 /// </summary>
@@ -35,24 +31,42 @@ public class BigMeat : Zombrain
 
     [Header("BigMeat - Charge Skill")]
     [Tooltip("Seconds between the end of the recovery and the next wind-up.")]
-    [SerializeField] private float chargeCooldown = 3f;
+    [SerializeField] private float chargeCooldown = 1.2f;
     [Tooltip("How long it steps backward before charging.")]
-    [SerializeField] private float backStepDuration = 2f;
+    [SerializeField] private float backStepDuration = 0.8f;
     [Tooltip("Maximum rush time. The rush ends earlier on impact.")]
-    [SerializeField] private float chargeDuration = 0.5f;
+    [SerializeField] private float chargeDuration = 0.7f;
     [Tooltip("Flat speed added during the rush.")]
     [SerializeField] private float chargeSpeedBonus = 90f;
-    [Tooltip("Charge slam reach = basic range * this.")]
+    [Tooltip("Charge starts when the target is within basic range * this.")]
     [SerializeField] private float chargeRangeMultiplier = 3f;
     [Tooltip("Slam damage = ATK * this.")]
-    [SerializeField] private float chargeDamageMultiplier = 2f;
+    [SerializeField] private float chargeDamageMultiplier = 4f;
     [Tooltip("The rush ends and slams once within basic range * this of the target.")]
-    [SerializeField] private float impactRangeMultiplier = 1f;
+    [SerializeField] private float impactRangeMultiplier = 1.5f;
+
+    [Header("BigMeat - Aim")]
+    [Tooltip("0 = uses the delayed Direction (0.1-0.3s old), 1 = fully live aim.")]
+    [SerializeField, Range(0f, 1f)] private float aimAccuracy = 1f;
+    [Tooltip("The rush aims this many seconds ahead of the target's movement. 0 = no prediction.")]
+    [SerializeField] private float leadSeconds = 0.25f;
+
+    [Header("BigMeat - Slam (area, hard to miss)")]
+    [Tooltip("The slam hits everything within basic range * this around the boss.")]
+    [SerializeField] private float slamRadiusMultiplier = 1.5f;
+
+    [Header("BigMeat - Chain")]
+    [Tooltip("Chance to immediately charge again after a slam.")]
+    [SerializeField, Range(0f, 1f)] private float chainChance = 0.5f;
+    [Tooltip("Total charges in one chain (1 = no chaining).")]
+    [SerializeField] private int maxCharges = 3;
+    [Tooltip("Short retreat between chained charges.")]
+    [SerializeField] private float chainBackStepDuration = 0.35f;
 
     [Header("BigMeat - Recovery")]
-    [Tooltip("After the slam the boss stands still for a random time in this range.")]
-    [SerializeField] private float recoverMin = 0.5f;
-    [SerializeField] private float recoverMax = 1.5f;
+    [Tooltip("After the chain the boss stands still for a random time in this range.")]
+    [SerializeField] private float recoverMin = 0.3f;
+    [SerializeField] private float recoverMax = 0.6f;
 
     [Header("BigMeat - Hit Stagger")]
     [Tooltip("Scales both the slow and the duration of hit stagger. 0.5 = half.")]
@@ -74,6 +88,16 @@ public class BigMeat : Zombrain
     private float appliedCharge;
     private Vector2 chargeDir;
     private float chargeSqrDist;
+    private int chargeCount;
+
+    // Target velocity tracking for lead aiming.
+    private Vector2 lastTargetPos;
+    private Vector2 targetVel;
+    private bool hasLastTargetPos;
+
+    // Slam buffers (no per-hit allocation).
+    private readonly Collider2D[] slamBuffer = new Collider2D[16];
+    private readonly List<UnitAttribute> slamHit = new List<UnitAttribute>(8);
 
     // Own stagger bookkeeping (Zombrain's is private).
     private float bossStaggerTimer;
@@ -81,13 +105,6 @@ public class BigMeat : Zombrain
 
     private float BasicRange => attribute != null ? attribute.SIGHT_Current : 0f;
     private float ChargeRange => BasicRange * chargeRangeMultiplier;
-
-    #region Bonus
-    protected override void GetBonus()
-    {
-        base.GetBonus();
-    }
-    #endregion
 
     #region Lifecycle
     public override bool SpawnObject(ZomPackage zp)
@@ -164,6 +181,9 @@ public class BigMeat : Zombrain
     {
         if (!isActive || attribute == null) return;
 
+        if (phase == Phase.BackStep || phase == Phase.Charge)
+            TrackTargetVelocity(dt);
+
         switch (phase)
         {
             case Phase.Normal:
@@ -174,6 +194,7 @@ public class BigMeat : Zombrain
                 }
                 if (CanStartBackStep())
                 {
+                    chargeCount = 0;
                     phaseTimer = backStepDuration;
                     SetPhase(Phase.BackStep);
                 }
@@ -191,9 +212,7 @@ public class BigMeat : Zombrain
                 break;
 
             case Phase.Charge:
-                // Uses the delayed Direction/DistanceToTarget from DefineDirection,
-                // so the rush is slightly behind a moving target.
-                bool aimed = AimFromCache();
+                bool aimed = AimAtTarget();
                 phaseTimer -= dt;
 
                 float impact = BasicRange * impactRangeMultiplier;
@@ -202,7 +221,7 @@ public class BigMeat : Zombrain
                 if (hasImpact || phaseTimer <= 0f)
                 {
                     ChargeStrike();
-                    StartRecover();
+                    FinishCharge();
                 }
                 break;
 
@@ -213,17 +232,50 @@ public class BigMeat : Zombrain
         }
     }
 
-    /// <summary>
-    /// Takes the aim from Zombrain's cached Direction / DistanceToTarget
-    /// (refreshed every 0.1-0.3s by DefineDirection) instead of the live
-    /// target position. False if there is no valid cached aim.
-    /// </summary>
-    private bool AimFromCache()
+    private void TrackTargetVelocity(float dt)
     {
-        if (Target == null || Direction == Vector2.zero) return false;
+        if (Target == null || dt <= 0f)
+        {
+            hasLastTargetPos = false;
+            targetVel = Vector2.zero;
+            return;
+        }
 
-        chargeDir = Direction;
-        chargeSqrDist = DistanceToTarget * DistanceToTarget;
+        Vector2 p = Target.position;
+        if (hasLastTargetPos)
+        {
+            Vector2 raw = (p - lastTargetPos) / dt;
+            targetVel = Vector2.Lerp(targetVel, raw, 0.3f); // smooth out jitter
+        }
+        lastTargetPos = p;
+        hasLastTargetPos = true;
+    }
+
+    /// <summary>
+    /// Aims the rush. Blends the delayed Direction (DefineDirection) with the live,
+    /// lead-predicted direction by aimAccuracy. Also stores the REAL distance for
+    /// impact detection. False if there is no valid target.
+    /// </summary>
+    private bool AimAtTarget()
+    {
+        if (Target == null) return false;
+
+        Vector2 pos = _t.position;
+        Vector2 targetPos = Target.position;
+
+        Vector2 toLive = targetPos + targetVel * leadSeconds - pos;
+        float liveSqr = toLive.sqrMagnitude;
+        if (liveSqr < 0.0001f) return false;
+
+        Vector2 liveDir = toLive / Mathf.Sqrt(liveSqr);
+        Vector2 dir = Direction != Vector2.zero
+            ? Vector2.Lerp(Direction, liveDir, aimAccuracy)
+            : liveDir;
+
+        if (dir.sqrMagnitude < 0.0001f) dir = liveDir;
+
+        chargeDir = dir.normalized;
+        chargeSqrDist = (targetPos - pos).sqrMagnitude;
         return true;
     }
 
@@ -238,7 +290,7 @@ public class BigMeat : Zombrain
 
     private void StartCharge()
     {
-        if (!AimFromCache())
+        if (!AimAtTarget())
         {
             EndSkill();
             return;
@@ -252,6 +304,10 @@ public class BigMeat : Zombrain
         SetPhase(Phase.Charge);
     }
 
+    /// <summary>
+    /// Area slam around the boss. Unlike a thin ray it can't slip past a target
+    /// that is slightly off-line; only invincibility (the player's dash) avoids it.
+    /// </summary>
     private void ChargeStrike()
     {
         if (package == null || attribute == null || attribute.IsDead) return;
@@ -259,26 +315,59 @@ public class BigMeat : Zombrain
         PlayAttackSound();
         if (anim != null) anim.SetTrigger(ChargeStrikeHash);
 
-        // Slam reaches 3x the basic range along the last aim, piercing everything in line.
-        AttackResult[] hits = Attack.ShootPierce(
-            gameObject,
-            attribute.ATK_Current * chargeDamageMultiplier,
-            attribute,
-            ChargeRange,
-            chargeDir,
-            hb.enemyMask
-        );
-        if(hits.Length > 0)
-            CamManager.instance?.Shake(1f);
+        float radius = BasicRange * slamRadiusMultiplier;
+        float damage = attribute.ATK_Current * chargeDamageMultiplier;
+        Vector2 center = _t.position;
 
-        for (int i = 0; i < hits.Length; i++)
-            HandleHitEffect(hits[i]);
+        int count = Physics2D.OverlapCircleNonAlloc(center, radius, slamBuffer, hb.enemyMask);
+        slamHit.Clear();
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = slamBuffer[i];
+            if (col == null) continue;
+            if (!col.TryGetComponent(out HurtBox hurt)) continue;
+
+            UnitAttribute victim = hurt.Access()?.attribute;
+            if (victim == null || victim == attribute || victim.IsDead) continue;
+            if (victim.tag != UnitTag.Friendly) continue;
+            if (slamHit.Contains(victim)) continue; // one hit per unit, even with several colliders
+            slamHit.Add(victim);
+
+            Combat.DealDamage(damage, out float finalDamage, attribute, victim);
+
+            HandleHitEffect(new AttackResult
+            {
+                DidHit = true,
+                IsCrit = false,
+                Target = col.gameObject,
+                HitPoint = col.ClosestPoint(center),
+                HitUnit = victim,
+                Damage = finalDamage
+            });
+        }
+
+        if (slamHit.Count > 0)
+            CamManager.instance?.Shake(1f);
     }
 
-    /// <summary>Rush is over: drop the speed burst and stand still for a random time.</summary>
-    private void StartRecover()
+    /// <summary>Rush is over: chain into another charge, or stand still for a random time.</summary>
+    private void FinishCharge()
     {
         RemoveChargeSpeed();
+        chargeCount++;
+
+        bool canChain = chargeCount < maxCharges
+                        && Target != null
+                        && RNG.GetPercent() < chainChance;
+
+        if (canChain)
+        {
+            phaseTimer = chainBackStepDuration;
+            SetPhase(Phase.BackStep);
+            return;
+        }
+
         phaseTimer = RNG.GetFloat(recoverMin, recoverMax);
         SetPhase(Phase.Recover);
     }
@@ -304,6 +393,9 @@ public class BigMeat : Zombrain
 
         phaseTimer = 0f;
         cooldownTimer = 0f;
+        chargeCount = 0;
+        hasLastTargetPos = false;
+        targetVel = Vector2.zero;
         SetPhase(Phase.Normal);
     }
 
@@ -338,7 +430,7 @@ public class BigMeat : Zombrain
                 break;
 
             case Phase.Recover:
-                // Standing still after the slam.
+                // Standing still after the chain.
                 break;
         }
     }
@@ -357,19 +449,17 @@ public class BigMeat : Zombrain
         base.TryAttack();
     }
 
-    // Same logic as Zombrain.PerformAttack, plus diagnostics for every way a
-    // bite can end up dealing no damage.
+    // Same logic as Zombrain.PerformAttack, but the IsAttacking bool is
+    // handled in UpdateAnimator (see below).
     protected override void PerformAttack()
     {
         if (package == null) return;
 
         PlayAttackSound();
 
-        float roll = RNG.GetPercent();
-        if (roll < package.BiteAccuracy)
+        if (RNG.GetPercent() < package.BiteAccuracy)
         {
             AttackResult rs = Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
-
             HandleHitEffect(rs);
         }
 

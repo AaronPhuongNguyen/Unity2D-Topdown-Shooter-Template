@@ -9,8 +9,8 @@ public class StoreUpgrade : MonoBehaviour
     PlayerManager pm => PlayerManager.instance;
 
     #region Constant growth value
-    public UpgradeValue HP = new(100, 0.02f, 100);
-    public UpgradeValue ATK = new(100, 0.02f, 100);
+    public UpgradeValue HP = new(300, 0.02f, 100);
+    public UpgradeValue ATK = new(300, 0.02f, 100);
 
     public UpgradeValue Recovery = new(2000, 0.005f, 40);
     public UpgradeValue Money = new(2000, 2, 40);
