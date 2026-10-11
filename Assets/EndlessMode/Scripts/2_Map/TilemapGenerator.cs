@@ -85,7 +85,7 @@ public class TerrainGenerator : MonoBehaviour
     private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count, "Loading Map");
+        LoadingHandle.Instance.AddTotalSteps(count, "Tilemap");
         pendingLoadingSteps += count;
     }
 

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -17,16 +18,16 @@ public class LoadingHandle : MonoBehaviour
     public static LoadingHandle Instance { get; private set; }
 
     [Header("UI (its own canvas)")]
-    [SerializeField] private Canvas canvas;      // Screen Space - Overlay, high Sorting Order
+    [SerializeField] private Canvas canvas;      // Screen Space - Overlay, high Sorting Order. Needs a GraphicRaycaster.
     [SerializeField] private Slider slider;      // loading bar
-    [SerializeField] private TextMeshProUGUI txtShower;   // shows "current / total"
+    [SerializeField] private TextMeshProUGUI txtShower;   // shows the loading text and percent
     [SerializeField] private GameObject confirmButton;
 
     [Header("Settings")]
     [Tooltip("How fast the bar fills (progress per second). Higher = snappier.")]
-    [SerializeField, Min(0.1f)] private float fillSpeed = 2f;
+    [SerializeField, Min(0.1f)] private float fillSpeed = 1f;
     [Tooltip("Frames to wait after the scene activates so its Awake/Start can register steps.")]
-    [SerializeField, Min(1)] private int settleFrames = 2;
+    [SerializeField, Min(1)] private int settleFrames = 10;
 
     // ---------- steps ----------
     public int TotalSteps { get; private set; }
@@ -49,7 +50,7 @@ public class LoadingHandle : MonoBehaviour
     private bool useButtonEnterGame = true;
     private int shownCurrent = -1, shownTotal = -1;   // last values written to the text
     private static readonly int UnscaledTimeId = Shader.PropertyToID("_UnscaledTime");
-    private string loadingAssetName = "Loading Asset";
+    private string loadingAssetName = "Asset";
 
     // =====================================================================
 
@@ -80,16 +81,18 @@ public class LoadingHandle : MonoBehaviour
     // ---------- public API ----------
 
     /// <summary>Loads a scene by name behind the loading screen.</summary>
-    public void LoadScene(string sceneName,bool UseConfirmButton=true,string loadingContext ="Loading World")
+    public void LoadScene(string sceneName, bool UseConfirmButton = true, string loadingContext = "World")
     {
         if (IsLoading) return;
+
+        // Set everything BEFORE the coroutine starts.
+        useButtonEnterGame = UseConfirmButton;
         loadingAssetName = loadingContext;
         StartCoroutine(LoadRoutine(sceneName));
-        useButtonEnterGame = UseConfirmButton;
     }
 
     /// <summary>Register more work. Call before it starts (e.g. in Awake of the new scene).</summary>
-    public void AddTotalSteps(int count = 1, string loadingLog = "Loading Asset")
+    public void AddTotalSteps(int count = 1, string loadingLog = "Asset")
     {
         TotalSteps += Mathf.Max(0, count);
         loadingAssetName = loadingLog;
@@ -116,7 +119,25 @@ public class LoadingHandle : MonoBehaviour
         Time.timeScale = loaded ? 1f : 0f;
     }
 
-    /// <summary>Writes "current / total" to the label. Only touches the text when a number changed.</summary>
+    /// <summary>
+    /// The loading canvas outlives the scene that owned the EventSystem, and an empty scene
+    /// has none, so the Confirm button could not be clicked. Create one if missing.
+    /// </summary>
+    private void EnsureEventSystem()
+    {
+        if (EventSystem.current != null) return;
+
+        var go = new GameObject("EventSystem (LoadingHandle)");
+        go.AddComponent<EventSystem>();
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        go.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+#else
+        go.AddComponent<StandaloneInputModule>();
+#endif
+        go.transform.SetParent(this.gameObject.transform);   // later scenes may not have one either
+    }
+
+    /// <summary>Writes the loading text and percent. Only touches the text when a number changed.</summary>
     private void RefreshText(bool force = false)
     {
         if (txtShower == null) return;
@@ -124,11 +145,12 @@ public class LoadingHandle : MonoBehaviour
 
         shownCurrent = CurrentSteps;
         shownTotal = TotalSteps;
-        txtShower.text = $"{loadingAssetName}: {(Progress * 100f).ToString("F0")}%";
+        txtShower.text = $"Loading <{loadingAssetName}> :  {(Progress * 100f).ToString("F0")}%";
     }
+
     private void CustomText(string txt = "Done")
     {
-        if(txtShower == null) return;
+        if (txtShower == null) return;
         txtShower.text = txt;
     }
 
@@ -151,10 +173,12 @@ public class LoadingHandle : MonoBehaviour
         txtShower.gameObject.SetActive(true);
         IsLoading = true;
         ResetSteps();
-        loadingAssetName = "Loading World";
+        // loadingAssetName is set by LoadScene, so it is not overwritten here anymore.
         SetLoaded(false);
         sceneProgress = 0f;
         slider.value = 0f;
+        shownCurrent = shownTotal = -1;
+        confirmButton.SetActive(false);
         canvas.enabled = true;
 
         AsyncOperation op = SceneManager.LoadSceneAsync(sceneName);
@@ -178,7 +202,7 @@ public class LoadingHandle : MonoBehaviour
         RefreshText(true);
         op.allowSceneActivation = true;
 
-        while (!op.isDone) yield return null;   
+        while (!op.isDone) yield return null;
 
         for (int i = 0; i < settleFrames; i++) yield return null;
 
@@ -188,15 +212,18 @@ public class LoadingHandle : MonoBehaviour
 
         CustomText("Initializing Game...");
         slider.gameObject.SetActive(false);
-        yield return new WaitForSecondsRealtime(RNG.GetFloat(1.5f,3f));        
-        
+        yield return new WaitForSecondsRealtime(RNG.GetFloat(3f, 6f));
+
         if (useButtonEnterGame)
         {
+            EnsureEventSystem();   // the new scene may not have one
             confirmButton.SetActive(true);
             txtShower.gameObject.SetActive(false);
         }
         else ConfirmEnterGame();
     }
+
+    /// <summary>Hook to the Confirm button's OnClick.</summary>
     public void ConfirmEnterGame()
     {
         confirmButton.SetActive(false);

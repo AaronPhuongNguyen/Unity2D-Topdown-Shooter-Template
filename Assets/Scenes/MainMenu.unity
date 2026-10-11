@@ -1309,8 +1309,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneName: SurvivalMode
-  LoadingText: Loading Survival Mode
-  UseConfirmButton: 0
+  LoadingText: Survival Mode
+  UseConfirmButton: 1
 --- !u!1 &262790334
 GameObject:
   m_ObjectHideFlags: 0
@@ -5922,7 +5922,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sceneName: EndlessMode
-  LoadingText: Loading Endless Mode
+  LoadingText: Endless Mode
   UseConfirmButton: 1
 --- !u!1 &937024568
 GameObject:
@@ -6953,8 +6953,8 @@ MonoBehaviour:
   slider: {fileID: 1879156099}
   txtShower: {fileID: 2091812154}
   confirmButton: {fileID: 2147326953}
-  fillSpeed: 2
-  settleFrames: 2
+  fillSpeed: 1
+  settleFrames: 10
 --- !u!1 &1107711151
 GameObject:
   m_ObjectHideFlags: 0
@@ -12455,7 +12455,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 1872047824}
   m_OnClick:
     m_PersistentCalls:

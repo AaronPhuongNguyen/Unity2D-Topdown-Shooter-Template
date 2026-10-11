@@ -98,7 +98,7 @@ public class NatureGenerator : MonoBehaviour
     private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count, "Loading Nature");
+        LoadingHandle.Instance.AddTotalSteps(count, "Nature");
         pendingLoadingSteps += count;
     }
 

@@ -29,6 +29,7 @@ public class TargetHP : MonoBehaviour, ITick
         SetupSlider(hpBar);
         SetupSlider(slerpBar);
     }
+    void Start() => TickSystem.RegisterAll(this);
 
     private static void SetupSlider(Slider s)
     {
