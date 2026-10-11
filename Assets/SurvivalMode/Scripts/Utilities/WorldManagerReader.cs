@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 /// <summary>
@@ -11,9 +13,20 @@ public class WorldManagerReader : MonoBehaviour
     [SerializeField] private GameObject noSaveFileUI;
     [SerializeField] private Button continueButton;   // optional: greyed out when no save
 
+    [Header("Save Feedback (optional)")]
+    [SerializeField] private GameObject savedToast;   // e.g. a "Game Saved!" label
+    [SerializeField] private float toastSeconds = 1.5f;
+
+    [Header("Events")]
+    [Tooltip("Fired when Continue finds a valid save. Hook LoadingAccess.Load() here.")]
+    [SerializeField] private UnityEvent onContinueSuccess;
+
+    private Coroutine toastRoutine;
+
     private void Start()
     {
         if (noSaveFileUI != null) noSaveFileUI.SetActive(false);
+        if (savedToast != null) savedToast.SetActive(false);
         RefreshContinueButton();
     }
 
@@ -36,10 +49,35 @@ public class WorldManagerReader : MonoBehaviour
     {
         if (!TryGetManager(out var wm)) return;
 
-        bool loading = wm.Continue();
+        bool ok = wm.Continue();
 
-        // No save -> show the NoSaveFile UI. Loading -> make sure it's hidden.
-        if (noSaveFileUI != null) noSaveFileUI.SetActive(!loading && !wm.HasSave);
+        // No save -> show the NoSaveFile UI. Valid save -> hide it and fire the event.
+        if (noSaveFileUI != null) noSaveFileUI.SetActive(!ok && !wm.HasSave);
+
+        if (ok) onContinueSuccess?.Invoke();
+    }
+
+    // Hook to the SaveGame button.
+    public void SaveGame()
+    {
+        if (!TryGetManager(out var wm)) return;
+
+        bool ok = wm.Save();
+        RefreshContinueButton();
+
+        if (ok && savedToast != null && isActiveAndEnabled)
+        {
+            if (toastRoutine != null) StopCoroutine(toastRoutine);
+            toastRoutine = StartCoroutine(ShowToast());
+        }
+    }
+
+    private IEnumerator ShowToast()
+    {
+        savedToast.SetActive(true);
+        yield return new WaitForSecondsRealtime(toastSeconds);   // realtime, so it works while paused
+        savedToast.SetActive(false);
+        toastRoutine = null;
     }
 
     // Hook to the NoSaveFile UI's close/OK button.

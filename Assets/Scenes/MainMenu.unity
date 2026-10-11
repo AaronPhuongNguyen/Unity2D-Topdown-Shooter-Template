@@ -175,6 +175,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   noSaveFileUI: {fileID: 88652685}
   continueButton: {fileID: 1369238733}
+  savedToast: {fileID: 0}
+  toastSeconds: 1.5
+  onContinueSuccess:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &12246081
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,6 +410,18 @@ MonoBehaviour:
       - m_Target: {fileID: 47656721}
         m_TargetAssemblyTypeName: LoadingAccess, Assembly-CSharp
         m_MethodName: Load
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 7416738}
+        m_TargetAssemblyTypeName: WorldManagerReader, Assembly-CSharp
+        m_MethodName: SaveGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

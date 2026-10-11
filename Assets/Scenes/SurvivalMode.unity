@@ -131,6 +131,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 420179877}
+  - component: {fileID: 420179878}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -150,9 +151,89 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 490649751}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &420179878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 420179876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 577e29e237f5eaf41a2075262a21acdf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &490649750
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 490649751}
+  - component: {fileID: 490649752}
+  m_Layer: 0
+  m_Name: GridManager.
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &490649751
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490649750}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 420179877}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &490649752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 490649750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2949af158e3a99c46b6ed220a8bc8ebe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fallbackSize: {x: 200, y: 200}
+  cellWorldSize: 1
+  generateOnStart: 1
+  groundTypes:
+  - name: Dirt
+    blocksPath: 0
+    blocksView: 0
+    allowFloor: 1
+    allowStructure: 1
+    structureNeedsFloor: 0
+  - name: Water
+    blocksPath: 1
+    blocksView: 0
+    allowFloor: 1
+    allowStructure: 1
+    structureNeedsFloor: 1
+  defaultGroundID: 0
+  drawGizmos: 1
+  drawMapBounds: 1
+  gizmoRadius: 40
+  debugFollow: {fileID: 584983504}
+  debugCell: {x: 0, y: 0, z: 0}
+  debugInfo: 
 --- !u!1 &584983501
 GameObject:
   m_ObjectHideFlags: 0

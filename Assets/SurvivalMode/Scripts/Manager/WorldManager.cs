@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(-5)]
@@ -28,7 +29,12 @@ public class WorldManager : MonoBehaviour
 
     [Header("Survival World")]
     public SaveData data;
-    
+
+    /// <summary>Fired right before writing. Other systems (inventory, map, ...) copy their state into data here.</summary>
+    public event Action OnBeforeSave;
+
+    /// <summary>Fired after the file was written.</summary>
+    public event Action OnSaved;
 
     /// <summary>True when a save exists and it actually contains a created world.</summary>
     public bool HasSave => data != null && data.WorldScript != null;
@@ -65,6 +71,28 @@ public class WorldManager : MonoBehaviour
         data.WorldScript = JsonUtility.FromJson<WorldScript>(JsonUtility.ToJson(newWorld));
         data.WorldScript.IsNew = true;
 
+        Save();
+    }
+
+    /// <summary>Sets the player in memory. Call Save() afterwards to write it.</summary>
+    public void SetPlayer(PlayerData player)
+    {
+        if (data == null) data = new SaveData();
+        data.PlayerData = player;
+    }
+
+    /// <summary>Saves everything in memory. Returns false if there is nothing to save.</summary>
+    public bool Save()
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("WorldManager: nothing to save (no data in memory).");
+            return false;
+        }
+
+        OnBeforeSave?.Invoke();               // let other systems update data first
         SaveSystem.Save(data, Slot);
+        OnSaved?.Invoke();
+        return true;
     }
 }
