@@ -272,7 +272,7 @@ public class NpcBrain : HurtBox, ITick
         SpawnIndicator();
 
         // Fresh clone: nothing applied yet.
-        appliedHPBonus = appliedATKBonus = appliedDEFBonus = 0f;
+        appliedHPBonus = appliedATKBonus = appliedDEFBonus = appliedHPP = appliedATKK = appliedSPEEDBonus = 0f;
         RefreshBonus();
         return true;
     }
@@ -344,9 +344,9 @@ public class NpcBrain : HurtBox, ITick
         float diff = Mathf.Max(0f, dm.CurrentDifficulty);
 
         appliedHPBonus = hpGrowthPerDifficulty * diff;
-        appliedHPP = 0.015f * diff;
+        appliedHPP = 0.1f * diff;
         appliedATKBonus = atkGrowthPerDifficulty * diff;
-        appliedATKK = 0.015f * diff;
+        appliedATKK = 0.1f * diff;
         appliedDEFBonus = Mathf.Min(1000, defPerDifficulty * diff);
         appliedSPEEDBonus = Mathf.Min(5, speedPerDif * diff);
 
