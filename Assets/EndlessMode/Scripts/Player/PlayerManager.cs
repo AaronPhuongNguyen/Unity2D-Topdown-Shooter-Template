@@ -24,6 +24,7 @@ public class PlayerManager : MonoBehaviour, ITick
     [HideInInspector] public Vector2 MoveInput;
     [HideInInspector] public Vector2 Direction;
     [HideInInspector] public Vector2 LastDeathAtSpot;
+    [HideInInspector] public bool IsDashing;
     [HideInInspector] public PlayerCombat pc;
     [HideInInspector] public PlayerPackage clonedPack;
     [HideInInspector] public GameObject AimIndicator;
@@ -296,6 +297,7 @@ public class PlayerManager : MonoBehaviour, ITick
         if (attribute.IsDead) return;
 
         SetCombat(0.5f);
+        CamManager.instance?.Shake(0.8f);
         PlayHitEffect();
 
         if (RNG.GetPercent() <= StaggerChance)
@@ -348,7 +350,7 @@ public class PlayerManager : MonoBehaviour, ITick
         appliedStaggerMultiplier = newMultiplier;
         staggerTimer = StaggerDuration;
 
-        CamManager.instance?.Shake(1.6f);
+        CamManager.instance?.Shake(3f);
     }
 
     private void TickStagger(float delta)
@@ -381,7 +383,7 @@ public class PlayerManager : MonoBehaviour, ITick
             bleedTickTimer = bleedTickInterval;
 
         bleedTimer = BleedDuration;
-        CamManager.instance?.Shake(0.8f);
+        CamManager.instance?.Shake(1.6f);
     }
 
     private void TickBleed(float delta)

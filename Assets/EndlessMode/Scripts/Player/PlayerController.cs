@@ -69,6 +69,7 @@ public class PlayerController : MonoBehaviour, ITick
         if (pm == null || pm.Controlling == null) return;
 
         pm.MoveInput = m;
+        if (pm.IsDashing) return;
 
         if (m != Vector2.zero) UnitMotion.MoveThisObject(pm.attribute, pm.Controlling, m);
 

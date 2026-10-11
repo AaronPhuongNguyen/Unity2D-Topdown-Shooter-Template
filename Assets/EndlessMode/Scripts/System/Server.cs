@@ -79,14 +79,19 @@ namespace Server
                 return;
             }
 
-            damage = HandleDamage(damage, attacker, victim);
-            victim.TakeDamage(damage);
-
-            victim.OnTakeDamage?.Invoke(damage);
-            attacker.OnDealDamage?.Invoke(damage);
-            EventBus.RaiseDamageDealt(attacker, victim, damage); // new
-
-            finalDamage = damage;
+            if (!victim.IsInvincible)
+            {
+                damage = HandleDamage(damage, attacker, victim);
+                victim.TakeDamage(damage);
+                victim.OnTakeDamage?.Invoke(damage);
+                attacker.OnDealDamage?.Invoke(damage);
+                EventBus.RaiseDamageDealt(attacker, victim, damage); // new
+                finalDamage = damage;
+            }
+            else
+            {
+                finalDamage = 0;
+            }
         }
         public static float HandleDamage(float damage, UnitAttribute a, UnitAttribute v)
         {

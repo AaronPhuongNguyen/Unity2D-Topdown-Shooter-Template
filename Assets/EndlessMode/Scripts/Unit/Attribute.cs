@@ -31,6 +31,7 @@ public class UnitAttribute
     public float HP_Current;
     public float HP_Lost => (HP_Max - HP_Current) / HP_Max;
     public bool IsFullHP => (HP_Current >= HP_Max);
+    public bool IsInvincible = false;
 
     public float CritRate = 0.2f;
     public float CritDamage = 2.0f;

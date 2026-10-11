@@ -131,7 +131,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 1}
+  m_LocalScale: {x: 6, y: 6, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7373240378887128006}
@@ -147,7 +147,7 @@ BoxCollider2D:
   m_GameObject: {fileID: 4593744226995595169}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: 2d12356f66b50a745b5006143ea057e0, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -167,10 +167,10 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: -0.1}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -181,7 +181,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.5, y: 0.25}
   m_EdgeRadius: 0
 --- !u!114 &6446079325543092492
 MonoBehaviour:
@@ -200,6 +200,7 @@ MonoBehaviour:
     template: {fileID: 0}
     tag: 0
     HP_Current: 0
+    IsInvincible: 0
     CritRate: 0.2
     CritDamage: 2
     HP_Ampl:
@@ -253,11 +254,15 @@ MonoBehaviour:
   separationStrength: 1.5
   preySearchRadius: 15
   chargeCooldown: 3
-  backStepDuration: 5
-  chargeDuration: 1
-  chargeSpeedBonus: 60
+  backStepDuration: 2
+  chargeDuration: 0.5
+  chargeSpeedBonus: 90
   chargeRangeMultiplier: 3
-  chargeDamageMultiplier: 2
+  chargeDamageMultiplier: 1.5
+  impactRangeMultiplier: 2
+  recoverMin: 1
+  recoverMax: 2
+  staggerMultiplier: 0.25
 --- !u!114 &785369671631075427
 MonoBehaviour:
   m_ObjectHideFlags: 0

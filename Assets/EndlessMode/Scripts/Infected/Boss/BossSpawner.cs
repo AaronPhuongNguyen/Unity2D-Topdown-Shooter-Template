@@ -94,6 +94,9 @@ public class BossSpawner : MonoBehaviour
 
         o.transform.position = GetSpawnOrigin() + GetRandomOffset(spawnRadius);
 
+        // DEBUG: remove once the duplicate-boss issue is found.
+        Debug.Log($"[BossSpawner:{GetInstanceID()}] spawned boss '{o.name}' (id {o.GetInstanceID()}) via {boss.prefab.name}", o);
+
         if (BossManager.instance != null)
             BossManager.instance.RegisterBoss(o);
 
