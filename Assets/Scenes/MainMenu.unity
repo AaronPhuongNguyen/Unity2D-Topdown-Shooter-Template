@@ -14383,7 +14383,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   mixer: {fileID: 0}
   sfxPriority: 8
-  volume: 0.4
+  volume: 1
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:

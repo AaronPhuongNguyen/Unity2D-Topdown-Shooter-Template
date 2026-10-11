@@ -8186,7 +8186,7 @@ GameObject:
   - component: {fileID: 788339510}
   - component: {fileID: 788339509}
   - component: {fileID: 788339512}
-  - component: {fileID: 788339511}
+  - component: {fileID: 788339513}
   m_Layer: 0
   m_Name: Home
   m_TagString: Untagged
@@ -8251,21 +8251,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 788339507}
   m_CullTransparentMesh: 1
---- !u!114 &788339511
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 788339507}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90650c688be06f74492015aab5199fc9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetSceneName: MainMenu
-  useAsync: 1
-  delayBeforeLoad: 0
 --- !u!114 &788339512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8310,18 +8295,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 788339511}
-        m_TargetAssemblyTypeName: SceneSwitcher, Assembly-CSharp
-        m_MethodName: LoadScene
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
       - m_Target: {fileID: 118959876}
         m_TargetAssemblyTypeName: GameHelper, Assembly-CSharp
         m_MethodName: ResumeGame
@@ -8334,6 +8307,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &788339513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 788339507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2686375dce6cfda468b8bc9b38e0f43e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneName: MainMenu
+  LoadingText: Menu
+  UseConfirmButton: 0
 --- !u!1 &792377255
 GameObject:
   m_ObjectHideFlags: 0
