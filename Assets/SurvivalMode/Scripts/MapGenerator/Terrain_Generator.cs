@@ -17,7 +17,7 @@ public class TerrainType
     public float maxElevation = 1f;
     [Tooltip("Index into GridGenerator's Ground Types (blocking / canPlace rules come from there).")]
     public int gridGroundID = 0;
-    [Tooltip("Rivers carve into the FIRST type with this flag. Also used by IsWater().")]
+    [Tooltip("Rivers carve into the FIRST type with this flag. Also used by IsWater(). Painted on the Water Tilemap.")]
     public bool isWater;
     [Tooltip("River banks use the FIRST type with this flag (e.g. Sand).")]
     public bool isBank;
@@ -70,9 +70,10 @@ public class RiverSettings
 }
 
 /// <summary>
-/// Perlin elevation map -> terrain types -> Tilemap, plus Perlin-worm rivers.
+/// Perlin elevation map -> terrain types -> Tilemaps, plus Perlin-worm rivers.
+/// Land goes on the Ground Tilemap, water on its own Water Tilemap (own material later).
 /// Size and origin come from GridGenerator, seed from WorldScript. After painting,
-/// every cell's ground type is pushed to the grid. Access anywhere: TerrainGenerator.Instance.
+/// every cell's ground type is pushed to the grid. Access anywhere: Terrain_Generator.Instance.
 /// </summary>
 [DisallowMultipleComponent]
 [DefaultExecutionOrder(-3)]
@@ -90,7 +91,12 @@ public class Terrain_Generator : MonoBehaviour
 
     #region Inspector
     [Header("References")]
+    [Tooltip("Land tiles (dirt, grass, stone, sand...).")]
     [SerializeField] private Tilemap tilemap;
+    [Tooltip("Water tiles only. A separate Tilemap so it can use its own material. Empty = water is painted on the Ground Tilemap.")]
+    [SerializeField] private Tilemap waterTilemap;
+    [Tooltip("Optional: tile placed on the Ground Tilemap UNDER water (e.g. a seabed), useful for transparent water materials.")]
+    [SerializeField] private TileBase underWaterTile;
     [SerializeField] private GridGenerator grid;
 
     [Header("Start")]
@@ -159,6 +165,8 @@ public class Terrain_Generator : MonoBehaviour
     public bool IsGenerated { get; private set; }
     public bool IsGenerating => isGenerating;
     public IReadOnlyList<TerrainType> Types => terrainTypes;
+    public Tilemap GroundTilemap => tilemap;
+    public Tilemap WaterTilemap => waterTilemap != null ? waterTilemap : tilemap;
     public event Action OnGenerated;
     #endregion
 
@@ -166,7 +174,7 @@ public class Terrain_Generator : MonoBehaviour
     private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count, "Loading Terrain");
+        LoadingHandle.Instance.AddTotalSteps(count, "Terrain");
         pendingLoadingSteps += count;
     }
 
@@ -234,7 +242,7 @@ public class Terrain_Generator : MonoBehaviour
         }
         if (!grid.IsGenerated)
         {
-            Debug.LogWarning("[TerrainGenerator] Grid failed to generate.");
+            Debug.LogWarning("[Terrain_Generator] Grid failed to generate.", this);
             Abort();
             yield break;
         }
@@ -280,9 +288,13 @@ public class Terrain_Generator : MonoBehaviour
         if (compute.IsFaulted) { Debug.LogException(compute.Exception); Abort(); yield break; }
         if (cancelRequested || tilemap == null) { Abort(); yield break; }
 
-        // ---------- Phase 2: paint the Tilemap ----------
+        // ---------- Phase 2: paint the Tilemaps (land and water separately) ----------
         tilemap.ClearAllTiles();
-        var column = new TileBase[h];
+        bool separateWater = waterTilemap != null && waterTilemap != tilemap;
+        if (separateWater) waterTilemap.ClearAllTiles();
+
+        var groundColumn = new TileBase[h];
+        var waterColumn = separateWater ? new TileBase[h] : null;
         long budgetTicks = (long)(loadingBudget * System.Diagnostics.Stopwatch.Frequency / 1000.0);
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -291,9 +303,24 @@ public class Terrain_Generator : MonoBehaviour
             for (int y = 0; y < h; y++)
             {
                 int i = x * h + y;
-                column[y] = terrainTypes[typeMap[i]].tiles[tileVar[i]];
+                TerrainType t = terrainTypes[typeMap[i]];
+                TileBase tile = t.tiles[tileVar[i]];
+
+                if (separateWater && t.isWater)
+                {
+                    groundColumn[y] = underWaterTile;   // seabed (or nothing)
+                    waterColumn[y] = tile;
+                }
+                else
+                {
+                    groundColumn[y] = tile;
+                    if (separateWater) waterColumn[y] = null;
+                }
             }
-            tilemap.SetTilesBlock(new BoundsInt(gridOrigin.x + x, gridOrigin.y, 0, 1, h, 1), column);
+
+            var bounds = new BoundsInt(gridOrigin.x + x, gridOrigin.y, 0, 1, h, 1);
+            tilemap.SetTilesBlock(bounds, groundColumn);
+            if (separateWater) waterTilemap.SetTilesBlock(bounds, waterColumn);
 
             if (sw.ElapsedTicks >= budgetTicks)
             {
@@ -333,19 +360,22 @@ public class Terrain_Generator : MonoBehaviour
 
     private bool CanGenerate()
     {
-        if (tilemap == null) { Debug.LogWarning("[TerrainGenerator] No Tilemap assigned.", this); return false; }
+        if (tilemap == null) { Debug.LogWarning("[Terrain_Generator] No Ground Tilemap assigned.", this); return false; }
         if (grid == null) grid = FindFirstObjectByType<GridGenerator>();
-        if (grid == null) { Debug.LogWarning("[TerrainGenerator] No GridGenerator found.", this); return false; }
-        if (terrainTypes == null || terrainTypes.Count == 0) { Debug.LogWarning("[TerrainGenerator] No terrain types.", this); return false; }
+        if (grid == null) { Debug.LogWarning("[Terrain_Generator] No GridGenerator found.", this); return false; }
+        if (terrainTypes == null || terrainTypes.Count == 0) { Debug.LogWarning("[Terrain_Generator] No terrain types.", this); return false; }
 
         foreach (TerrainType t in terrainTypes)
         {
             if (t.tiles == null || t.tiles.Count == 0 || t.tiles.Contains(null))
             {
-                Debug.LogWarning($"[TerrainGenerator] Type '{t.name}' has no tiles, or an empty tile slot.", this);
+                Debug.LogWarning($"[Terrain_Generator] Type '{t.name}' has no tiles, or an empty tile slot.", this);
                 return false;
             }
         }
+
+        if (waterTilemap == null)
+            Debug.LogWarning("[Terrain_Generator] No Water Tilemap assigned, water will be painted on the Ground Tilemap.", this);
         return true;
     }
 
@@ -372,13 +402,13 @@ public class Terrain_Generator : MonoBehaviour
             if (t.isBank && bankIdx < 0) bankIdx = i;
 
             if (t.gridGroundID >= grid.GroundTypeCount)
-                Debug.LogWarning($"[TerrainGenerator] '{t.name}' uses Grid Ground ID {t.gridGroundID}, " +
+                Debug.LogWarning($"[Terrain_Generator] '{t.name}' uses Grid Ground ID {t.gridGroundID}, " +
                                  $"but GridGenerator only has {grid.GroundTypeCount} Ground Types.", this);
         }
 
         if (rivers.enabled && waterIdx < 0)
         {
-            Debug.LogWarning("[TerrainGenerator] Rivers need a type with 'Is Water' ticked. Rivers skipped.", this);
+            Debug.LogWarning("[Terrain_Generator] Rivers need a type with 'Is Water' ticked. Rivers skipped.", this);
             rivers.enabled = false;
         }
     }
@@ -631,6 +661,7 @@ public class Terrain_Generator : MonoBehaviour
         IsGenerated = false;
         FlushLoadingSteps();
         if (tilemap != null) tilemap.ClearAllTiles();
+        if (waterTilemap != null) waterTilemap.ClearAllTiles();
         elevation = null; typeMap = null;
     }
 
@@ -641,7 +672,7 @@ public class Terrain_Generator : MonoBehaviour
         long total = 0;
         foreach (int c in typeCounts) total += c;
 
-        var sb = new System.Text.StringBuilder($"[TerrainGenerator] Seed {S_RNG.Seed}, {total} cells:");
+        var sb = new System.Text.StringBuilder($"[Terrain_Generator] Seed {S_RNG.Seed}, {total} cells:");
         for (int i = 0; i < typeCounts.Length && i < terrainTypes.Count; i++)
             sb.Append($"\n  {terrainTypes[i].name} (ID {terrainTypes[i].id}): {typeCounts[i]} ({typeCounts[i] * 100f / Mathf.Max(1, total):F1}%)");
         Debug.Log(sb.ToString(), this);

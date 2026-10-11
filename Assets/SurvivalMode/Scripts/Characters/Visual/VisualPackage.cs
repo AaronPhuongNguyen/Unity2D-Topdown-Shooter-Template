@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -63,24 +63,114 @@ public class VisualDataBase : ScriptableObject
     [ContextMenu("Fill Default Palettes")]
     private void FillDefaultPalettes()
     {
+        // =========================================================
+        // SKIN COLORS - 7 tông da tự nhiên (sáng -> tối)
+        // =========================================================
         SkinColors = new Color[]
         {
-            new Color32(255, 255, 255, 255),   // pale (default)
-            new Color32(245, 222, 200, 255),
-            new Color32(220, 180, 140, 255),
-            new Color32(180, 130, 90, 255),
-            new Color32(130, 90, 60, 255),
-            new Color32(90, 60, 40, 255),
+        new Color32(255, 255, 255, 255),   // 0 original sprite color (default)
+        new Color32(255, 235, 220, 255),   // 1 rất sáng (pale / porcelain)
+        new Color32(240, 210, 180, 255),   // 2 sáng (fair / light beige)
+        new Color32(220, 180, 140, 255),   // 3 trung bình sáng (tan)
+        new Color32(190, 145, 105, 255),   // 4 trung bình (bronze)
+        new Color32(150, 105, 75, 255),    // 5 ngăm (brown)
+        new Color32(100, 70, 50, 255),     // 6 đậm (dark brown)
+        new Color32(60, 40, 30, 255),      // 7 rất đậm (ebony)
         };
+
+        // =========================================================
+        // HAIR COLORS - 7 nhóm màu cầu vồng x 3 sắc độ (Đậm/Vừa/Nhạt)
+        // =========================================================
         HairColors = new Color[]
         {
-            new Color32(255, 255, 255, 255),   // original sprite color
-            new Color32(35, 35, 38, 255),      // black
-            new Color32(110, 70, 40, 255),     // brown
-            new Color32(240, 205, 110, 255),   // blonde
-            new Color32(190, 90, 40, 255),     // ginger
-            new Color32(140, 140, 145, 255),   // gray
+            new Color32(255, 255, 255, 255),   // 0 original sprite color (default)
+
+            // ----- ĐỎ (Red) -----
+            new Color32(140, 20, 20, 255),     // 1 đỏ đậm
+            new Color32(200, 40, 40, 255),     // 2 đỏ vừa
+            new Color32(245, 110, 110, 255),   // 3 đỏ nhạt
+
+            // ----- CAM (Orange) -----
+            new Color32(170, 70, 10, 255),     // 4 cam đậm
+            new Color32(230, 120, 30, 255),    // 5 cam vừa
+            new Color32(255, 180, 100, 255),   // 6 cam nhạt
+
+            // ----- VÀNG (Yellow) -----
+            new Color32(180, 150, 20, 255),    // 7 vàng đậm
+            new Color32(235, 205, 60, 255),    // 8 vàng vừa
+            new Color32(255, 240, 150, 255),   // 9 vàng nhạt
+
+            // ----- LỤC (Green) -----
+            new Color32(30, 100, 40, 255),     // 10 lục đậm
+            new Color32(70, 165, 80, 255),     // 11 lục vừa
+            new Color32(150, 220, 150, 255),   // 12 lục nhạt
+
+            // ----- LAM (Blue) -----
+            new Color32(30, 60, 150, 255),     // 13 lam đậm
+            new Color32(70, 120, 210, 255),    // 14 lam vừa
+            new Color32(150, 195, 245, 255),   // 15 lam nhạt
+
+            // ----- CHÀM (Indigo) -----
+            new Color32(60, 30, 120, 255),     // 16 chàm đậm
+            new Color32(110, 70, 180, 255),    // 17 chàm vừa
+            new Color32(180, 150, 230, 255),   // 18 chàm nhạt
+
+            // ----- TÍM (Violet) -----
+            new Color32(120, 30, 110, 255),    // 19 tím đậm
+            new Color32(180, 70, 170, 255),    // 20 tím vừa
+            new Color32(230, 150, 220, 255),   // 21 tím nhạt
+
+            // ----- HỒNG (Pink) -----
+            new Color32(170, 30, 90, 255),     // 22 hồng đậm
+            new Color32(235, 80, 150, 255),    // 23 hồng vừa
+            new Color32(255, 170, 205, 255),   // 24 hồng nhạt
+
+            // ----- HỒNG ĐÀO (Peach) -----
+            new Color32(190, 90, 70, 255),     // 25 hồng đào đậm
+            new Color32(245, 150, 120, 255),   // 26 hồng đào vừa
+            new Color32(255, 200, 175, 255),   // 27 hồng đào nhạt
+
+            // ----- NÂU (Brown) -----
+            new Color32(70, 45, 25, 255),      // 28 nâu đậm
+            new Color32(120, 80, 45, 255),     // 29 nâu vừa
+            new Color32(180, 140, 100, 255),   // 30 nâu nhạt
+
+            // ----- ĐEN / XÁM (Black / Gray) -----
+            new Color32(25, 25, 28, 255),      // 31 đen đậm
+            new Color32(90, 90, 95, 255),      // 32 xám vừa
+            new Color32(200, 200, 205, 255),   // 33 xám nhạt (bạc)
+
+            // ----- TRẮNG (White) -----
+            new Color32(210, 210, 215, 255),   // 34 trắng đậm (bạc trắng)
+            new Color32(235, 235, 240, 255),   // 35 trắng vừa
+            new Color32(255, 255, 255, 255),   // 36 trắng nhạt (tinh khiết)
+
+            // ----- XANH NGỌC (Teal) -----
+            new Color32(20, 90, 90, 255),      // 37 teal đậm
+            new Color32(60, 160, 160, 255),    // 38 teal vừa
+            new Color32(150, 220, 220, 255),   // 39 teal nhạt
+
+            // ----- XANH MINT (Mint) -----
+            new Color32(40, 130, 110, 255),    // 40 mint đậm
+            new Color32(100, 200, 175, 255),   // 41 mint vừa
+            new Color32(180, 240, 220, 255),   // 42 mint nhạt
+
+            // ----- VÀNG KIM (Gold) -----
+            new Color32(160, 120, 20, 255),    // 43 vàng kim đậm
+            new Color32(220, 180, 60, 255),    // 44 vàng kim vừa
+            new Color32(255, 225, 150, 255),   // 45 vàng kim nhạt
+
+            // ----- BẠC (Silver) -----
+            new Color32(120, 125, 135, 255),   // 46 bạc đậm
+            new Color32(170, 175, 185, 255),   // 47 bạc vừa
+            new Color32(220, 225, 235, 255),   // 48 bạc nhạt
+
+            // ----- ĐỒNG (Copper) -----
+            new Color32(140, 70, 30, 255),     // 49 đồng đậm
+            new Color32(200, 115, 60, 255),    // 50 đồng vừa
+            new Color32(245, 175, 130, 255),   // 51 đồng nhạt
         };
+
 #if UNITY_EDITOR
         UnityEditor.EditorUtility.SetDirty(this);
 #endif

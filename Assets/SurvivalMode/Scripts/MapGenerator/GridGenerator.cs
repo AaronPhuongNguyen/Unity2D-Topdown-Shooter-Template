@@ -179,7 +179,7 @@ public class GridGenerator : MonoBehaviour
     private void RegisterLoadingSteps(int count)
     {
         if (count <= 0 || LoadingHandle.Instance == null) return;
-        LoadingHandle.Instance.AddTotalSteps(count, "Grid");
+        LoadingHandle.Instance.AddTotalSteps(count, "Cells");
         pendingLoadingSteps += count;
     }
 
