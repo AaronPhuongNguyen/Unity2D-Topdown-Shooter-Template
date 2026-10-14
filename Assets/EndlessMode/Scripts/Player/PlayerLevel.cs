@@ -11,7 +11,7 @@ public class UnitLevel
 
     public float EXP_Current;
     // Guarded: Log(0) is -Infinity, which made the old formula return -Infinity at level 1.
-    public float EXP_ToUpLevel => 100 * (1 + Mathf.Log(Mathf.Max(1, Level_Current - 1)) * 0.15f);
+    public float EXP_ToUpLevel => 100 * (1 + Mathf.Log(Mathf.Max(1, Level_Current - 1)) * 0.75f);
 
     public Action<float> OnEXPAdded;
     public Action OnLevelUp;

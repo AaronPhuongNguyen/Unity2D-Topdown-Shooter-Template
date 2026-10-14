@@ -278,7 +278,6 @@ public class DomainManager : MonoBehaviour, ITick
         CurrentWave += wave;
         BeginWave();
         AddCurrency(Killed + 100);
-        PM?.AddEXP(wave * 100);
     }
 
     // Sets up the state of the wave that CurrentWave points at (no currency reward).

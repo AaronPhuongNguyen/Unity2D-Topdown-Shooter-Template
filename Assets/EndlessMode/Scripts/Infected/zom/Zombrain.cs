@@ -162,7 +162,7 @@ public class Zombrain : HurtBox, ITick
     {
         float diff = dm.CurrentDifficulty;
 
-        float diffScale = diff * (1 + Mathf.Log(diff) * 0.35f);
+        float diffScale = diff * (1 + Mathf.Log(diff) * 0.75f);
 
         bool isAlpha = RNG.GetPercent() < 0.1f;
 
