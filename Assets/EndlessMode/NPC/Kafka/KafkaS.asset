@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: KafkaS
   m_EditorClassIdentifier: 
   AttackSounds:
-  - {fileID: 8300000, guid: d390168c76ce97140b3f9fb9601fcd61, type: 3}
+  - {fileID: 8300000, guid: 9993349c439430446a8abf0c34c4c767, type: 3}
   HitTargetSounds:
   - {fileID: 8300000, guid: 28d4b3a9848dffd459a183b12bc12a6a, type: 3}
   - {fileID: 8300000, guid: 92b2c8a31f62a94418d0e316a3460fb2, type: 3}

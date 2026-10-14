@@ -19,7 +19,8 @@ MonoBehaviour:
     template: {fileID: 11400000, guid: 0de660415fe183144912c9d7fcfc3716, type: 2}
     tag: 0
     HP_Current: 0
-    CritRate: 0.1
+    IsInvincible: 0
+    CritRate: 0.25
     CritDamage: 2
     HP_Ampl:
       FlatBonus: 0
@@ -46,7 +47,7 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     ArmourPenetration_Ampl:
-      FlatBonus: 0
+      FlatBonus: 0.1
       PercBonus: 1
       TotalBonus: 1
     DamageReduction_Ampl:
@@ -62,4 +63,4 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 35fc646ddf6b08b46bb4108cd8b66b8e, type: 2}
-  ShootAccuracy: 0.8
+  ShootAccuracy: 0.85

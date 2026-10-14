@@ -20,7 +20,7 @@ MonoBehaviour:
     tag: 0
     HP_Current: 0
     IsInvincible: 0
-    CritRate: 0.5
+    CritRate: 0.4
     CritDamage: 1.5
     HP_Ampl:
       FlatBonus: 0

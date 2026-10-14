@@ -346,9 +346,6 @@ public class BigMeat : Zombrain
                 Damage = finalDamage
             });
         }
-
-        if (slamHit.Count > 0)
-            CamManager.instance?.Shake(1f);
     }
 
     /// <summary>Rush is over: chain into another charge, or stand still for a random time.</summary>
@@ -405,6 +402,12 @@ public class BigMeat : Zombrain
         if (anim == null) return;
         anim.SetBool(BackStepHash, p == Phase.BackStep);
         anim.SetBool(ChargingHash, p == Phase.Charge);
+    }
+
+    protected override void HandleHitEffect(AttackResult result)
+    {
+        base.HandleHitEffect(result);
+        if(result.Damage > 0) CamManager.instance.Shake(1.5f);
     }
     #endregion
 

@@ -44,7 +44,4 @@ MonoBehaviour:
   - {fileID: 8300000, guid: de634015f7fe39e418c7250c3a0bb7ff, type: 3}
   - {fileID: 8300000, guid: c4110637ae8154044bfdcf6be2e5b13b, type: 3}
   MiscSounds:
-  - {fileID: 8300000, guid: 3b6ac2d5847fdf74b9e45e227a330cea, type: 3}
-  - {fileID: 8300000, guid: 49de2c3f4579fc14f9c39375902770c6, type: 3}
-  - {fileID: 8300000, guid: 832b4cc3dca8ee84d8f02e2739da88db, type: 3}
-  - {fileID: 8300000, guid: 1be629c378215214ca92751de2efa63a, type: 3}
+  - {fileID: 8300000, guid: a31316f6df597414db1e6c775d9d5000, type: 3}

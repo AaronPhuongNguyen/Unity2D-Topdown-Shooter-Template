@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Server;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -16,12 +17,23 @@ using UnityEngine.Experimental.Rendering;
 ///     directions (distance from every nearby zombie, map walls/edges, and its
 ///     previous direction to avoid jitter) and runs the best one, abandoning the
 ///     player. It only goes back to following once nothing has been near for calmTime,
+///   - DODGES: an attacker calls NotifyIncomingAttack() right before it strikes.
+///     The NPC instantly dashes sideways and is invincible for the dash.
+///     Costs Energy (default 10 = a full bar), has its own cooldown (default 2s),
+///   - GETS STAGGERED (temporary slow) whenever it takes a hit,
 ///   - GROWS STRONGER every wave (HP / ATK / DEF), a bit weaker than zombies,
 ///   - is removed on game restart (EventBus.OnGameRestart) and on death.
 ///
 /// Two separate searches:
 ///   FindTarget()  - radius = SIGHT_Current  -> who to shoot
 ///   FindThreats() - radius = scanRadius     -> who to run from
+///
+/// All active NPCs are listed in NpcBrain.Active so zombies can hunt them
+/// without any physics query.
+///
+/// Inheritance: derive a character (e.g. Kafka) from this class. Override
+/// OnSpawned / OnRemoved / OnNewWave / OnDeath / OnDodged for character-specific
+/// behaviour (always call base where noted).
 ///
 /// Prefab setup:
 ///   - Put it on a layer that Zombrain's hb.enemyMask includes (the player's layer),
@@ -37,8 +49,14 @@ public class NpcBrain : HurtBox, ITick
 {
     public enum Mode { Following, Fleeing }
 
-    PlayerManager pm => PlayerManager.instance;
-    DomainManager dm => DomainManager.instance;
+    /// <summary>Every NPC between Init() and removal. Zombies read this to hunt NPCs first.</summary>
+    public static readonly List<NpcBrain> Active = new List<NpcBrain>();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => Active.Clear();
+
+    protected PlayerManager pm => PlayerManager.instance;
+    protected DomainManager dm => DomainManager.instance;
 
     #region Data
     public NpcPackage package;
@@ -60,6 +78,29 @@ public class NpcBrain : HurtBox, ITick
 
     /// <summary>True between Init() and removal (death / restart).</summary>
     public bool IsActive => isActive;
+
+    /// <summary>True while the dodge dash is running (invincible).</summary>
+    public bool IsDodging => isDashing;
+    #endregion
+
+    #region Inspector: Energy / Dodge
+    [Header("Energy")]
+    public EnergyPool Energy = new EnergyPool { Max = 10f, RegenPerSecond = 1f };
+
+    [Header("Dodge")]
+    [SerializeField] private bool canDodge = true;
+    [Tooltip("Energy spent per dodge.")]
+    [SerializeField] private float dodgeEnergyCost = 10f;
+    [Tooltip("Seconds between dodges (counted from the start of a dodge).")]
+    [SerializeField] private float dodgeCooldown = 2f;
+    [Tooltip("Seconds of dash (= seconds of invincibility).")]
+    [SerializeField] private float dodgeDuration = 0.25f;
+    [Tooltip("Total distance covered by the dash (world units).")]
+    [SerializeField] private float dodgeDistance = 4f;
+    [Tooltip("0 = pure sidestep, 1 = equal sidestep and backwards push.")]
+    [SerializeField, Range(0f, 1f)] private float dodgeAwayBias = 0.35f;
+    [Tooltip("Optional effect spawned at the start of a dodge.")]
+    [SerializeField] private GameObject dodgeEffect;
     #endregion
 
     #region Inspector: Sense
@@ -112,10 +153,14 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private float edgeMargin = 3f;
     [SerializeField] private float edgePenalty = 0.5f;
 
+    [Header("Hit Stagger")]
+    [Tooltip("Speed change (TotalBonus) applied while staggered. -0.4 = 40% slower.")]
+    [SerializeField] private float hitStaggerSlowPercent = -0.4f;
+    [Tooltip("Seconds the stagger lasts. Refreshed on every hit.")]
+    [SerializeField] private float hitStaggerDuration = 1.2f;
+
     [Header("Attack")]
     [SerializeField] private bool attackWhileFleeing = true;
-    [Tooltip("ASPD = attacks per second (cooldown = 1 / ASPD). Untick if your ASPD is already a delay in seconds.")]
-    [SerializeField] private bool aspdIsAttacksPerSecond = true;
     [SerializeField] private float minAttackCooldown = 0.1f;
     [SerializeField] private float maxAttackCooldown = 3f;
     [Tooltip("Random aim error in degrees (+/-). 0 = perfect aim.")]
@@ -139,10 +184,10 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private float indicatorReturnSpeed = 1f;
 
     [Header("Wave Bonus (weaker than zombies)")]
-    [SerializeField] private float hpGrowthPerDifficulty = 25;
-    [SerializeField] private float atkGrowthPerDifficulty = 1;
+    [SerializeField] private float hpGrowthPerDifficulty = 100;
+    [SerializeField] private float atkGrowthPerDifficulty = 10;
     [Tooltip("Flat DEF gained per CurrentDifficulty point.")]
-    [SerializeField] private float defPerDifficulty = 25f;
+    [SerializeField] private float defPerDifficulty = 30f;
     [SerializeField] private float speedPerDif = 0.5f;
     #endregion
 
@@ -153,7 +198,7 @@ public class NpcBrain : HurtBox, ITick
     // A current target is kept until it is farther than Sight * this (stops flicker at the edge).
     private const float TargetKeepMargin = 1.15f;
 
-    private Transform _t;
+    protected Transform _t;
     private bool isActive;
 
     private float targetScanTimer;
@@ -162,7 +207,7 @@ public class NpcBrain : HurtBox, ITick
     private float attackTimer;
     private float appliedSpeed;
 
-    private float appliedHPBonus, appliedATKBonus, appliedDEFBonus,appliedSPEEDBonus;
+    private float appliedHPBonus, appliedATKBonus, appliedDEFBonus, appliedSPEEDBonus;
     private float appliedHPP, appliedATKK;
 
     private bool followMoving;
@@ -173,6 +218,18 @@ public class NpcBrain : HurtBox, ITick
     private float appliedSync;
     private float lastFollowDist;
     private Vector2 fleeDir;
+
+    // Hit stagger
+    private float hitStaggerTimer;
+    private bool staggerApplied;
+    private float appliedStaggerPercent;
+
+    // Dodge
+    private bool isDashing;
+    private float dashTimeLeft;
+    private float dodgeCooldownTimer;
+    private Vector2 dashDir;
+    private bool dashInvincibleApplied;
 
     private UnitAttribute targetUnit;
     private GameObject indicator;
@@ -206,12 +263,12 @@ public class NpcBrain : HurtBox, ITick
         return npc.Init(pkg) ? npc : null;
     }
 
-    private void Awake()
+    protected virtual void Awake()
     {
         _t = transform;
     }
 
-    private void OnEnable()
+    protected virtual void OnEnable()
     {
         EventBus.OnGameRestart += Remove;
         EventBus.OnNewWave += OnNewWave;
@@ -219,7 +276,7 @@ public class NpcBrain : HurtBox, ITick
             TickSystem.Register((ITick)this);
     }
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         EventBus.OnGameRestart -= Remove;
         EventBus.OnNewWave -= OnNewWave;
@@ -227,7 +284,7 @@ public class NpcBrain : HurtBox, ITick
             TickSystem.Unregister((ITick)this);
     }
 
-    public bool Init(NpcPackage pkg)
+    public virtual bool Init(NpcPackage pkg)
     {
         if (pkg == null || pkg.attribute == null)
         {
@@ -247,8 +304,11 @@ public class NpcBrain : HurtBox, ITick
         attribute.Reset();
         attribute.tag = UnitTag.Friendly;
         attribute.OnDeath += OnDeath;
+        attribute.OnTakeDamage += OnHit;
         package.attribute = attribute;
         isActive = true;
+
+        if (!Active.Contains(this)) Active.Add(this);
 
         Target = null;
         targetUnit = null;
@@ -269,34 +329,68 @@ public class NpcBrain : HurtBox, ITick
         wanderPause = 0f;
         appliedSync = 0f;
 
+        // Fresh clone: no stagger applied to it.
+        hitStaggerTimer = 0f;
+        staggerApplied = false;
+        appliedStaggerPercent = 0f;
+
+        // Fresh energy, no dodge running.
+        Energy.Refill();
+        isDashing = false;
+        dashTimeLeft = 0f;
+        dodgeCooldownTimer = 0f;
+        dashInvincibleApplied = false;
+
         SpawnIndicator();
 
         // Fresh clone: nothing applied yet.
         appliedHPBonus = appliedATKBonus = appliedDEFBonus = appliedHPP = appliedATKK = appliedSPEEDBonus = 0f;
         RefreshBonus();
+
+        OnSpawned();
         return true;
     }
 
-    private void OnDeath()
+    /// <summary>Hook: called at the end of a successful Init(). NPC is fully set up.</summary>
+    protected virtual void OnSpawned() { }
+
+    /// <summary>Hook: called at the start of Remove(), while attribute/package are still valid.</summary>
+    protected virtual void OnRemoved() { }
+
+    /// <summary>Hook: called when the NPC starts a dodge (energy already spent).</summary>
+    protected virtual void OnDodged() { }
+
+    protected virtual void OnDeath()
     {
         PlayDeathSound();
         Remove();
     }
 
     /// <summary>Removes the NPC (restart / death). Safe to call repeatedly.</summary>
-    private void Remove()
+    protected virtual void Remove()
     {
         if (!isActive) return;
         isActive = false;
 
+        OnRemoved();
+
+        Active.Remove(this);
+
+        EndDodge();
+
         if (attribute != null)
         {
             attribute.OnDeath -= OnDeath;
+            attribute.OnTakeDamage -= OnHit;
+            RemoveHitStagger();
             RemoveBonus();
             if (appliedSpeed != 0f) attribute.SPEED_Ampl.FlatBonus -= appliedSpeed;
             if (appliedSync != 0f) attribute.SPEED_Ampl.FlatBonus -= appliedSync;
         }
         appliedSpeed = 0f;
+        hitStaggerTimer = 0f;
+        staggerApplied = false;
+        appliedStaggerPercent = 0f;
 
         Target = null;
         targetUnit = null;
@@ -324,8 +418,130 @@ public class NpcBrain : HurtBox, ITick
     }
     #endregion
 
+    #region Dodge
+    /// <summary>
+    /// Called by an attacker right BEFORE its strike resolves (e.g. Zombrain.PerformAttack).
+    /// If the NPC can afford it, it dashes away and turns invincible instantly,
+    /// so the incoming hit is wasted. Returns true if a dodge started.
+    /// </summary>
+    public bool NotifyIncomingAttack(Vector2 attackerPos)
+    {
+        if (!canDodge || !isActive || attribute == null || attribute.IsDead) return false;
+        if (isDashing || dodgeCooldownTimer > 0f) return false;
+        if (!Energy.TrySpend(dodgeEnergyCost)) return false;
+
+        StartDodge(attackerPos);
+        return true;
+    }
+
+    private void StartDodge(Vector2 attackerPos)
+    {
+        Vector2 pos = _t.position;
+        Vector2 away = pos - attackerPos;
+        if (away.sqrMagnitude < 0.0001f)
+        {
+            float a = RNG.GetFloat(0f, Mathf.PI * 2f);
+            away = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+        }
+        away.Normalize();
+
+        // Sidestep: pick the side (left/right of the attack line) with more open space.
+        Vector2 perp = new Vector2(-away.y, away.x);
+        Vector2 dirA = (perp + away * dodgeAwayBias).normalized;
+        Vector2 dirB = (-perp + away * dodgeAwayBias).normalized;
+
+        float costA = BoundsPenalty(pos + dirA * dodgeDistance);
+        float costB = BoundsPenalty(pos + dirB * dodgeDistance);
+
+        if (Mathf.Approximately(costA, costB)) dashDir = RNG.GetFloat(0f, 1f) < 0.5f ? dirA : dirB;
+        else dashDir = costA < costB ? dirA : dirB;
+
+        isDashing = true;
+        dashTimeLeft = dodgeDuration;
+        dodgeCooldownTimer = dodgeCooldown;
+
+        attribute.IsInvincible = true;
+        dashInvincibleApplied = true;
+
+        if (dodgeEffect != null && PoolingSystem.instance != null)
+        {
+            GameObject o = PoolingSystem.instance.GetFromPool(dodgeEffect);
+            if (o != null)
+            {
+                o.transform.position = pos;
+                o.transform.rotation = _t.rotation;
+            }
+        }
+
+        OnDodged();
+    }
+
+    private void TickDodge(float dt)
+    {
+        float step = Mathf.Min(dt, dashTimeLeft);
+        float speed = dodgeDuration > 0.0001f ? dodgeDistance / dodgeDuration : 0f;
+
+        Vector2 p = (Vector2)_t.position + dashDir * speed * step;
+        if (dm != null) p = dm.ClampToMap(p);
+        _t.position = new Vector3(p.x, p.y, _t.position.z);
+
+        dashTimeLeft -= dt;
+        if (dashTimeLeft <= 0f) EndDodge();
+    }
+
+    private void EndDodge()
+    {
+        isDashing = false;
+        dashTimeLeft = 0f;
+
+        if (dashInvincibleApplied && attribute != null)
+            attribute.IsInvincible = false;
+        dashInvincibleApplied = false;
+    }
+    #endregion
+
+    #region Hit Stagger
+    private void OnHit(float damage)
+    {
+        ApplyHitStagger();
+    }
+
+    /// <summary>Slows the NPC for hitStaggerDuration. Re-hits only refresh the timer (no stacking).</summary>
+    private void ApplyHitStagger()
+    {
+        if (!isActive || attribute == null || attribute.IsDead) return;
+
+        hitStaggerTimer = hitStaggerDuration;
+        if (staggerApplied) return;
+
+        appliedStaggerPercent = hitStaggerSlowPercent;
+        attribute.SPEED_Ampl.TotalBonus += appliedStaggerPercent;
+        staggerApplied = true;
+    }
+
+    private void TickHitStagger(float dt)
+    {
+        if (!staggerApplied) return;
+
+        hitStaggerTimer -= dt;
+        if (hitStaggerTimer <= 0f) RemoveHitStagger();
+    }
+
+    private void RemoveHitStagger()
+    {
+        if (!staggerApplied) return;
+        if (attribute != null)
+            attribute.SPEED_Ampl.TotalBonus -= appliedStaggerPercent;
+
+        appliedStaggerPercent = 0f;
+        hitStaggerTimer = 0f;
+        staggerApplied = false;
+    }
+    #endregion
+
     #region Wave Bonus
-    private void OnNewWave(int wave)
+    /// <summary>New wave: refreshes the wave bonus. Subclasses: call base first.</summary>
+    protected virtual void OnNewWave(int wave)
     {
         if (isActive) RefreshBonus();
     }
@@ -349,7 +565,6 @@ public class NpcBrain : HurtBox, ITick
         appliedATKK = 0.1f * diff;
         appliedDEFBonus = Mathf.Min(1000, defPerDifficulty * diff);
         appliedSPEEDBonus = Mathf.Min(5, speedPerDif * diff);
-
 
         attribute.HP_Ampl.FlatBonus += appliedHPBonus;
         attribute.ATK_Ampl.FlatBonus += appliedATKBonus;
@@ -376,11 +591,15 @@ public class NpcBrain : HurtBox, ITick
     #endregion
 
     #region Tick
-    public void Tick(float dt)
+    public virtual void Tick(float dt)
     {
         if (!isActive || attribute == null || attribute.IsDead) return;
         if (pm == null) return;
 
+        Energy.Tick(dt);
+        if (dodgeCooldownTimer > 0f) dodgeCooldownTimer -= dt;
+
+        TickHitStagger(dt);
         ResolveFollow();
 
         // Two independent searches: Sight for targets, scanRadius for threats.
@@ -408,7 +627,11 @@ public class NpcBrain : HurtBox, ITick
 
         bool hasAim = TickAttack(dt, out Vector2 aimDir);
         HandleIndicator(dt);
-        Vector2 move = CanMove ? GetMoveDirection(dt) : Vector2.zero;
+
+        // While dashing, the dash IS the movement.
+        Vector2 move = Vector2.zero;
+        if (isDashing) TickDodge(dt);
+        else if (CanMove) move = GetMoveDirection(dt);
 
         if (move != Vector2.zero)
         {
@@ -422,13 +645,13 @@ public class NpcBrain : HurtBox, ITick
         }
 
         // Face the enemy while shooting, otherwise face where we are going.
-        Vector2 face = hasAim ? aimDir : move;
+        Vector2 face = hasAim ? aimDir : (isDashing ? dashDir : move);
         if (face != Vector2.zero) UnitMotion.RotateThisObject(gameObject, face);
 
         UpdateSpeedBonus();
 
         if (anim != null)
-            anim.SetBool(IsWalkingHash, move != Vector2.zero);
+            anim.SetBool(IsWalkingHash, move != Vector2.zero || isDashing);
     }
 
     private void ResolveFollow()
@@ -700,10 +923,12 @@ public class NpcBrain : HurtBox, ITick
     /// Feedback loop: nudges a flat speed bonus until the NPC's SPEED_Current
     /// equals the player's (plus any flee / catch-up boost on top). Runs every
     /// threat scan, so it follows the player's own slows and buffs too.
+    /// Paused while the NPC is staggered, otherwise it would cancel the slow.
     /// </summary>
     private void SyncSpeedWithPlayer()
     {
         if (!matchPlayerSpeed || pm == null || pm.attribute == null || attribute == null) return;
+        if (staggerApplied) return;
 
         float err = pm.attribute.SPEED_Current + appliedSpeed - attribute.SPEED_Current;
         if (Mathf.Abs(err) < 0.05f) return;
@@ -730,8 +955,7 @@ public class NpcBrain : HurtBox, ITick
     {
         get
         {
-            float aspd = attribute.ASPD_Current;
-            float cd = aspdIsAttacksPerSecond ? 1f / Mathf.Max(0.05f, aspd) : aspd;
+            float cd = 0.1f / attribute.ASPD_Current;
             return Mathf.Clamp(cd, minAttackCooldown, maxAttackCooldown);
         }
     }

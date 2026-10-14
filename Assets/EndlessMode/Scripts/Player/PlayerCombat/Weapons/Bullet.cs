@@ -76,11 +76,6 @@ public class Bullet : MonoBehaviour, ITick
             trail.Clear();
             trail.emitting = true;
         }
-
-        // Hit sound plays immediately - impact is "decided" the instant
-        // the shot is fired, no need to wait for the visual bullet to travel.
-        if (didHit && PlayerManager.instance != null)
-            PlayerManager.instance.PlayHitSound();
     }
     #endregion
 

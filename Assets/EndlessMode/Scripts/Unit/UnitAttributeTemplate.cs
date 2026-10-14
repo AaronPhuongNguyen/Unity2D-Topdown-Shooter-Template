@@ -8,6 +8,6 @@ public class UnitAttributeTemplate:ScriptableObject
     public float ATK_Base = 20;
     public float SPEED_Base = 10;
     public float DEF_Base = 100;
-    public float ASPD_Base = 0.1f;
+    public float ASPD_Base = 1f;
     public float SIGHT_Base = 25f;
 }

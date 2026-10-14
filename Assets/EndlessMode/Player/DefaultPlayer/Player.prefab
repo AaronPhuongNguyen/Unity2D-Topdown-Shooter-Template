@@ -597,7 +597,7 @@ MonoBehaviour:
   rifleDamageBonus: 0
   rifleRangeBonus: 0
   rifleBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
-  rifleShootSound: {fileID: 8300000, guid: d0a88e91a4e38924c8d65fa2a3ba4e6a, type: 3}
+  rifleShootSound: {fileID: 8300000, guid: 2823bb6f055aef44ebe04a0899257bca, type: 3}
   shotgunFireRate: 6
   shotgunPelletCount: 14
   shotgunSpread: 9

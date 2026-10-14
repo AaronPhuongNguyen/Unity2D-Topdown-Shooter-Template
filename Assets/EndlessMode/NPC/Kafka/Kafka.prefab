@@ -9,8 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5562632942724262435}
-  - component: {fileID: 7152433936220595372}
-  - component: {fileID: 5838335900662919584}
+  - component: {fileID: -7117907949876106961}
+  - component: {fileID: 1701925214293238091}
   m_Layer: 7
   m_Name: Kafka
   m_TagString: Untagged
@@ -36,7 +36,52 @@ Transform:
   - {fileID: 6078851846247527297}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7152433936220595372
+--- !u!61 &-7117907949876106961
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1864921463154914027}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 6200000, guid: 2d12356f66b50a745b5006143ea057e0, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0
+--- !u!114 &1701925214293238091
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,12 +90,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1864921463154914027}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01dd3e32617113c46bfa3bd05e2bc7e7, type: 3}
+  m_Script: {fileID: 11500000, guid: e7de8fb418e87d3488a0ce64ac12ac50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   package: {fileID: 11400000, guid: 9fe3dd6700fe7584886c7b485468536d, type: 2}
   attribute:
-    template: {fileID: 11400000, guid: 2ba9deba1fac40a4a8deb8ae617e7057, type: 2}
+    template: {fileID: 0}
     tag: 0
     HP_Current: 0
     IsInvincible: 0
@@ -102,6 +147,18 @@ MonoBehaviour:
   Target: {fileID: 0}
   Follow: {fileID: 0}
   followPlayer: 1
+  Energy:
+    Max: 10
+    RegenPerSecond: 1
+    RegenDelay: 0
+    Current: 0
+  canDodge: 1
+  dodgeEnergyCost: 10
+  dodgeCooldown: 2
+  dodgeDuration: 0.25
+  dodgeDistance: 4
+  dodgeAwayBias: 0.35
+  dodgeEffect: {fileID: 0}
   targetScanInterval: 0.2
   threatScanInterval: 0.2
   scanRadius: 14
@@ -119,15 +176,16 @@ MonoBehaviour:
   calmTime: 0.8
   fleeDirections: 16
   fleeLookAhead: 3.5
-  fleeSpeedBonus: 2
+  fleeSpeedBonus: 3
   continuityBonus: 0.3
   wallPenalty: 5
   edgeMargin: 3
   edgePenalty: 0.5
+  hitStaggerSlowPercent: -0.4
+  hitStaggerDuration: 1.2
   attackWhileFleeing: 1
-  aspdIsAttacksPerSecond: 0
   minAttackCooldown: 0.1
-  maxAttackCooldown: 0.5
+  maxAttackCooldown: 3
   spreadAngle: 2
   muzzle: {fileID: 7416084440610428882}
   shootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
@@ -135,29 +193,17 @@ MonoBehaviour:
   bulletSpeed: 125
   bulletLifetime: 1
   indicatorPrefab: {fileID: 7358377081612034780, guid: 1580f80df68d0ff40b939c9ec7909021, type: 3}
-  indicatorPulseMultiplier: 0.5
+  indicatorPulseMultiplier: 0.4
   indicatorReturnSpeed: 1
-  hpGrowthPerDifficulty: 80
-  atkGrowthPerDifficulty: 8
+  hpGrowthPerDifficulty: 150
+  atkGrowthPerDifficulty: 15
   defPerDifficulty: 50
-  speedPerDif: 0.5
---- !u!114 &5838335900662919584
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1864921463154914027}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e7de8fb418e87d3488a0ce64ac12ac50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  speedPerDif: 1
   spawnLine: {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
   waveLines:
-  - {fileID: 8300000, guid: b7de8f7fe6ca62145b03f2ea46040846, type: 3}
-  - {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
   - {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}
+  - {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
+  - {fileID: 8300000, guid: b7de8f7fe6ca62145b03f2ea46040846, type: 3}
   bossWaveLines:
   - {fileID: 8300000, guid: b7de8f7fe6ca62145b03f2ea46040846, type: 3}
   - {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}

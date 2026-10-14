@@ -1,4 +1,5 @@
 using Server;
+using System;
 using UnityEngine;
 
 [DefaultExecutionOrder(-5)]
@@ -8,6 +9,9 @@ public class PlayerManager : MonoBehaviour, ITick
     public bool AutoAttack = false;
     public PlayerPackage package;
     public UnitAttribute attribute => clonedPack?.attribute;
+    
+    [Header("Energy")]
+    public EnergyPool Energy = new EnergyPool { Max = 10f, RegenPerSecond = 1.5f };
 
     #region Inspector Debugger
     public LayerMask EnemyMask;
@@ -118,6 +122,7 @@ public class PlayerManager : MonoBehaviour, ITick
         if (combatDuration > 0) combatDuration -= delta;
         if (Controlling == null) return;
 
+        Energy.Tick(delta);
         pc?.Tick(delta);
         NaturalHealing(delta);
         TickStagger(delta);
@@ -202,6 +207,8 @@ public class PlayerManager : MonoBehaviour, ITick
         bleedTickTimer = 0f;
         bleedStacks = 0;
         attackSlowApplied = false;
+
+        Energy.Refill();
 
         EventBus.RaisePlayerRespawn();
     }
@@ -430,4 +437,47 @@ public class PlayerManager : MonoBehaviour, ITick
         LastDeathAtSpot = Vector2.zero;
     }
     #endregion
+}
+
+[Serializable]
+public class EnergyPool
+{
+    [Min(0.01f)] public float Max = 10f;
+    [Tooltip("Energy gained per second.")]
+    [Min(0f)] public float RegenPerSecond = 1f;
+    [Tooltip("Seconds after spending before regen resumes. 0 = regen immediately.")]
+    [Min(0f)] public float RegenDelay = 0f;
+
+    public float Current;
+    public float Normalized => Max > 0f ? Current / Max : 0f;
+    public bool IsFull => Current >= Max;
+
+    private float delayTimer;
+
+    public bool CanAfford(float cost) => Current + 0.0001f >= cost;
+
+    public bool TrySpend(float cost)
+    {
+        if (!CanAfford(cost)) return false;
+        Current = Mathf.Max(0f, Current - cost);
+        delayTimer = RegenDelay;
+        return true;
+    }
+
+    public void Tick(float dt)
+    {
+        if (delayTimer > 0f)
+        {
+            delayTimer -= dt;
+            return;
+        }
+        if (Current < Max)
+            Current = Mathf.Min(Max, Current + RegenPerSecond * dt);
+    }
+
+    public void Refill()
+    {
+        Current = Max;
+        delayTimer = 0f;
+    }
 }

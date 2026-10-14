@@ -4,7 +4,8 @@ using UnityEngine.UI;
 /// <summary>
 /// Dash skill for a UI Button.
 /// Dashes the player in the move direction (or the facing direction if not
-/// moving) for 0.5s, invincible the whole time. Cooldown: 1s.
+/// moving) for DashDuration seconds, invincible the whole time.
+/// Cooldown: 1s. Cost: 5 Energy (PlayerManager.Energy).
 ///
 /// Setup: add this to any active GameObject, then either
 ///   - drag the Button into the "button" field (auto-wires onClick), OR
@@ -18,7 +19,8 @@ public class DashSkill : MonoBehaviour, ITick
     DomainManager dm => DomainManager.instance;
 
     public const float DashDuration = 0.3f;
-    public const float SkillCooldown = 5f;
+    public const float SkillCooldown = 1f;
+    public const float EnergyCost = 5f;
 
     [Tooltip("Total distance covered over the dash duration (world units).")]
     [SerializeField] private float dashDistance = 5f;
@@ -54,6 +56,9 @@ public class DashSkill : MonoBehaviour, ITick
         Vector2 dir = pm.MoveInput != Vector2.zero ? pm.MoveInput : pm.Direction;
         if (dir.sqrMagnitude < 0.0001f) return;
 
+        // Spend last, so a dash that can't start never costs energy.
+        if (!pm.Energy.TrySpend(EnergyCost)) return;
+
         dashDir = dir.normalized;
         dashTimeLeft = DashDuration;
         CD = TotalCooldown;
@@ -73,6 +78,8 @@ public class DashSkill : MonoBehaviour, ITick
     public void Tick(float delta)
     {
         if (pm == null) return;
+
+        button.interactable = pm.Energy.CanAfford(EnergyCost);
 
         if (CD > 0f) CD -= delta;
         if (UI != null)

@@ -6,7 +6,7 @@ public class AttackDemo : MonoBehaviour, ITick
     PlayerManager pm => PlayerManager.instance;
 
     private const float SkillCooldown = 120f;
-    private const float ASPDValue = -0.25f;
+    private const float ASPDValue = 0.4f;
     private const float SpeedValue = 0.2f;
     private const float ArmourPenValue = 0.4f;
     private const float BuffDuration = 10f;

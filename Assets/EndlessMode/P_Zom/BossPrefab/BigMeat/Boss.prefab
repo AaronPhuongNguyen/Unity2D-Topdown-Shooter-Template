@@ -252,22 +252,27 @@ MonoBehaviour:
   SpeedHelper: 0
   separationRadius: 1
   separationStrength: 1.5
+  hitTargetSound: {fileID: 0}
+  hitsBeforeSound: 3
   preySearchRadius: 15
-  chargeCooldown: 3
-  backStepDuration: 1
-  chargeDuration: 0.7
-  chargeSpeedBonus: 90
+  retargetThreshold: 0.8
+  npcChaseRadius: 0
+  npcChaseSpeedBonus: 1.5
+  chargeCooldown: 4
+  backStepDuration: 1.25
+  chargeDuration: 0.75
+  chargeSpeedBonus: 100
   chargeRangeMultiplier: 3
-  chargeDamageMultiplier: 4
-  impactRangeMultiplier: 1.5
-  aimAccuracy: 1
-  leadSeconds: 0.25
-  slamRadiusMultiplier: 1.5
+  chargeDamageMultiplier: 3
+  impactRangeMultiplier: 2
+  aimAccuracy: 0.75
+  leadSeconds: 0.4
+  slamRadiusMultiplier: 2
   chainChance: 0.5
-  maxCharges: 3
-  chainBackStepDuration: 0.35
-  recoverMin: 0.3
-  recoverMax: 0.6
+  maxCharges: 2
+  chainBackStepDuration: 1.5
+  recoverMin: 2
+  recoverMax: 3
   staggerMultiplier: 0.5
 --- !u!114 &785369671631075427
 MonoBehaviour:

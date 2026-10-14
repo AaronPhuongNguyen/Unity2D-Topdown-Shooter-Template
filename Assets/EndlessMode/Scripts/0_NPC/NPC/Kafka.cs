@@ -1,19 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Server;
+using UnityEngine;
 
 /// <summary>
-/// Kafka, the first NPC. Put this next to NpcBrain on her prefab.
-/// NpcBrain handles following, fighting, fleeing and the wave bonus;
-/// this component only gives her a voice:
+/// Kafka, the first NPC. Inherits everything from NpcBrain (following,
+/// fighting, fleeing, hit stagger, wave bonus) and adds a voice:
 ///   - a greeting when she appears (optional),
 ///   - one random line on every new wave (never the same line twice in a row),
 ///   - an optional separate pool of lines for boss waves.
 /// She stays silent while she is not active (dead / game restarted).
+///
+/// Put this on her prefab INSTEAD of NpcBrain (it is an NpcBrain).
 /// </summary>
-[RequireComponent(typeof(NpcBrain))]
-public class Kafka : MonoBehaviour
+public class Kafka : NpcBrain
 {
     [Header("Voice")]
     [Tooltip("Played once when she joins the fight (optional).")]
@@ -31,37 +31,34 @@ public class Kafka : MonoBehaviour
     [Tooltip("Small delay so the line doesn't clash with the new-wave sound.")]
     [SerializeField] private float speakDelay = 0.4f;
 
-    private NpcBrain npc;
     private AudioClip lastClip;
 
-    private void Awake()
+    #region NpcBrain hooks
+    protected override void OnDisable()
     {
-        npc = GetComponent<NpcBrain>();
-    }
-
-    private void OnEnable()
-    {
-        EventBus.OnNewWave += OnNewWave;
-        // NpcBrain.Init() and the spawn position are set right after the object
-        // is enabled by the pool, so greet one frame later.
-        StartCoroutine(GreetNextFrame());
-    }
-
-    private void OnDisable()
-    {
-        EventBus.OnNewWave -= OnNewWave;
         StopAllCoroutines();
+        base.OnDisable();
     }
 
-    private IEnumerator GreetNextFrame()
+    /// <summary>Init() has finished and the position is already set: greet right away.</summary>
+    protected override void OnSpawned()
     {
-        yield return null;
-        if (npc != null && npc.IsActive) Speak(spawnLine);
+        base.OnSpawned();
+        lastClip = null;
+        Speak(spawnLine);
     }
 
-    private void OnNewWave(int wave)
+    protected override void OnRemoved()
     {
-        if (npc == null || !npc.IsActive) return;
+        StopAllCoroutines();
+        base.OnRemoved();
+    }
+
+    protected override void OnNewWave(int wave)
+    {
+        base.OnNewWave(wave); // keep the wave bonus refresh
+
+        if (!IsActive) return;
         if (speakChance < 1f && RNG.GetPercent() > speakChance) return;
 
         bool isBossWave = BossManager.instance != null && BossManager.instance.IsBossWaveNumber(wave);
@@ -72,11 +69,13 @@ public class Kafka : MonoBehaviour
 
         StartCoroutine(SpeakAfterDelay(clip));
     }
+    #endregion
 
+    #region Voice
     private IEnumerator SpeakAfterDelay(AudioClip clip)
     {
         if (speakDelay > 0f) yield return new WaitForSeconds(speakDelay);
-        if (npc != null && npc.IsActive) Speak(clip);
+        if (IsActive) Speak(clip);
     }
 
     private void Speak(AudioClip clip)
@@ -115,4 +114,5 @@ public class Kafka : MonoBehaviour
 
     [ContextMenu("Test Speak")]
     private void Test_Speak() => Speak(Pick(waveLines));
+    #endregion
 }

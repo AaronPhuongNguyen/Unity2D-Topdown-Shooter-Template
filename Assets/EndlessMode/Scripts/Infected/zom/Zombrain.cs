@@ -20,6 +20,9 @@ public class Zombrain : HurtBox, ITick
     public bool isAttacking => attackStagger > _now;
     public bool isMoving => Target != null && Direction != Vector2.zero;
 
+    /// <summary>True while the current target is an NPC.</summary>
+    public bool IsChasingNpc => targetNpc != null;
+
     [SerializeField] protected float DistanceToTarget;
     [SerializeField] protected float SpeedHelper;
     #endregion
@@ -62,6 +65,16 @@ public class Zombrain : HurtBox, ITick
     private const float HitStaggerDuration = 1.5f;
 
     private float hitStaggerTimer;
+    #endregion
+
+    #region Hit Target Sound
+    [Header("Hit Target Sound")]
+    [Tooltip("Played when this zombie has landed more than 'Hits Before Sound' hits on its current target.")]
+    [SerializeField] protected AudioClip hitTargetSound;
+    [Tooltip("Sound plays on the hit AFTER this many hits (3 = plays on the 4th hit).")]
+    [SerializeField] protected int hitsBeforeSound = 3;
+
+    private int targetHitCount;
     #endregion
 
     #region Lifecycle
@@ -108,6 +121,8 @@ public class Zombrain : HurtBox, ITick
         ApplyBonus();
 
         Target = null;
+        targetNpc = null;
+        targetHitCount = 0;
 
         rotateInterval = 0f;
         attackInterval = 0f;
@@ -178,7 +193,7 @@ public class Zombrain : HurtBox, ITick
         attribute.HP_Ampl.FlatBonus += lastHPBonus;
         attribute.HP_Ampl.TotalBonus += lastHPP;
         attribute.ATK_Ampl.FlatBonus += lastATKBonus;
-        attribute.ATK_Ampl.TotalBonus += lastATKK;   // was HP_Ampl (bug)
+        attribute.ATK_Ampl.TotalBonus += lastATKK;
         attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus += lastAPBonus;
@@ -191,7 +206,7 @@ public class Zombrain : HurtBox, ITick
         attribute.HP_Ampl.FlatBonus -= lastHPBonus;
         attribute.HP_Ampl.TotalBonus -= lastHPP;
         attribute.ATK_Ampl.FlatBonus -= lastATKBonus;
-        attribute.ATK_Ampl.TotalBonus -= lastATKK;   // was HP_Ampl (bug)
+        attribute.ATK_Ampl.TotalBonus -= lastATKK;
         attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
@@ -210,6 +225,7 @@ public class Zombrain : HurtBox, ITick
         if (!Unsubscribe()) return;
 
         Target = null;
+        targetNpc = null;
         package = null;
         attribute = null;
         ce = null;
@@ -228,6 +244,7 @@ public class Zombrain : HurtBox, ITick
     private void CleanUpAndReturnToHive()
     {
         Target = null;
+        targetNpc = null;
         package = null;
         attribute = null;
         ce = null;
@@ -310,7 +327,14 @@ public class Zombrain : HurtBox, ITick
             );
             separationInterval = _now + 0.2f;
         }
-        SpeedHelper = (DistanceToTarget > pm.attribute.SIGHT_Current * 3f) ? 60f : 0f;
+
+        // Catch-up boost when far away, plus a small extra push while hunting an NPC
+        // so zombies can actually run down a fleeing NPC.
+        float farDistance = pm != null && pm.attribute != null ? pm.attribute.SIGHT_Current * 3f : float.MaxValue;
+        float desired = DistanceToTarget > farDistance ? 60f : 0f;
+        if (targetNpc != null) desired += npcChaseSpeedBonus;
+        SpeedHelper = desired;
+
         if (!Mathf.Approximately(SpeedHelper, appliedChaseBonus))
         {
             attribute.SPEED_Ampl.FlatBonus += SpeedHelper - appliedChaseBonus;
@@ -356,13 +380,29 @@ public class Zombrain : HurtBox, ITick
 
         if (RNG.GetPercent() < package.BiteAccuracy)
         {
+            // Warn the NPC just before the bite lands so it can dodge.
+            if (targetNpc != null) targetNpc.NotifyIncomingAttack(_t.position);
+
             AttackResult rs = Attack.Shoot(gameObject, attribute, attribute.SIGHT_Current, Direction, hb.enemyMask);
             HandleHitEffect(rs);
+            CountTargetHit(rs);
         }
 
         if (anim != null) anim.SetBool(AttackHash, CanAttack && isAttacking);
 
         attackStagger = _now + RNG.GetFloat(attribute.ASPD_Current, 2f);
+    }
+
+    /// <summary>Counts landed hits on the current target; plays hitTargetSound once it goes over the threshold.</summary>
+    protected virtual void CountTargetHit(AttackResult result)
+    {
+        if (!result.DidHit) return;
+
+        targetHitCount++;
+        if (targetHitCount <= hitsBeforeSound) return;
+
+        targetHitCount = 0;
+        PlayHitTargetSound();
     }
 
     protected virtual void OnHit(float damage)
@@ -377,7 +417,7 @@ public class Zombrain : HurtBox, ITick
         if (o == null) return;
         o.transform.position = result.HitPoint;
 
-        DamagePopupManager.Show(result.HitPoint, result.Damage, Color.red);
+        DamagePopupManager.Show(result.HitPoint, result.Damage, Color.yellow);
         PlayHitSound();
     }
     #endregion
@@ -411,17 +451,27 @@ public class Zombrain : HurtBox, ITick
 
     #region Sense
     [Header("Prey Search")]
+    [Tooltip("Radius used to look for friendlies (NPCs, player...) with physics.")]
     [SerializeField] protected float preySearchRadius = 15f;
-    [Tooltip("Zombie only switches if the new target is at least this much closer (0.8 = 20% closer). Prevents flip-flopping.")]
+    [Tooltip("Switch target only if the new one is at least this much closer (0.8 = 20% closer). Prevents flip-flopping.")]
     [SerializeField, Range(0.1f, 1f)] protected float retargetThreshold = 0.8f;
 
+    [Header("NPC Chase")]
+    [Tooltip("NPCs farther than this are ignored. 0 = unlimited. The nearest target wins, NPC or player.")]
+    [SerializeField] protected float npcChaseRadius = 0f;
+    [Tooltip("Small flat speed bonus while chasing an NPC, so fleeing NPCs can be caught. 0 = off.")]
+    [SerializeField] protected float npcChaseSpeedBonus = 1.5f;
+
     private Collider2D[] preyBuffer = new Collider2D[8];
+    private NpcBrain targetNpc;
 
     protected virtual void FindPrey()
     {
         // Drop dead / destroyed / pooled-away targets immediately
         if (Target != null && !Target.gameObject.activeInHierarchy)
-            Target = null;
+            ClearTarget();
+        if (targetNpc != null && (!targetNpc.IsActive || targetNpc.attribute == null || targetNpc.attribute.IsDead))
+            ClearTarget();
 
         if (_now < findPreyInterval) return;
 
@@ -430,7 +480,7 @@ public class Zombrain : HurtBox, ITick
             ? RNG.GetFloat(0.3f, 1f)
             : RNG.GetFloat(0.5f, 1.2f));
 
-        Transform best = SearchForPrey();
+        Transform best = SearchForPrey(out NpcBrain bestNpc);
         if (best == null || best == Target) return;
 
         if (Target != null)
@@ -442,23 +492,63 @@ public class Zombrain : HurtBox, ITick
         }
 
         Target = best;
+        targetNpc = bestNpc;
+        targetHitCount = 0;
         rotateInterval = 0f; // force direction/distance refresh right away
     }
 
-    protected virtual Transform SearchForPrey()
+    private void ClearTarget()
     {
-        int count = Physics2D.OverlapCircleNonAlloc(_t.position, preySearchRadius, preyBuffer, hb.enemyMask);
+        Target = null;
+        targetNpc = null;
+        targetHitCount = 0;
+    }
 
+    /// <summary>
+    /// Nearest valid target overall: NPCs (registry), other friendlies (physics),
+    /// and the player. No priority, whoever is closest wins.
+    /// </summary>
+    protected virtual Transform SearchForPrey(out NpcBrain npc)
+    {
+        npc = null;
+
+        Vector2 pos = _t.position;
+        float bestSqr = float.MaxValue;
+        Transform best = null;
+        NpcBrain bestNpc = null;
+
+        // 1) NPC registry (no physics, no radius limit unless npcChaseRadius is set).
+        float npcLimitSqr = npcChaseRadius > 0f ? npcChaseRadius * npcChaseRadius : float.MaxValue;
+        var list = NpcBrain.Active;
+        for (int i = 0; i < list.Count; i++)
+        {
+            NpcBrain n = list[i];
+            if (n == null || !n.IsActive) continue;
+
+            UnitAttribute ua = n.attribute;
+            if (ua == null || ua.IsDead) continue;
+            if (!n.gameObject.activeInHierarchy) continue;
+
+            float sqr = ((Vector2)n.transform.position - pos).sqrMagnitude;
+            if (sqr > npcLimitSqr) continue;
+
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = n.transform;
+                bestNpc = n;
+            }
+        }
+
+        // 2) Other friendlies nearby (physics).
+        int count = Physics2D.OverlapCircleNonAlloc(pos, preySearchRadius, preyBuffer, hb.enemyMask);
         if (count >= preyBuffer.Length)
         {
             preyBuffer = new Collider2D[preyBuffer.Length * 2];
-            return SearchForPrey();
+            count = Physics2D.OverlapCircleNonAlloc(pos, preySearchRadius, preyBuffer, hb.enemyMask);
         }
 
         int ownLayer = gameObject.layer;
-        float nearestSqr = float.MaxValue;
-        Transform nearest = null;
-
         for (int i = 0; i < count; i++)
         {
             Collider2D col = preyBuffer[i];
@@ -467,23 +557,34 @@ public class Zombrain : HurtBox, ITick
 
             if (!col.TryGetComponent(out HurtBox hurtBox)) continue;
 
-            UnitPackage package = hurtBox.Access();
-            if (package?.attribute == null) continue;
-            if (package.attribute.tag != UnitTag.Friendly) continue;
-            if (package.attribute.IsDead) continue;
+            UnitPackage pkg = hurtBox.Access();
+            if (pkg?.attribute == null) continue;
+            if (pkg.attribute.tag != UnitTag.Friendly) continue;
+            if (pkg.attribute.IsDead) continue;
 
-            Vector2 delta = (Vector2)col.transform.position - (Vector2)_t.position;
-            float distSqr = delta.sqrMagnitude;
-
-            if (distSqr < nearestSqr)
+            float sqr = ((Vector2)col.transform.position - pos).sqrMagnitude;
+            if (sqr < bestSqr)
             {
-                nearestSqr = distSqr;
-                nearest = col.transform;
+                bestSqr = sqr;
+                best = col.transform;
+                col.TryGetComponent(out bestNpc); // null if it is not an NPC
             }
         }
-        if (nearest == null && pm.Controlling != null) nearest = pm.Controlling.transform;
 
-        return nearest;
+        // 3) The player, wherever he is.
+        if (pm != null && pm.Controlling != null)
+        {
+            float sqr = ((Vector2)pm.Controlling.transform.position - pos).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = pm.Controlling.transform;
+                bestNpc = null;
+            }
+        }
+
+        npc = bestNpc;
+        return best;
     }
 
     protected virtual void PlayAttackSound()
@@ -496,6 +597,12 @@ public class Zombrain : HurtBox, ITick
     {
         if (AudioManager.instance == null || package == null) return;
         AudioManager.instance.PlayAudio(package.Media.Audio.GetHitSound(), _t.position);
+    }
+
+    protected virtual void PlayHitTargetSound()
+    {
+        if (AudioManager.instance == null || hitTargetSound == null) return;
+        AudioManager.instance.PlayAudio(hitTargetSound, _t.position);
     }
 
     protected virtual void PlayDeathSound()

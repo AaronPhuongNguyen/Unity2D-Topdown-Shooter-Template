@@ -1,107 +1,76 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 /// <summary>
-/// Single damage popup instance: pooled, screen-space UI text with a
-/// simple jump-then-fall-then-fade animation. Position is converted from
-/// world space to screen space once at spawn time (not re-tracked every
-/// frame) - cheap, and the small screen-space arc animation is applied on
-/// top of that fixed starting point.
+/// One floating number. Pure view + tiny state: the manager drives Tick(),
+/// so there is no Update / coroutine on this object.
+/// Prefab needs a TMP text (this object or a child). CanvasGroup is added automatically.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
-public class DamagePopup : MonoBehaviour, ITick
+public class DamagePopup : MonoBehaviour
 {
-    #region Inspector
-    [SerializeField] private TextMeshProUGUI label;
-    [SerializeField] private float lifetime = 0.8f;
-    [SerializeField] private float jumpHeight = 40f;
-    [SerializeField] private float jumpDuration = 0.15f;
-    [SerializeField] private float fallDistance = 25f;
-    [SerializeField] private AnimationCurve jumpCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-    #endregion
+    private RectTransform rect;
+    private CanvasGroup group;
+    private TMP_Text label;
 
-    #region Cache
-    private RectTransform rt;
-    private Vector2 startAnchoredPos;
-    private float age;
-    private Color baseColor;
-    #endregion
+    private Vector2 pos, vel;
+    private float age, life;
+    private float startScale, endScale;
 
-    #region Lifecycle
-    private void Awake()
+    /// <summary>Called once when the popup is created.</summary>
+    public void Build()
     {
-        rt = (RectTransform)transform;
-        if (label == null) label = GetComponentInChildren<TextMeshProUGUI>();
+        rect = (RectTransform)transform;
+        label = GetComponentInChildren<TMP_Text>(true);
+        group = GetComponent<CanvasGroup>();
+        if (group == null) group = gameObject.AddComponent<CanvasGroup>();
+
+        // Position is set in canvas-local space around the canvas center.
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+        group.interactable = false;
+        group.blocksRaycasts = false;
     }
 
-    private void OnEnable()
+    /// <summary>Called each time the popup is shown.</summary>
+    public void Setup(Vector2 startPos, Vector2 velocity, string text, Color color,
+                      float scaleStart, float scaleEnd, float lifetime)
     {
-        if (TickSystem.Instance != null)
-            TickSystem.Register((ITick)this);
-    }
-
-    private void OnDisable()
-    {
-        if (TickSystem.Instance != null)
-            TickSystem.Unregister((ITick)this);
-    }
-    #endregion
-
-    #region Public API
-    /// <summary>
-    /// Called by DamagePopupManager right after fetching this from the pool.
-    /// screenPos: already-converted screen-space position (see manager).
-    /// </summary>
-    public void Init(Vector2 screenPos, string text, Color color)
-    {
+        pos = startPos;
+        vel = velocity;
         age = 0f;
-        baseColor = color;
+        life = Mathf.Max(0.05f, lifetime);
+        startScale = scaleStart;
+        endScale = scaleEnd;
 
-        rt.position = screenPos;
-        startAnchoredPos = rt.anchoredPosition;
-
-        label.text = text;
-        label.color = color;
-        rt.localScale = Vector3.one;
-    }
-
-    public void Tick(float delta)
-    {
-        age += delta;
-
-        float t = age / lifetime;
-        if (t >= 1f)
+        if (label != null)
         {
-            Despawn();
-            return;
+            label.text = text;
+            label.color = color;
         }
 
-        // Jump phase (first jumpDuration seconds): curved rise.
-        // Fall phase (remainder): straight linear drop, standard "number pop" feel.
-        float jumpT = Mathf.Clamp01(age / jumpDuration);
-        float jumpOffset = jumpCurve.Evaluate(jumpT) * jumpHeight;
-
-        float fallT = Mathf.Clamp01((age - jumpDuration) / Mathf.Max(0.01f, lifetime - jumpDuration));
-        float fallOffset = fallT * fallDistance;
-
-        rt.anchoredPosition = startAnchoredPos + new Vector2(0f, jumpOffset - fallOffset);
-
-        // Fade out over the last 40% of lifetime only, so it stays fully
-        // visible/readable at first instead of fading the whole time.
-        float fadeT = Mathf.Clamp01((t - 0.6f) / 0.4f);
-        Color c = baseColor;
-        c.a = Mathf.Lerp(baseColor.a, 0f, fadeT);
-        label.color = c;
+        rect.anchoredPosition = pos;
+        rect.localScale = Vector3.one * startScale;
+        group.alpha = 1f;
     }
-    #endregion
 
-    #region Despawn
-    private void Despawn()
+    /// <summary>Returns false when the popup is finished.</summary>
+    public bool Tick(float dt, float gravity, float drag, float fadeStart)
     {
-        if (PoolingSystem.instance != null)
-            PoolingSystem.instance.RemoveToPool(gameObject);
-        else
-            gameObject.SetActive(false);
+        age += dt;
+        float t = age / life;
+        if (t >= 1f) return false;
+
+        // Jump arc
+        vel.y -= gravity * dt;
+        vel.x -= vel.x * Mathf.Min(1f, drag * dt);
+        pos += vel * dt;
+        rect.anchoredPosition = pos;
+
+        // Starts big, slowly shrinks
+        rect.localScale = Vector3.one * Mathf.Lerp(startScale, endScale, t);
+
+        // Holds, then fades
+        group.alpha = t <= fadeStart ? 1f : 1f - (t - fadeStart) / (1f - fadeStart);
+        return true;
     }
-    #endregion
 }

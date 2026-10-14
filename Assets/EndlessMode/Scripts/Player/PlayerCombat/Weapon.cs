@@ -195,7 +195,7 @@ public class Weapon : MonoBehaviour, ITick
     #region Rifle Logic
     private void FireRifle()
     {
-        shootCooldown = 0.1f * pm.attribute.ASPD_Current * rifleFireRate;
+        shootCooldown = (0.1f / pm.attribute.ASPD_Current) * rifleFireRate;
 
         float range = pm.attribute.SIGHT_Current;
         float maxSpread = ComputeMaxSpread(rifleSpread);
@@ -213,7 +213,7 @@ public class Weapon : MonoBehaviour, ITick
     #region Shotgun Logic
     private void FireShotgun()
     {
-        shootCooldown = 0.1f * pm.attribute.ASPD_Current * shotgunFireRate;
+        shootCooldown = (0.1f / pm.attribute.ASPD_Current) * shotgunFireRate;
 
         float range = pm.attribute.SIGHT_Current;
         float maxSpread = ComputeMaxSpread(shotgunSpread);
@@ -234,7 +234,7 @@ public class Weapon : MonoBehaviour, ITick
     #region Sniper Logic
     private void FireSniper()
     {
-        shootCooldown = 0.1f * pm.attribute.ASPD_Current * sniperFireRate;
+        shootCooldown = (0.1f / pm.attribute.ASPD_Current) * sniperFireRate;
 
         float range = pm.attribute.SIGHT_Current;
         float maxSpread = ComputeMaxSpread(sniperSpread);
@@ -253,7 +253,10 @@ public class Weapon : MonoBehaviour, ITick
         );
 
         for (int i = 0; i < results.Length; i++)
+        {
             PlayHitEffect(results[i]);
+            pm.PlayHitSound();
+        }
 
         AttackResult last = results.Length > 0 ? results[results.Length - 1] : default;
         PlayBulletVisual(dir, last, range, sniperBulletPrefab);
