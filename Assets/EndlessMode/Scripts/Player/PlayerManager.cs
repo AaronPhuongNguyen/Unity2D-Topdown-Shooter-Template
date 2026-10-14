@@ -414,6 +414,7 @@ public class PlayerManager : MonoBehaviour, ITick
         float totalBleedDamage = perStackDamage * bleedStacks;
 
         attribute.TakeDamage(totalBleedDamage);
+        DamagePopupManager.Show(Controlling.transform.position,totalBleedDamage,Color.yellow);
         SetCombat(0.5f);
         PlayHitEffect();
         PlayDeathSound();

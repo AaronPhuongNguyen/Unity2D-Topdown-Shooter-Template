@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe2c62b5493b49e43a83b4aa71455172, type: 3}
+  m_Name: Dealt Damage Effect Card
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: d76955a54a8b17648969a428d77b2f05, type: 3}
+  Name: Dealt Damage
+  Description: +2% Dealt Damage
+  Category: 0
+  Rarity: 0.3
+  FlatIncrease: 0
+  PercentIncrease: 0
+  TotalIncrease: 0.02

@@ -1,0 +1,23 @@
+using UnityEngine;
+
+public abstract class CardEffect : ScriptableObject
+{
+    public Sprite Icon;
+    public string Name;
+    [TextArea] public string Description;
+    public Category Category;
+
+    [Tooltip("Chance (0-1) that this card is accepted when it comes up in a draw. " +
+             "1 = always accepted (common). 0.1 = accepted 10% of the time (rare). " +
+             "Rejected cards are rerolled.")]
+    [Range(0f, 1f)] public float Rarity = 1f;
+
+    public abstract void DrawCard(UnitAttribute attribute);
+}
+
+public enum Category
+{
+    Basic,
+    Normal,
+    Strong
+}

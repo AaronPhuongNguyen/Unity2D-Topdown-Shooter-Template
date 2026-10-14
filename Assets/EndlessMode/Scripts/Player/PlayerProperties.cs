@@ -111,8 +111,8 @@ public class PlayerProperties : MonoBehaviour
     private const float Growth_HPP = 0.01f;
     private const float Growth_CDR = 0.03f;
 
-    private const float Cap_SPEED = 7f;
-    private const float Cap_SIGHT = 15f;
+    private const float Cap_SPEED = 8f;
+    private const float Cap_SIGHT = 18f;
     private const float Cap_CDR = 0.6f;
 
     private int Up_Point;
@@ -143,13 +143,13 @@ public class PlayerProperties : MonoBehaviour
     private int RollReward()
     {
         float luck = RNG.GetPercent();
-        if (pity >= 10) { pity = 0; return 8; }
+        if (pity >= 10) { pity = 0; return 6; }
 
         pity++;
-        if (luck < 0.20f) { pity = 0; return 7; }
-        if (luck < 0.4f) return 6;
-        if (luck < 0.6f) return 5;
-        return 4;
+        if (luck < 0.20f) { pity = 0; return 6; }
+        if (luck < 0.4f) return 5;
+        if (luck < 0.6f) return 4;
+        return 3;
     }
 
     public void UpgradeHP()

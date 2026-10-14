@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89ac3800bb0716d43a1d02e0f8767c23, type: 3}
+  m_Name: Kafka_Spawner
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: c35e7defeb771fe4c85a469eccd45eb4, type: 3}
+  Name: Kafka
+  Description: 'Kafka:
+
+    + 500 HP
+
+    + 25 ATK'
+  Category: 1
+  Rarity: 0.25
+  npc: {fileID: 11400000, guid: 9fe3dd6700fe7584886c7b485468536d, type: 2}
+  count: 1

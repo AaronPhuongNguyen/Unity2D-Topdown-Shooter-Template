@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a4a1160c6f422940a31c7bc00c5a345, type: 3}
+  m_Name: HP Effect Card 1
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: de4d8250e0eb0574aae3bc8818d39679, type: 3}
+  Name: HP
+  Description: +2% HP
+  Category: 0
+  Rarity: 0.8
+  FlatIncrease: 0
+  PercentIncrease: 0
+  TotalIncrease: 0.02

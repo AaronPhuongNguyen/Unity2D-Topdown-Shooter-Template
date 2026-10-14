@@ -26,7 +26,7 @@ public class AttackDemo : MonoBehaviour, ITick
 
         CD = SkillCooldown * (1 - pm.attribute.CooldownReduction_Current);
         buffDuration = BuffDuration;
-        ATKValue = 0.5f + Mathf.Min(1.5f,DomainManager.instance.Killed * 0.001f);
+        ATKValue = 0.25f + Mathf.Min(0.75f,DomainManager.instance.Killed * 0.001f);
 
         pm.attribute.DealtDamage_Ampl.TotalBonus += ATKValue;
         pm.attribute.SPEED_Ampl.TotalBonus += SpeedValue;
