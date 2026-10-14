@@ -278,6 +278,7 @@ public class DomainManager : MonoBehaviour, ITick
         CurrentWave += wave;
         BeginWave();
         AddCurrency(Killed + 100);
+        PM?.AddEXP(wave * 100);
     }
 
     // Sets up the state of the wave that CurrentWave points at (no currency reward).
@@ -287,7 +288,6 @@ public class DomainManager : MonoBehaviour, ITick
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
         isNewWave = false;
-        MaxEnemyPerWave = Mathf.RoundToInt(1000 * RNG.GetFloat(0.5f, 1.5f));
     }
 
     private void NextWave()
