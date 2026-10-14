@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: a4fad9a20cc404741a4b66ef3776e695, type: 3}
   Name: Armour Peirce
-  Description: +2% Armour Peirce
+  Description: +3% Armour Peirce
   Category: 0
   Rarity: 0.3
-  FlatIncrease: 0
+  UniquePerRun: 1
+  FlatIncrease: 0.03
   PercentIncrease: 0
-  TotalIncrease: 0.02
+  TotalIncrease: 0

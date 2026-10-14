@@ -49,6 +49,7 @@ public sealed class TickSystem : MonoBehaviour
     public static void SetGameSpeed(float speed)
     {
         _gameSpeed = Mathf.Max(0f, speed);
+        Time.timeScale = Mathf.Max(0, speed);
         OnGameSpeedChanged?.Invoke(_gameSpeed);
     }
 

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: c899993b33804634790997a5dc21b299, type: 3}
   Name: Crit Rate
-  Description: +4% Crit Rate
+  Description: +8% Crit Rate
   Category: 1
   Rarity: 0.1
-  CritRateIncrease: 0.04
+  CritRateIncrease: 0.08
   MaxCritRate: 1

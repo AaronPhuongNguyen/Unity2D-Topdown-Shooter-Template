@@ -183,9 +183,17 @@ public class HiveBrain : MonoBehaviour, ITick
         zoms.Remove(o);
         PoolingSystem.instance.RemoveToPool(o.gameObject);
     }
-    private void Reboot()
+
+    private void Reboot() => ClearAllZoms();
+
+    /// <summary>
+    /// Removes every tracked zombie from the field (returns them to the pool).
+    /// Used on game restart and when the player respawns. NOTE: this does not touch
+    /// DomainManager.RemainingEnemy - the caller is expected to reset it.
+    /// </summary>
+    public void ClearAllZoms()
     {
-        Debug.Log($"[HiveBrain] Reboot() called. Clearing {zoms.Count} tracked zoms.");
+        Debug.Log($"[HiveBrain] ClearAllZoms() called. Clearing {zoms.Count} tracked zoms.");
         for (int i = zoms.Count - 1; i >= 0; i--)
         {
             if (zoms[i] == null) continue;
@@ -193,6 +201,7 @@ public class HiveBrain : MonoBehaviour, ITick
             PoolingSystem.instance.RemoveToPool(zoms[i].gameObject);
         }
         zoms.Clear();
+        tickCursor = 0;
 
         // Return grid lists to the pool instead of dropping them so the
         // next wave's RebuildGrid() doesn't need to reallocate from scratch.

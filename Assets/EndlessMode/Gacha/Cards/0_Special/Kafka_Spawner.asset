@@ -14,12 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: c35e7defeb771fe4c85a469eccd45eb4, type: 3}
   Name: Kafka
-  Description: 'Kafka:
-
-    + 500 HP
-
-    + 25 ATK'
-  Category: 1
-  Rarity: 0.25
+  Description: Kafka loves you and wanna fight with you until death
+  Category: 0
+  Rarity: 1
+  UniquePerRun: 1
   npc: {fileID: 11400000, guid: 9fe3dd6700fe7584886c7b485468536d, type: 2}
   count: 1

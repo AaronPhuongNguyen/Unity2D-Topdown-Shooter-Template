@@ -17,4 +17,5 @@ MonoBehaviour:
   Description: +2% Crit Damage
   Category: 0
   Rarity: 0.4
+  UniquePerRun: 0
   CritDamageIncrease: 0.02

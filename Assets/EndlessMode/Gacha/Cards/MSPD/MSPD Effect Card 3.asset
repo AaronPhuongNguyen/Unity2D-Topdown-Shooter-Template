@@ -16,7 +16,8 @@ MonoBehaviour:
   Name: Move Speed
   Description: +8% Move Speed
   Category: 2
-  Rarity: 0.01
+  Rarity: 0.125
+  UniquePerRun: 1
   FlatIncrease: 0
   PercentIncrease: 0
   TotalIncrease: 0.08

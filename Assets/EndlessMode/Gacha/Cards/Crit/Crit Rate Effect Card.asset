@@ -17,5 +17,6 @@ MonoBehaviour:
   Description: +1% Crit Rate
   Category: 0
   Rarity: 0.4
+  UniquePerRun: 0
   CritRateIncrease: 0.01
   MaxCritRate: 1

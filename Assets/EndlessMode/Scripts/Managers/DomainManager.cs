@@ -1,4 +1,5 @@
 using Server;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -210,8 +211,8 @@ public class DomainManager : MonoBehaviour, ITick
     public int CurrentWave = 0;
     public int MaxEnemyPerWave = 400;
     public float CurrentDifficulty = 0;
-    public const float WaveDuration = 90f;
-    public const float PreparingTimeDefault = 5f;
+    public const float WaveDuration = 60f;
+    public const float PreparingTimeDefault = 3f;
 
     [Header("Runtime debug")]
     public float SecondBeforeNextWave;
@@ -247,19 +248,20 @@ public class DomainManager : MonoBehaviour, ITick
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
         CurrentWave = 0;
+        ResetRespawnAttempts();
         HandleWave(1);
     }
 
     public void HandleSpawn(ZomPackage p)
     {
         RemainingEnemy++;
-        AddCurrency(p.CurrencyAtKill * 0.5f);
     }
     public void HandleKill(ZomPackage p)
     {
         RemainingEnemy--;
         Killed++;
         AddCurrency(p.CurrencyAtKill);
+        PM?.AddEXP(p.EXPAtKill);
     }
     public void AddCurrency(float v) => Currency += Mathf.FloorToInt(v);
     public void CostCurrency(float v) => Currency -= Mathf.CeilToInt(v);
@@ -267,19 +269,27 @@ public class DomainManager : MonoBehaviour, ITick
     {
         isGameRunning = true;
         PreparingTime = PreparingTimeDefault;
+        ResetRespawnAttempts();
         HandleWave(1);
     }
 
     private void HandleWave(int wave)
     {
         CurrentWave += wave;
+        BeginWave();
+        AddCurrency(Killed + 100);
+    }
+
+    // Sets up the state of the wave that CurrentWave points at (no currency reward).
+    private void BeginWave()
+    {
         CurrentDifficulty = CurrentWave / 4f;
         PreparingTime = PreparingTimeDefault;
         SecondBeforeNextWave = 0f;
         isNewWave = false;
         MaxEnemyPerWave = Mathf.RoundToInt(1000 * RNG.GetFloat(0.5f, 1.5f));
-        AddCurrency(Killed + 100);
     }
+
     private void NextWave()
     {
         if (isNewWave)
@@ -308,8 +318,82 @@ public class DomainManager : MonoBehaviour, ITick
     }
     #endregion
 
+    #region Respawn Price
+    [Header("Respawn Price")]
+    [Tooltip("Currency cost of the first respawn.")]
+    public int BaseRespawnPrice = 15000;
+    [Tooltip("Price multiplier applied after every respawn attempt.")]
+    public float RespawnPriceMultiplier = 1.5f;
+
+    /// <summary>How many times the player has paid to respawn this match.</summary>
+    public int RespawnAttempts { get; private set; }
+
+    /// <summary>Current price to respawn: 15K, 22.5K, 33.75K, ...</summary>
+    public int PriceToRespawn =>
+        Mathf.CeilToInt(BaseRespawnPrice * Mathf.Pow(RespawnPriceMultiplier, RespawnAttempts));
+
+    /// <summary>Price of the respawn that comes AFTER the current one (for UI previews).</summary>
+    public int NextPriceToRespawn =>
+        Mathf.CeilToInt(BaseRespawnPrice * Mathf.Pow(RespawnPriceMultiplier, RespawnAttempts + 1));
+
+    public bool CanAffordRespawn => Currency >= PriceToRespawn;
+
+    /// <summary>Raised whenever a respawn is paid for (UI can refresh on it).</summary>
+    public event Action OnRespawnPurchased;
+
+    private void ResetRespawnAttempts() => RespawnAttempts = 0;
+    #endregion
+
+    #region Respawn
+    /// <summary>
+    /// RESPAWN BUTTON (hook this to a UI Button's OnClick, or use the context menu).
+    /// Costs PriceToRespawn currency (x1.5 for every attempt already made).
+    /// Revives the dead player (no new game), clears every zombie, sets the wave back by one
+    /// (never below wave 1), and resumes the match with a fresh preparing time.
+    /// Does nothing if the player is not dead or can't afford it.
+    /// </summary>
+    [ContextMenu("Respawn Player")]
+    public void RespawnPlayer()
+    {
+        PlayerManager pm = PM;
+        if (pm == null || !pm.IsDead)
+        {
+            Debug.LogWarning("DomainManager: RespawnPlayer ignored - the player is not dead.");
+            return;
+        }
+
+        int price = PriceToRespawn;
+        if (Currency < price)
+        {
+            Debug.LogWarning($"DomainManager: RespawnPlayer ignored - need {price}, have {Currency}.");
+            return;
+        }
+
+        // 0. Pay, then raise the price for the next attempt.
+        CostCurrency(price);
+        RespawnAttempts++;
+
+        // 1. Wipe the field.
+        if (HiveBrain.instance != null) HiveBrain.instance.ClearAllZoms();
+        RemainingEnemy = 0;
+
+        // 2. Go back one wave and restart it (no currency reward for this).
+        CurrentWave = Mathf.Max(1, CurrentWave - 1);
+        BeginWave();
+
+        // 3. Bring the same player back and resume the match (GameOver had stopped it).
+        pm.Respawn();
+        isGameRunning = true;
+
+        OnRespawnPurchased?.Invoke();
+    }
+    #endregion
+
     #region Debugger
     [ContextMenu("Add 10 wave")]
     private void AddWave() => HandleWave(10);
+
+    [ContextMenu("Add 100K Currency")]
+    private void DebugAddCurrency() => AddCurrency(100000);
     #endregion
 }

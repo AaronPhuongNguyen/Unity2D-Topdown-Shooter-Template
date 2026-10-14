@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 8ecfc14014c7ad2428db46c196052859, type: 3}
   Name: Crit Damage
-  Description: +4% Crit Damage
+  Description: +8% Crit Damage
   Category: 1
   Rarity: 0.2
-  CritDamageIncrease: 0.04
+  UniquePerRun: 0
+  CritDamageIncrease: 0.08

@@ -9,9 +9,13 @@ public class PlayerManager : MonoBehaviour, ITick
     public bool AutoAttack = false;
     public PlayerPackage package;
     public UnitAttribute attribute => clonedPack?.attribute;
-    
+
     [Header("Energy")]
-    public EnergyPool Energy = new EnergyPool { Max = 10f, RegenPerSecond = 1.5f };
+    public EnergyPool Energy = new EnergyPool { Max = 10f, RegenPerSecond = 1f };
+
+    [Header("Level")]
+    [Tooltip("Level / EXP and per-level growth. Reset on a new game, kept across a Respawn.")]
+    public UnitLevel Level = new UnitLevel();
 
     #region Inspector Debugger
     public LayerMask EnemyMask;
@@ -40,8 +44,11 @@ public class PlayerManager : MonoBehaviour, ITick
     public bool IsMoving => MoveInput != Vector2.zero && !IsAttacking && CurrentHP > 0;
     public bool IsIdle => !IsAttacking && !IsMoving && CurrentHP > 0;
 
+    /// <summary>True from the moment the player dies until Respawn() / Init().</summary>
+    public bool IsDead => isDead;
+    private bool isDead;
+
     [HideInInspector] public float combatDuration;
-    private CorpseEmitter ce;
     #endregion
 
     #region Attack Move Penalty
@@ -120,7 +127,7 @@ public class PlayerManager : MonoBehaviour, ITick
     public void Tick(float delta)
     {
         if (combatDuration > 0) combatDuration -= delta;
-        if (Controlling == null) return;
+        if (Controlling == null || isDead) return; // a dead player stays in the scene (hidden) but must not tick
 
         Energy.Tick(delta);
         pc?.Tick(delta);
@@ -134,9 +141,22 @@ public class PlayerManager : MonoBehaviour, ITick
     }
     #endregion
 
+    #region Level
+    public void AddEXP(float exp)
+    {
+        if (exp <= 0) return;
+        float finalEXP = exp * Mathf.Max(1, DomainManager.instance.CurrentDifficulty);
+        Level.AddEXP(finalEXP);
+    }
+    #endregion
+
     #region Setup
     private bool isInitializing;
 
+    /// <summary>
+    /// NEW GAME: destroys the old player and builds a fresh one (fresh stats, level 1).
+    /// Used on game start and "play again". To bring the SAME player back after dying, use Respawn().
+    /// </summary>
     public void Init()
     {
         if (isInitializing)
@@ -171,6 +191,8 @@ public class PlayerManager : MonoBehaviour, ITick
 
     private void SetUpPlayer()
     {
+        isDead = false;
+
         Controlling.transform.position = LastDeathAtSpot;
         SetRigidBody();
 
@@ -180,12 +202,6 @@ public class PlayerManager : MonoBehaviour, ITick
             rot = Controlling.AddComponent<RecoverOverTime>();
         if (!Controlling.TryGetComponent(out mot))
             mot = Controlling.AddComponent<MoneyOverTime>();
-
-        if (!Controlling.TryGetComponent(out ce))
-        {
-            ce = Controlling.AddComponent<CorpseEmitter>();
-            ce.CreateEmitter(pc);
-        }
 
         if (IndicatorPrefab != null)
         {
@@ -197,9 +213,11 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.Reset();
         attribute.tag = UnitTag.Friendly;
 
-        attribute.OnTakeDamage += OnDamageTaken;
-        attribute.OnDeath += PlayDeathSound;
-        attribute.OnDeath += AfterDeath;
+        // New game = level 1 again, pointed at the NEW attribute clone.
+        Level.Reset();
+        Level.Bind(attribute);
+
+        BindAttributeEvents();
 
         staggerTimer = 0f;
         appliedStaggerMultiplier = 1f;
@@ -211,6 +229,22 @@ public class PlayerManager : MonoBehaviour, ITick
         Energy.Refill();
 
         EventBus.RaisePlayerRespawn();
+    }
+
+    private void BindAttributeEvents()
+    {
+        // Unsubscribe first so this can never double-subscribe.
+        UnbindAttributeEvents();
+        attribute.OnTakeDamage += OnDamageTaken;
+        attribute.OnDeath += PlayDeathSound;
+        attribute.OnDeath += AfterDeath;
+    }
+
+    private void UnbindAttributeEvents()
+    {
+        attribute.OnDeath -= AfterDeath;
+        attribute.OnDeath -= PlayDeathSound;
+        attribute.OnTakeDamage -= OnDamageTaken;
     }
 
     private void SetRigidBody()
@@ -226,8 +260,41 @@ public class PlayerManager : MonoBehaviour, ITick
     #endregion
 
     #region Handle Life
+    /// <summary>
+    /// Brings the SAME player back after death (no new game): keeps stats, cards, level and EXP,
+    /// restores full HP and energy, and puts the player where they died.
+    /// If there is no player yet, falls back to Init().
+    /// </summary>
     [ContextMenu("Respawn")]
-    public void Respawn() => Init();
+    public void Respawn()
+    {
+        if (Controlling == null || clonedPack == null)
+        {
+            Init();
+            return;
+        }
+
+        if (!isDead) return; // alive - nothing to revive
+
+        isDead = false;
+
+        Controlling.transform.position = LastDeathAtSpot;
+        Controlling.SetActive(true);
+
+        // Death already removed stagger / attack slow / bleed; make sure input state is clean too.
+        Target = null;
+        ManualAttacking = false;
+        IsDashing = false;
+        combatDuration = 0f;
+
+        attribute.Respawn(); // full HP + OnSpawn
+        CurrentHP = attribute.HP_Current;
+        Energy.Refill();
+
+        BindAttributeEvents(); // AfterDeath unsubscribed them
+
+        EventBus.RaisePlayerRespawn();
+    }
 
     [ContextMenu("Instant Kill")]
     public void InstantKill() => attribute.TakeDamage(attribute.HP_Current);
@@ -242,21 +309,27 @@ public class PlayerManager : MonoBehaviour, ITick
 
     private void AfterDeath()
     {
+        if (isDead) return;
+        isDead = true;
+
         Debug.Log("Death!");
 
         LastDeathAtSpot = Controlling.transform.position;
-        ce.SpawnCorpse(LastDeathAtSpot, Controlling.transform.localScale);
 
-        attribute.OnDeath -= AfterDeath;
-        attribute.OnDeath -= PlayDeathSound;
-        attribute.OnTakeDamage -= OnDamageTaken;
+        UnbindAttributeEvents();
 
         RemoveStagger();
         RemoveAttackMovePenalty();
         bleedTimer = 0f;
         bleedStacks = 0;
 
-        PoolingSystem.instance.DestroyObject(Controlling);
+        // Tick no longer syncs while dead, so do it here (IsAttacking / IsMoving read CurrentHP).
+        CurrentHP = Mathf.Max(0f, attribute.HP_Current);
+
+        // NOT destroyed: just hidden, so Respawn() can bring this same player back.
+        // It is destroyed/recreated only by Init() (new game / play again).
+        Controlling.SetActive(false);
+        if (AimIndicator != null) AimIndicator.SetActive(false);
 
         EventBus.RaisePlayerDeath();
         EventBus.RaiseGameOver();
@@ -413,8 +486,9 @@ public class PlayerManager : MonoBehaviour, ITick
         float perStackDamage = BleedFlatDamagePerStack * DomainManager.instance.CurrentDifficulty + (attribute.HP_Max * BleedPercentMaxHPPerStack);
         float totalBleedDamage = perStackDamage * bleedStacks;
 
+        Vector3 popupPos = Controlling.transform.position; // read before damage: it may kill and hide the player
         attribute.TakeDamage(totalBleedDamage);
-        DamagePopupManager.Show(Controlling.transform.position,totalBleedDamage,Color.yellow);
+        DamagePopupManager.Show(popupPos, totalBleedDamage, Color.yellow);
         SetCombat(0.5f);
         PlayHitEffect();
         PlayDeathSound();

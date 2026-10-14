@@ -14,10 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   packName: HazomG
   packID: HGP
-  prefab: {fileID: 1349149678334999788, guid: e7c59b317e358444e8604f9b16a5aae4, type: 3}
+  prefab: {fileID: 1349149678334999788, guid: 3a8aba17a6c0ecf4eb90aa7cdcb6fbef, type: 3}
   attribute:
     template: {fileID: 11400000, guid: 63b2482fa4bed8a47beee3f6a0615ac5, type: 2}
+    tag: 0
     HP_Current: 0
+    IsInvincible: 0
+    CritRate: 0.2
+    CritDamage: 2
     HP_Ampl:
       FlatBonus: 0
       PercBonus: 1
@@ -60,6 +64,7 @@ MonoBehaviour:
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 42d92c1089cfa864aa205fd18b4c7e78, type: 2}
   CurrencyAtKill: 1000
+  EXPAtKill: 1000
   AppearFromWave: 30
   CountPerSpawner: 1
   _rateToAppear: 0.05

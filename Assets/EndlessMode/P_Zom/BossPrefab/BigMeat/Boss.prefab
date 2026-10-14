@@ -263,7 +263,7 @@ MonoBehaviour:
   chargeDuration: 0.75
   chargeSpeedBonus: 100
   chargeRangeMultiplier: 3
-  chargeDamageMultiplier: 3
+  chargeDamageMultiplier: 2
   impactRangeMultiplier: 2
   aimAccuracy: 0.75
   leadSeconds: 0.4

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GachaCardManager : MonoBehaviour
 {
@@ -12,15 +14,18 @@ public class GachaCardManager : MonoBehaviour
     // because PlayerManager re-clones its attribute on every Init/respawn.
     private static PlayerManager PM => PlayerManager.instance;
 
+    [Header("Open Button")]
+    [Tooltip("Opens the card selection. Interactable only while rewards are waiting in the queue. " +
+             "Its onClick is wired automatically - don't also wire it in the Inspector. " +
+             "Keep it OUTSIDE the selection canvas (or in _uiToHide) so it isn't clickable while picking.")]
+    public Button openButton;
+    [Tooltip("Optional: shows how many reward picks are waiting (e.g. 'x3'). Hidden when 0.")]
+    public TextMeshProUGUI pendingCountText;
+
     [Header("Custom")]
     public Color BasicColor = Color.gray;                       // Basic = Gray
     public Color NormalColor = new Color(0.0f, 0.5f, 1f);       // Normal = Azure
     public Color StrongColor = new Color(1f, 0.84f, 0f);        // Strong = Golden
-
-    [Header("Rules")]
-    [Tooltip("If true, a card you already picked this run is never offered again. " +
-             "Cards are never duplicated inside one selection either way.")]
-    public bool uniquePerRun = true;
 
     [Header("Tray")] // on where position card selection UI will show
     public Transform tray1;
@@ -30,16 +35,19 @@ public class GachaCardManager : MonoBehaviour
     [Header("Hide")]//In which UI will be hidden while canvas is shown.
     public GameObject[] _uiToHide;
 
-    // Reward cycle (length 8, counted from wave 1), highest tier wins on overlap:
-    //   completed wave 2,6,10,... -> Basic | 4,12,... -> Normal | 8,16,... -> Strong
-    private const int BasicEvery = 2;
-    private const int NormalEvery = 4;
-    private const int StrongEvery = 8;
+    // Reward cycle (length 8), keyed to the level the player JUST reached.
+    // Highest tier wins on overlap:
+    //   level 2,6,10,... -> Basic | 4,12,... -> Normal | 8,16,... -> Strong
+    private const int BasicEvery = 3;
+    private const int NormalEvery = 6;
+    private const int StrongEvery = 12;
 
-    private readonly Queue<Category> _pending = new Queue<Category>(4);
+    private readonly Queue<Category> _pending = new Queue<Category>(8);
     private readonly List<CardEffect> _drawn = new List<CardEffect>(3);
     private readonly List<GachaCard> _spawned = new List<GachaCard>(3);
-    private readonly HashSet<CardEffect> _picked = new HashSet<CardEffect>();
+    // Picked cards that have CardEffect.UniquePerRun = true. Passed to Draw as the exclusion set,
+    // so those cards never come back this run. Cards without the flag are never added here.
+    private readonly HashSet<CardEffect> _pickedUnique = new HashSet<CardEffect>();
     private Transform[] _trays;
 
     private Category _currentCategory;
@@ -48,6 +56,9 @@ public class GachaCardManager : MonoBehaviour
 
     private RectTransform[] _rects;
     private Vector2[] _defaultPos;
+
+    // The UnitLevel we are currently listening to (so we can always unsubscribe cleanly).
+    private UnitLevel _levelSubscribed;
 
     private void Awake()
     {
@@ -63,6 +74,22 @@ public class GachaCardManager : MonoBehaviour
         }
 
         if (canvas != null) canvas.enabled = false;
+
+        if (openButton != null)
+            openButton.onClick.AddListener(OnOpenClicked);
+    }
+
+    private void Start()
+    {
+        // Fallback in case PlayerManager wasn't ready during OnEnable.
+        SubscribeToLevel();
+        RefreshButton();
+    }
+
+    private void OnDestroy()
+    {
+        if (openButton != null)
+            openButton.onClick.RemoveListener(OnOpenClicked);
     }
 
     /// <summary>
@@ -92,44 +119,90 @@ public class GachaCardManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventBus.OnWaveCleared += HandleWaveCleared;
         EventBus.OnGameRestart += ResetRun;
+        SubscribeToLevel();
+        RefreshButton();
     }
 
     private void OnDisable()
     {
-        EventBus.OnWaveCleared -= HandleWaveCleared;
         EventBus.OnGameRestart -= ResetRun;
+        UnsubscribeFromLevel();
         if (_isOpen) Close(); // never leave the game paused
     }
 
-    private void ResetRun()
+    #region Level Subscription
+    // PlayerManager.Level is created once and survives respawns / new games (Reset() keeps the
+    // delegates), so one subscription is enough for the whole session.
+    private void SubscribeToLevel()
     {
-        _picked.Clear();
-        _pending.Clear();
-        if (_isOpen) Close();
+        UnitLevel level = PM != null ? PM.Level : null;
+        if (level == null || level == _levelSubscribed) return;
+
+        UnsubscribeFromLevel();
+        level.OnLevelUp += HandleLevelUp;
+        _levelSubscribed = level;
     }
 
-    // DomainManager calls HandleWave(1) BEFORE raising WaveCleared,
-    // so the wave that was just completed is CurrentWave - 1.
-    private void HandleWaveCleared()
+    private void UnsubscribeFromLevel()
     {
-        var dm = DomainManager.instance;
-        if (dm == null) return;
+        if (_levelSubscribed == null) return;
+        _levelSubscribed.OnLevelUp -= HandleLevelUp;
+        _levelSubscribed = null;
+    }
+    #endregion
 
-        int completed = dm.CurrentWave - 1;
-        if (completed <= 0) return;
+    private void ResetRun()
+    {
+        _pickedUnique.Clear();
+        _pending.Clear();
+        if (_isOpen) Close();
+        RefreshButton();
+    }
+
+    // UnitLevel increments Level_Current BEFORE invoking OnLevelUp, so this is the level just reached.
+    // Several level-ups from one EXP gain fire this once per level, each with its own value.
+    private void HandleLevelUp()
+    {
+        if (_levelSubscribed == null) return;
+
+        int reached = _levelSubscribed.Level_Current;
+        if (reached <= 1) return;
 
         Category? reward = null;
-        if (completed % StrongEvery == 0) reward = Category.Strong;
-        else if (completed % NormalEvery == 0) reward = Category.Normal;
-        else if (completed % BasicEvery == 0) reward = Category.Basic;
+        if (reached % StrongEvery == 0) reward = Category.Strong;
+        else if (reached % NormalEvery == 0) reward = Category.Normal;
+        else if (reached % BasicEvery == 0) reward = Category.Basic;
 
         if (!reward.HasValue) return;
 
+        // Only queue it. The player opens the selection with the button.
         _pending.Enqueue(reward.Value);
-        if (!_isOpen) ShowNext();
+        RefreshButton();
     }
+
+    #region Button
+    private void OnOpenClicked()
+    {
+        if (_isOpen || _pending.Count == 0) return;
+        ShowNext();
+    }
+
+    /// <summary>Button.interactable = there is at least one reward waiting (and nothing is open).</summary>
+    private void RefreshButton()
+    {
+        int count = _pending.Count;
+
+        if (openButton != null)
+            openButton.interactable = count > 0 && !_isOpen;
+
+        if (pendingCountText != null)
+        {
+            pendingCountText.gameObject.SetActive(count > 0);
+            pendingCountText.text = $"x{count}";
+        }
+    }
+    #endregion
 
     private void ShowNext()
     {
@@ -138,7 +211,7 @@ public class GachaCardManager : MonoBehaviour
             Category cat = _pending.Dequeue();
             // Draw returns only DISTINCT cards: if just one is available,
             // exactly one is shown instead of three copies.
-            if (cardDataBase.Draw(cat, 3, _drawn, uniquePerRun ? _picked : null) > 0)
+            if (cardDataBase.Draw(cat, 3, _drawn, _pickedUnique) > 0)
             {
                 _currentCategory = cat;
                 Open();
@@ -146,6 +219,8 @@ public class GachaCardManager : MonoBehaviour
             }
             Debug.LogWarning($"GachaCardManager: no available {cat} cards, skipping reward.");
         }
+
+        RefreshButton(); // queue drained without opening anything
     }
 
     #region Debugger (right-click the component header in Play Mode)
@@ -156,17 +231,17 @@ public class GachaCardManager : MonoBehaviour
             Debug.LogWarning("GachaCardManager: enter Play Mode to test.");
             return;
         }
-        _pending.Enqueue(cat);
-        if (!_isOpen) ShowNext();
+        _pending.Enqueue(cat); // queued only - press the button to open
+        RefreshButton();
     }
 
-    [ContextMenu("Test/Show Basic")]
+    [ContextMenu("Test/Queue Basic")]
     private void TestBasic() => DebugReward(Category.Basic);
 
-    [ContextMenu("Test/Show Normal")]
+    [ContextMenu("Test/Queue Normal")]
     private void TestNormal() => DebugReward(Category.Normal);
 
-    [ContextMenu("Test/Show Strong")]
+    [ContextMenu("Test/Queue Strong")]
     private void TestStrong() => DebugReward(Category.Strong);
 
     [ContextMenu("Test/Queue Basic + Normal + Strong")]
@@ -177,11 +252,11 @@ public class GachaCardManager : MonoBehaviour
         DebugReward(Category.Strong);
     }
 
-    [ContextMenu("Test/Clear Picked Cards")]
+    [ContextMenu("Test/Clear Unique Picked Cards")]
     private void TestClearPicked()
     {
-        _picked.Clear();
-        Debug.Log("GachaCardManager: picked cards cleared.");
+        _pickedUnique.Clear();
+        Debug.Log("GachaCardManager: unique-picked cards cleared.");
     }
     #endregion
 
@@ -216,6 +291,8 @@ public class GachaCardManager : MonoBehaviour
             c.Setup(_drawn[i], bg, OnCardPicked);
             _spawned.Add(c);
         }
+
+        RefreshButton();
     }
 
     private void OnCardPicked(CardEffect effect)
@@ -227,11 +304,11 @@ public class GachaCardManager : MonoBehaviour
         }
         else
         {
-            _picked.Add(effect);
+            if (effect.UniquePerRun) _pickedUnique.Add(effect); // only cards flagged UniquePerRun are locked out
             effect.DrawCard(attr);
         }
         Close();
-        ShowNext(); // if several rewards queued up, show the next one
+        ShowNext(); // if several rewards are queued, keep going with the next one
     }
 
     private void Close()
@@ -247,5 +324,7 @@ public class GachaCardManager : MonoBehaviour
 
         TickSystem.SetGameSpeed(_speedBeforePause);
         _isOpen = false;
+
+        RefreshButton();
     }
 }

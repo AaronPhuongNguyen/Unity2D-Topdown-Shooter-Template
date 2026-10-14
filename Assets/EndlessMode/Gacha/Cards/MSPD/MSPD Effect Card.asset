@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 76659bb7b5355194abe1714e05cc2904, type: 3}
   Name: Move Speed
-  Description: +1% Move Speed
+  Description: +2% Move Speed
   Category: 0
-  Rarity: 0.2
+  Rarity: 0.5
+  UniquePerRun: 0
   FlatIncrease: 0
   PercentIncrease: 0
-  TotalIncrease: 0.01
+  TotalIncrease: 0.02

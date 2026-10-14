@@ -12,6 +12,10 @@ public abstract class CardEffect : ScriptableObject
              "Rejected cards are rerolled.")]
     [Range(0f, 1f)] public float Rarity = 1f;
 
+    [Tooltip("If true, once the player picks this card it is never offered again for the rest of the run. " +
+             "If false (default), it can come up again and stack.")]
+    public bool UniquePerRun = false;
+
     public abstract void DrawCard(UnitAttribute attribute);
 }
 

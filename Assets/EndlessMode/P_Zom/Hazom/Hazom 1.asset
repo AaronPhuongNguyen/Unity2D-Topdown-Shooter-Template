@@ -19,6 +19,7 @@ MonoBehaviour:
     template: {fileID: 11400000, guid: ce17dafe5dd61df468ef2f5d0490804b, type: 2}
     tag: 0
     HP_Current: 0
+    IsInvincible: 0
     CritRate: 0.1
     CritDamage: 2
     HP_Ampl:
@@ -63,6 +64,7 @@ MonoBehaviour:
       TotalBonus: 1
   Media: {fileID: 11400000, guid: 42d92c1089cfa864aa205fd18b4c7e78, type: 2}
   CurrencyAtKill: 25
+  EXPAtKill: 25
   AppearFromWave: 7
   CountPerSpawner: 3
   _rateToAppear: 0.5
