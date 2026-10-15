@@ -1,9 +1,10 @@
+using Server;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GachaCardManager : MonoBehaviour
+public class GachaCardManager : MonoBehaviour, ITick
 {
     [Header("Properties")]
     public Canvas canvas; //where show the selection UI
@@ -13,6 +14,11 @@ public class GachaCardManager : MonoBehaviour
     // The card's target is resolved from PlayerManager at pick time (see OnCardPicked),
     // because PlayerManager re-clones its attribute on every Init/respawn.
     private static PlayerManager PM => PlayerManager.instance;
+
+    [Header("Card Runtime")]
+    [Tooltip("Child object the ongoing card effects are added to. Created automatically if empty.")]
+    public GameObject runtimeHolder;
+    private readonly List<CardBehaviour> _behaviours = new List<CardBehaviour>(16);
 
     [Header("Open Button")]
     [Tooltip("Opens the card selection. Interactable only while rewards are waiting in the queue. " +
@@ -35,12 +41,11 @@ public class GachaCardManager : MonoBehaviour
     [Header("Hide")]//In which UI will be hidden while canvas is shown.
     public GameObject[] _uiToHide;
 
-    // Reward cycle (length 8), keyed to the level the player JUST reached.
-    // Highest tier wins on overlap:
-    //   level 2,6,10,... -> Basic | 4,12,... -> Normal | 8,16,... -> Strong
-    private const int BasicEvery = 3;
+    // Reward cycle, keyed to the level the player JUST reached.
+    // Highest tier wins on overlap.
+    private const int BasicEvery = 2;
     private const int NormalEvery = 6;
-    private const int StrongEvery = 12;
+    private const int StrongEvery = 10;
 
     private readonly Queue<Category> _pending = new Queue<Category>(8);
     private readonly List<CardEffect> _drawn = new List<CardEffect>(3);
@@ -74,6 +79,12 @@ public class GachaCardManager : MonoBehaviour
         }
 
         if (canvas != null) canvas.enabled = false;
+
+        if (runtimeHolder == null)
+        {
+            runtimeHolder = new GameObject("CardRuntime");
+            runtimeHolder.transform.SetParent(transform, false);
+        }
 
         if (openButton != null)
             openButton.onClick.AddListener(OnOpenClicked);
@@ -120,6 +131,7 @@ public class GachaCardManager : MonoBehaviour
     private void OnEnable()
     {
         EventBus.OnGameRestart += ResetRun;
+        if (TickSystem.Instance != null) TickSystem.Register((ITick)this);
         SubscribeToLevel();
         RefreshButton();
     }
@@ -127,9 +139,35 @@ public class GachaCardManager : MonoBehaviour
     private void OnDisable()
     {
         EventBus.OnGameRestart -= ResetRun;
+        if (TickSystem.Instance != null) TickSystem.Unregister((ITick)this);
         UnsubscribeFromLevel();
         if (_isOpen) Close(); // never leave the game paused
     }
+
+    #region Card Runtime
+    /// <summary>Ticks every ongoing card behaviour on the holder.</summary>
+    public void Tick(float dt)
+    {
+        if (_isOpen || runtimeHolder == null) return;
+
+        runtimeHolder.GetComponents(_behaviours); // no allocation
+        for (int i = 0; i < _behaviours.Count; i++)
+        {
+            CardBehaviour b = _behaviours[i];
+            if (b != null && b.Active) b.Tick(dt);
+        }
+    }
+
+    /// <summary>Stops and removes every ongoing card behaviour.</summary>
+    private void StopAllBehaviours()
+    {
+        if (runtimeHolder == null) return;
+
+        runtimeHolder.GetComponents(_behaviours);
+        for (int i = 0; i < _behaviours.Count; i++)
+            if (_behaviours[i] != null) _behaviours[i].Stop();
+    }
+    #endregion
 
     #region Level Subscription
     // PlayerManager.Level is created once and survives respawns / new games (Reset() keeps the
@@ -154,6 +192,7 @@ public class GachaCardManager : MonoBehaviour
 
     private void ResetRun()
     {
+        StopAllBehaviours();
         _pickedUnique.Clear();
         _pending.Clear();
         if (_isOpen) Close();
@@ -258,6 +297,9 @@ public class GachaCardManager : MonoBehaviour
         _pickedUnique.Clear();
         Debug.Log("GachaCardManager: unique-picked cards cleared.");
     }
+
+    [ContextMenu("Test/Stop All Card Behaviours")]
+    private void TestStopBehaviours() => StopAllBehaviours();
     #endregion
 
     private Color ColorFor(Category cat)
@@ -305,7 +347,7 @@ public class GachaCardManager : MonoBehaviour
         else
         {
             if (effect.UniquePerRun) _pickedUnique.Add(effect); // only cards flagged UniquePerRun are locked out
-            effect.DrawCard(attr);
+            effect.DrawCard(attr, runtimeHolder);
         }
         Close();
         ShowNext(); // if several rewards are queued, keep going with the next one

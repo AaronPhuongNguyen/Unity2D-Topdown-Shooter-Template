@@ -605,9 +605,9 @@ MonoBehaviour:
   shotgunRangeBonus: -0.3
   shotgunBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   shotgunShootSound: {fileID: 8300000, guid: da2250a7d0f72fe458f2dd972d66bdb3, type: 3}
-  sniperFireRate: 9
+  sniperFireRate: 10
   sniperSpread: 0.2
-  sniperDamageBonus: 3.5
+  sniperDamageBonus: 5
   sniperRangeBonus: 0.3
   sniperPierceTargets: 0
   sniperPierceFalloff: 0.7

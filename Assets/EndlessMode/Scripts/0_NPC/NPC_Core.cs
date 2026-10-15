@@ -593,6 +593,7 @@ public class NpcBrain : HurtBox, ITick
     #region Tick
     public virtual void Tick(float dt)
     {
+        if (TickSystem.GameSpeed <= 0) return;
         if (!isActive || attribute == null || attribute.IsDead) return;
         if (pm == null) return;
 

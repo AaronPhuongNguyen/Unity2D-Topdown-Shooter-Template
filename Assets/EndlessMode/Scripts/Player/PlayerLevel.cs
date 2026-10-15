@@ -11,7 +11,13 @@ public class UnitLevel
 
     public float EXP_Current;
     // Guarded: Log(0) is -Infinity, which made the old formula return -Infinity at level 1.
-    public float EXP_ToUpLevel => 100 * (1 + Mathf.Log(Mathf.Max(1, Level_Current - 1)) * 0.75f);
+    [Header("EXP curve")]
+    public float EXP_Base = 100f;       // cost of level 1 -> 2
+    public float EXP_Growth = 20f;     // how much each extra level adds
+    public float EXP_Exponent = 1.1f;  // >1 = gets steeper at high level
+
+    public float EXP_ToUpLevel =>
+        EXP_Base + EXP_Growth * Mathf.Pow(Mathf.Max(0, Level_Current - 1), EXP_Exponent);
 
     public Action<float> OnEXPAdded;
     public Action OnLevelUp;
@@ -61,18 +67,29 @@ public class UnitLevel
 [Serializable]
 public class StatusBonusPerLevel
 {
-    [Header("Growth per level (added as flat bonus)")]
-    public float Growth_HP=5f;
-    public float Growth_ATK=0.5f;
-    public float Growth_DEF=5;
-    public float Growth_SPEED=0.1f;
-    public float Growth_SIGHT=0.1f;
-    public float Growth_CDR=0.01f;
+    // Hard rule: any percent growth per level is clamped to this (0.01 = +1%).
+    public const float MaxPctPerLevel = 0.01f;
 
-    // Max values - only DEF, CDR, SPEED and SIGHT are limited (HP and ATK are not).
+    [Header("Flat growth per level")]
+    public float Growth_HP = 5f;
+    public float Growth_ATK = 0.5f;
+    public float Growth_DEF = 5f;
+    public float Growth_SPEED = 0.1f;
+    public float Growth_SIGHT = 0.1f;
+    public float Growth_CDR = 0.01f;
+
+    [Header("Percent growth per level (PercBonus, max 0.01 = +1%)")]
+    [Range(0f, MaxPctPerLevel)] public float Growth_HP_Pct = 0.01f;
+    [Range(0f, MaxPctPerLevel)] public float Growth_ATK_Pct = 0.005f;
+
+    [Header("Milestone (FLAT bonus every N levels, 0 = disabled)")]
+    public int MilestoneEvery = 10;
+    public float Milestone_HP_Flat = 25f;
+    public float Milestone_ATK_Flat = 2f;
+
     [Header("Max (final stat value)")]
     public float Max_DEF = 1000f;
-    public float Max_CDR = 0.5f;   // 50%
+    public float Max_CDR = 0.5f;
     public float Max_SPEED = 8f;
     public float Max_SIGHT = 15f;
 
@@ -86,21 +103,24 @@ public class StatusBonusPerLevel
         Max_SIGHT = maxSight;
     }
 
-    /// <summary>Applies one level's worth of growth to the unit, respecting the max values.</summary>
-    public void Apply(UnitAttribute a)
+    public void Apply(UnitAttribute a, int newLevel = 0)
     {
         if (a == null) return;
-        if (a.IsNewUnit) a.Reset(); // make sure amplifiers exist
+        if (a.IsNewUnit) a.Reset();
 
-        // HP: no cap. Heal by the amount gained so leveling is felt immediately.
+        bool milestone = MilestoneEvery > 0 && newLevel > 1 && newLevel % MilestoneEvery == 0;
+
+        // HP: flat + percent (PercBonus). TotalBonus is never touched.
         float hpBefore = a.HP_Max;
-        a.HP_Ampl.FlatBonus += Growth_HP;
+        a.HP_Ampl.FlatBonus += Growth_HP + (milestone ? Milestone_HP_Flat : 0f);
+        a.HP_Ampl.PercBonus += Mathf.Min(Growth_HP_Pct, MaxPctPerLevel);
         a.Heal(Mathf.Max(0f, a.HP_Max - hpBefore));
 
-        // ATK: no cap.
-        a.ATK_Ampl.FlatBonus += Growth_ATK;
+        // ATK: flat + percent (PercBonus).
+        a.ATK_Ampl.FlatBonus += Growth_ATK + (milestone ? Milestone_ATK_Flat : 0f);
+        a.ATK_Ampl.PercBonus += Mathf.Min(Growth_ATK_Pct, MaxPctPerLevel);
 
-        // Capped stats.
+        // Capped stats: flat only.
         float before = a.DEF_Current;
         a.DEF_Ampl.FlatBonus += Growth_DEF;
         Cap(a.DEF_Ampl, Growth_DEF, before, a.DEF_Current, Max_DEF);
@@ -120,12 +140,6 @@ public class StatusBonusPerLevel
         a.OnStatusChange?.Invoke();
     }
 
-    /// <summary>
-    /// The growth was already added. If the final value went past <paramref name="max"/>,
-    /// take back just the part that overshoots (all of it if already over the max).
-    /// Works whatever multipliers sit on top of the flat bonus, and never lowers a value
-    /// that is over the max because of something else (e.g. a card).
-    /// </summary>
     private static void Cap(Amplification amp, float growth, float before, float after, float max)
     {
         if (after <= max || after <= before) return;

@@ -7,11 +7,11 @@ public class AttackDemo : MonoBehaviour, ITick
 
     private const float SkillCooldown = 120f;
     private const float ASPDValue = 0.4f;
-    private const float SpeedValue = 0.2f;
+    private const float SpeedValue = 0.25f;
     private const float ArmourPenValue = 0.4f;
-    private const float BuffDuration = 10f;
+    private const float BuffDuration = 12f;
     private const float ShootAcc = 0.2f;
-    private const float Protecting = 0.4f;
+    private const float Protecting = 0.5f;
     public Image UI;
 
     private float CD;

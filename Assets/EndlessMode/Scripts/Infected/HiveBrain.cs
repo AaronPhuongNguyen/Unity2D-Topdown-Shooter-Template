@@ -117,6 +117,7 @@ public class HiveBrain : MonoBehaviour, ITick
     // same as every other ITick consumer, with zero extra wiring here.
     public void Tick(float delta)
     {
+        if (TickSystem.GameSpeed <= 0) return;
         if (zoms.Count == 0) return;
 
         RebuildGrid(); // refresh spatial buckets before ticking this frame

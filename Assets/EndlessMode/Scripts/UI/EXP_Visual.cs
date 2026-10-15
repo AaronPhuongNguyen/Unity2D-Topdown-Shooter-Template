@@ -60,7 +60,7 @@ public class LevelUI : MonoBehaviour, IUnscaledTick
 
         shownFill = fillSpeed <= 0f
             ? target
-            : Mathf.MoveTowards(shownFill, target, fillSpeed * deltaTime);
+            : Mathf.Lerp(shownFill, target, fillSpeed * deltaTime);
 
         expFill.fillAmount = shownFill;
     }

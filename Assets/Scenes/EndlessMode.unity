@@ -4283,19 +4283,31 @@ MonoBehaviour:
         FlatBonus: 0
         PercBonus: 1
         TotalBonus: 1
+      Lifesteal_Ampl:
+        FlatBonus: 0
+        PercBonus: 1
+        TotalBonus: 1
     SBPL:
       Growth_HP: 10
       Growth_ATK: 1
-      Growth_DEF: 5
-      Growth_SPEED: 0.05
+      Growth_DEF: 10
+      Growth_SPEED: 0.1
       Growth_SIGHT: 0.1
       Growth_CDR: 0.01
+      Growth_HP_Pct: 0.01
+      Growth_ATK_Pct: 0.005
+      MilestoneEvery: 10
+      Milestone_HP_Flat: 25
+      Milestone_ATK_Flat: 2
       Max_DEF: 1000
       Max_CDR: 0.5
       Max_SPEED: 8
       Max_SIGHT: 15
     Level_Current: 1
     EXP_Current: 0
+    EXP_Base: 100
+    EXP_Growth: 20
+    EXP_Exponent: 1.1
   EnemyMask:
     serializedVersion: 2
     m_Bits: 64
@@ -6032,6 +6044,7 @@ MonoBehaviour:
   canvas: {fileID: 917046461}
   card: {fileID: 7275773130241246951, guid: 17b526c50aba19e499c31a4a95820775, type: 3}
   cardDataBase: {fileID: 11400000, guid: 234f65c0f1df6e346b5b13e7eb460b33, type: 2}
+  runtimeHolder: {fileID: 0}
   openButton: {fileID: 75962366}
   pendingCountText: {fileID: 2132564649}
   BasicColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}

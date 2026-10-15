@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2317d81875545e49a4d302eb8dabf47, type: 3}
   m_Name: Armour Penetration Effect Card 2
   m_EditorClassIdentifier: 
-  Icon: {fileID: 21300000, guid: a4fad9a20cc404741a4b66ef3776e695, type: 3}
+  Icon: {fileID: 21300000, guid: 19a0c8c7f83449a4b8cd67e3190d28bb, type: 3}
   Name: Armour Peirce
   Description: +9% Armour Peirce
   Category: 1

@@ -141,6 +141,10 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   anim: {fileID: 3496908157226765466}
   CanAttack: 1
   CanMove: 1
@@ -176,7 +180,7 @@ MonoBehaviour:
   calmTime: 0.8
   fleeDirections: 16
   fleeLookAhead: 3.5
-  fleeSpeedBonus: 3
+  fleeSpeedBonus: 5
   continuityBonus: 0.3
   wallPenalty: 5
   edgeMargin: 3

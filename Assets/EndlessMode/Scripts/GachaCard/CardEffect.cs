@@ -17,6 +17,9 @@ public abstract class CardEffect : ScriptableObject
     public bool UniquePerRun = false;
 
     public abstract void DrawCard(UnitAttribute attribute);
+
+    // Cards that need ongoing logic override this one. Others don't need to change.
+    public virtual void DrawCard(UnitAttribute attribute, GameObject holder) => DrawCard(attribute);
 }
 
 public enum Category

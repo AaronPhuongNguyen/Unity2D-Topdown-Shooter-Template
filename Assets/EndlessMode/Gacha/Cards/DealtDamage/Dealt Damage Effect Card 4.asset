@@ -17,7 +17,7 @@ MonoBehaviour:
   Description: +8% Dealt Damage
   Category: 1
   Rarity: 0.15
-  UniquePerRun: 0
+  UniquePerRun: 1
   FlatIncrease: 0.08
   PercentIncrease: 0
   TotalIncrease: 0

@@ -95,7 +95,7 @@ namespace Server
         }
         public static float HandleDamage(float damage, UnitAttribute a, UnitAttribute v)
         {
-            float effectiveDamage = damage * Mathf.Max(0,a.DealtDamage_Current) * (1 - Mathf.Clamp(v.DamageReduction_Current,0,0.9f));
+            float effectiveDamage = damage * Mathf.Max(0, a.DealtDamage_Current);
             float effectiveArmour = v.DEF_Current * (1 - Mathf.Clamp01(a.ArmourPenetration_Current));
 
             if (effectiveArmour <= 0) return effectiveDamage;

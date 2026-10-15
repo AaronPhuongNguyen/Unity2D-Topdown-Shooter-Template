@@ -15,6 +15,6 @@ MonoBehaviour:
   HP_Base: 15000
   ATK_Base: 25
   SPEED_Base: 18
-  DEF_Base: 200
+  DEF_Base: 100
   ASPD_Base: 1
   SIGHT_Base: 3

@@ -145,7 +145,8 @@ public class PlayerManager : MonoBehaviour, ITick
     public void AddEXP(float exp)
     {
         if (exp <= 0) return;
-        Level.AddEXP(exp);
+        float e = exp * Mathf.Max(1,DomainManager.instance.CurrentDifficulty);
+        Level.AddEXP(e);
     }
     #endregion
 

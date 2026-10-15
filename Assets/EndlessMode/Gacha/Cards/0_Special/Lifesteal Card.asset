@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 002e27e9379b4154d9140f2047cb7b5e, type: 3}
+  m_Name: Lifesteal Card
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: 7f41bd1d618184b46a7ef457d3fe4f9f, type: 3}
+  Name: Perfect Lifesteal
+  Description: Acquire 10% Lifesteal, each dealing damage attempt recovers 0.1% Max
+    HP
+  Category: 1
+  Rarity: 0.1
+  UniquePerRun: 1
+  Lifesteal: 0.1
+  HealMaxHPPerHit: 0.001

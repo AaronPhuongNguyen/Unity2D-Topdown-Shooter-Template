@@ -49,6 +49,7 @@ public class UnitAttribute
     public float DamageReduction_Current => Server.Calculation.FinalValue(0f, DamageReduction_Ampl);
     public float CooldownReduction_Current => Server.Calculation.FinalValue(0f, CooldownReduction_Ampl);
     public float DealtDamage_Current => Server.Calculation.FinalValue(1f, DealtDamage_Ampl);
+    public float Lifesteal_Current => Server.Calculation.FinalValue(0f, Lifesteal_Ampl);
     #endregion
 
     #region Amplifier
@@ -63,6 +64,7 @@ public class UnitAttribute
     public Amplification DamageReduction_Ampl;
     public Amplification CooldownReduction_Ampl;
     public Amplification DealtDamage_Ampl;
+    public Amplification Lifesteal_Ampl;
     #endregion
 
     #region Flags
@@ -70,7 +72,8 @@ public class UnitAttribute
         HP_Ampl == null || ATK_Ampl == null || SPEED_Ampl == null ||
         DEF_Ampl == null || ASPD_Ampl == null || SIGHT_Ampl == null ||
         ArmourPenetration_Ampl == null || DamageReduction_Ampl == null ||
-        CooldownReduction_Ampl == null || DealtDamage_Ampl == null;
+        CooldownReduction_Ampl == null || DealtDamage_Ampl == null
+        || Lifesteal_Ampl == null;
 
     public bool IsDead => HP_Current <= 0;
     #endregion
@@ -100,6 +103,7 @@ public class UnitAttribute
         DamageReduction_Ampl ??= new Amplification();
         CooldownReduction_Ampl ??= new Amplification();
         DealtDamage_Ampl ??= new Amplification();
+        Lifesteal_Ampl ??= new Amplification();
     }
 
     public void Respawn()
@@ -112,7 +116,7 @@ public class UnitAttribute
     #region Combat
     public void TakeDamage(float damage)
     {
-        HP_Current -= damage * (1 - DamageReduction_Current);
+        HP_Current -= damage * (1 - Mathf.Clamp(DamageReduction_Current, 0f, 0.9f));
         DeathHandler();
     }
     public void Heal(float value)
@@ -147,6 +151,7 @@ public class UnitAttribute
             DamageReduction_Ampl = DamageReduction_Ampl?.Clone(),
             CooldownReduction_Ampl = CooldownReduction_Ampl?.Clone(),
             DealtDamage_Ampl = DealtDamage_Ampl?.Clone(),
+            Lifesteal_Ampl = Lifesteal_Ampl?.Clone(),
         };
     }
     #endregion

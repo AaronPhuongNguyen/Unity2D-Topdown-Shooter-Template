@@ -62,9 +62,13 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   Media: {fileID: 11400000, guid: 42d92c1089cfa864aa205fd18b4c7e78, type: 2}
   CurrencyAtKill: 1000
-  EXPAtKill: 1000
+  EXPAtKill: 500
   AppearFromWave: 30
   CountPerSpawner: 1
   _rateToAppear: 0.05
