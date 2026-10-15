@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d02b64694e380340ad0e9154172b744, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arcScale: 0.6
+  arcScale: 1.2
   spinSpeed: 360
   explosionEffect: {fileID: 6251949785278662778, guid: 649b08d9ae78f46428242765b3da630e, type: 3}
   explosionSound: {fileID: 8300000, guid: 8c59fc9b579959a4da266c47fe497d44, type: 3}

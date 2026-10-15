@@ -4241,6 +4241,7 @@ MonoBehaviour:
       tag: 0
       HP_Current: 0
       IsInvincible: 0
+      IsUntargetable: 0
       CritRate: 0.2
       CritDamage: 2
       HP_Ampl:
@@ -12036,7 +12037,7 @@ MonoBehaviour:
   speaker: {fileID: 0}
   mixer: {fileID: 0}
   sfxPriority: 8
-  volume: 1
+  volume: 0.5
   musicSpeaker: {fileID: 0}
   musicMixer: {fileID: 0}
   musicList:
@@ -17545,7 +17546,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   settings:
-    SFX: 1
+    SFX: 0.5
     Music: 1
     MaxValue: 1
     MinValue: 0

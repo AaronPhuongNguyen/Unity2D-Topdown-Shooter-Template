@@ -106,6 +106,7 @@ public class Grenade : MonoBehaviour, ITick
 
         if (explosionSound != null && AudioManager.instance != null)
             AudioManager.instance.PlayAudio(explosionSound, pos);
+        if (CamManager.instance != null) CamManager.instance.Shake(3f);
 
         Release();
     }

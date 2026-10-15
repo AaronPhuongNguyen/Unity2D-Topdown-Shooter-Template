@@ -99,6 +99,7 @@ MonoBehaviour:
     tag: 0
     HP_Current: 0
     IsInvincible: 0
+    IsUntargetable: 0
     CritRate: 0.2
     CritDamage: 2
     HP_Ampl:
@@ -212,12 +213,12 @@ MonoBehaviour:
   speakDelay: 0.4
   useGrenade: 1
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
-  grenadeRange: 20
-  grenadeCooldown: 10
-  grenadeDamageMultiplier: 5
-  grenadeRadius: 10
-  grenadeEdgeDamage: 0.4
-  grenadeFlightTime: 0.4
+  grenadeRange: 15
+  grenadeCooldown: 15
+  grenadeDamageMultiplier: 15
+  grenadeRadius: 15
+  grenadeEdgeDamage: 0.25
+  grenadeFlightTime: 0.2
   throwPoint: {fileID: 7416084440610428882}
   grenadeThrowLine: {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}
 --- !u!1 &1968811004170483111
