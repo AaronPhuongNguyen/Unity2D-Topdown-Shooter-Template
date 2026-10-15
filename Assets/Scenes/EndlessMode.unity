@@ -4327,7 +4327,7 @@ MonoBehaviour:
   rot: {fileID: 0}
   mot: {fileID: 0}
   combatDuration: 0
-  StaggerChance: 0.2
+  StaggerChance: 0.25
   bleedChance: 0.75
 --- !u!1 &432608217
 GameObject:

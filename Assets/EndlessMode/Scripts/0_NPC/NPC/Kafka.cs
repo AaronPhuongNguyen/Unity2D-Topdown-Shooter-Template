@@ -5,11 +5,9 @@ using UnityEngine;
 
 /// <summary>
 /// Kafka, the first NPC. Inherits everything from NpcBrain (following,
-/// fighting, fleeing, hit stagger, wave bonus) and adds a voice:
-///   - a greeting when she appears (optional),
-///   - one random line on every new wave (never the same line twice in a row),
-///   - an optional separate pool of lines for boss waves.
-/// She stays silent while she is not active (dead / game restarted).
+/// fighting, fleeing, hit stagger, stat matching) and adds:
+///   - a voice: greeting, one random line per new wave (boss pool optional),
+///   - SKILL: throws a grenade at her target when it is closer than grenadeRange.
 ///
 /// Put this on her prefab INSTEAD of NpcBrain (it is an NpcBrain).
 /// </summary>
@@ -31,7 +29,25 @@ public class Kafka : NpcBrain
     [Tooltip("Small delay so the line doesn't clash with the new-wave sound.")]
     [SerializeField] private float speakDelay = 0.4f;
 
+    [Header("Skill: Grenade")]
+    [SerializeField] private bool useGrenade = true;
+    [SerializeField] private GameObject grenadePrefab;
+    [Tooltip("Throws only when the target is closer than this.")]
+    [SerializeField] private float grenadeRange = 20f;
+    [SerializeField] private float grenadeCooldown = 10f;
+    [Tooltip("Grenade damage = her ATK x this.")]
+    [SerializeField] private float grenadeDamageMultiplier = 3f;
+    [SerializeField] private float grenadeRadius = 5f;
+    [Tooltip("Damage multiplier at the very edge of the blast (1 = no falloff).")]
+    [SerializeField, Range(0f, 1f)] private float grenadeEdgeDamage = 0.4f;
+    [Tooltip("Seconds the grenade stays in the air.")]
+    [SerializeField] private float grenadeFlightTime = 0.6f;
+    [Tooltip("Where it leaves her hand. Falls back to her position.")]
+    [SerializeField] private Transform throwPoint;
+    [SerializeField] private AudioClip grenadeThrowLine;
+
     private AudioClip lastClip;
+    private float grenadeTimer;
 
     #region NpcBrain hooks
     protected override void OnDisable()
@@ -45,6 +61,7 @@ public class Kafka : NpcBrain
     {
         base.OnSpawned();
         lastClip = null;
+        grenadeTimer = 0f; // ready to throw
         Speak(spawnLine);
     }
 
@@ -56,7 +73,7 @@ public class Kafka : NpcBrain
 
     protected override void OnNewWave(int wave)
     {
-        base.OnNewWave(wave); // keep the wave bonus refresh
+        base.OnNewWave(wave);
 
         if (!IsActive) return;
         if (speakChance < 1f && RNG.GetPercent() > speakChance) return;
@@ -69,6 +86,51 @@ public class Kafka : NpcBrain
 
         StartCoroutine(SpeakAfterDelay(clip));
     }
+
+    public override void Tick(float dt)
+    {
+        base.Tick(dt);
+        TickGrenade(dt);
+    }
+    #endregion
+
+    #region Skill: Grenade
+    private void TickGrenade(float dt)
+    {
+        if (!useGrenade || TickSystem.GameSpeed <= 0f) return;
+        if (!IsActive || attribute == null || attribute.IsDead) return;
+
+        if (grenadeTimer > 0f)
+        {
+            grenadeTimer -= dt;
+            return;
+        }
+
+        if (Target == null || !Target.gameObject.activeInHierarchy) return;
+
+        Vector2 from = throwPoint != null ? (Vector2)throwPoint.position : (Vector2)transform.position;
+        Vector2 to = Target.position;
+        if ((to - from).sqrMagnitude >= grenadeRange * grenadeRange) return;
+
+        ThrowGrenade(from, to);
+    }
+
+    private void ThrowGrenade(Vector2 from, Vector2 to)
+    {
+        Grenade g = Grenade.Throw(
+            grenadePrefab, from, to, attribute,
+            attribute.ATK_Current * grenadeDamageMultiplier,
+            grenadeRadius, grenadeEdgeDamage,
+            pm.EnemyMask, grenadeFlightTime);
+
+        if (g == null) return; // no prefab / pool problem: don't burn the cooldown
+
+        grenadeTimer = grenadeCooldown;
+        Speak(grenadeThrowLine);
+    }
+
+    [ContextMenu("Test Throw Grenade")]
+    private void Test_Grenade() => grenadeTimer = 0f;
     #endregion
 
     #region Voice
@@ -106,7 +168,6 @@ public class Kafka : NpcBrain
             return c;
         }
 
-        // Unlucky rolls (or mostly empty slots): fall back to the first usable clip.
         for (int i = 0; i < list.Count; i++)
             if (list[i] != null) return list[i];
         return null;

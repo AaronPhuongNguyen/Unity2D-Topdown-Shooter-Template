@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Server;
 using UnityEngine;
@@ -21,7 +22,8 @@ using UnityEngine.Experimental.Rendering;
 ///     The NPC instantly dashes sideways and is invincible for the dash.
 ///     Costs Energy (default 10 = a full bar), has its own cooldown (default 2s),
 ///   - GETS STAGGERED (temporary slow) whenever it takes a hit,
-///   - GROWS STRONGER every wave (HP / ATK / DEF), a bit weaker than zombies,
+///   - MATCHES THE PLAYER'S STATS (HP, ATK, DEF, ASPD, SIGHT, ... and speed),
+///     so levels and cards carry over automatically,
 ///   - is removed on game restart (EventBus.OnGameRestart) and on death.
 ///
 /// Two separate searches:
@@ -182,13 +184,6 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private float indicatorPulseMultiplier = 1.5f;
     [Tooltip("How fast the marker eases back to normal. 1 = same feel as the player's.")]
     [SerializeField] private float indicatorReturnSpeed = 1f;
-
-    [Header("Wave Bonus (weaker than zombies)")]
-    [SerializeField] private float hpGrowthPerDifficulty = 100;
-    [SerializeField] private float atkGrowthPerDifficulty = 10;
-    [Tooltip("Flat DEF gained per CurrentDifficulty point.")]
-    [SerializeField] private float defPerDifficulty = 30f;
-    [SerializeField] private float speedPerDif = 0.5f;
     #endregion
 
     #region Runtime
@@ -206,9 +201,6 @@ public class NpcBrain : HurtBox, ITick
     private float calmTimer;
     private float attackTimer;
     private float appliedSpeed;
-
-    private float appliedHPBonus, appliedATKBonus, appliedDEFBonus, appliedSPEEDBonus;
-    private float appliedHPP, appliedATKK;
 
     private bool followMoving;
 
@@ -343,9 +335,8 @@ public class NpcBrain : HurtBox, ITick
 
         SpawnIndicator();
 
-        // Fresh clone: nothing applied yet.
-        appliedHPBonus = appliedATKBonus = appliedDEFBonus = appliedHPP = appliedATKK = appliedSPEEDBonus = 0f;
-        RefreshBonus();
+        SyncStatsWithPlayer();
+        attribute.HP_Current = attribute.HP_Max; // spawn at full HP
 
         OnSpawned();
         return true;
@@ -383,7 +374,6 @@ public class NpcBrain : HurtBox, ITick
             attribute.OnDeath -= OnDeath;
             attribute.OnTakeDamage -= OnHit;
             RemoveHitStagger();
-            RemoveBonus();
             if (appliedSpeed != 0f) attribute.SPEED_Ampl.FlatBonus -= appliedSpeed;
             if (appliedSync != 0f) attribute.SPEED_Ampl.FlatBonus -= appliedSync;
         }
@@ -539,54 +529,57 @@ public class NpcBrain : HurtBox, ITick
     }
     #endregion
 
-    #region Wave Bonus
-    /// <summary>New wave: refreshes the wave bonus. Subclasses: call base first.</summary>
-    protected virtual void OnNewWave(int wave)
-    {
-        if (isActive) RefreshBonus();
-    }
+    #region Match Player Stats
+    /// <summary>Kept so subclasses that override it still compile. Stats now follow the player, not the wave.</summary>
+    protected virtual void OnNewWave(int wave) { }
 
     /// <summary>
-    /// Re-computes the bonus from the current difficulty. Removes the old bonus
-    /// first so the percentages are based on the unmodified base stats and
-    /// never compound. Called on spawn and on every new wave.
+    /// Makes this NPC's final stats equal the player's. The NPC may have a different template base,
+    /// so it adds a flat offset, measures how much the stat really moved, then corrects the rest
+    /// (works whatever Perc/Total multipliers sit on top). Speed is handled by SyncSpeedWithPlayer.
     /// </summary>
-    private void RefreshBonus()
+    private void SyncStatsWithPlayer()
     {
-        if (attribute == null || dm == null) return;
+        if (pm == null || pm.attribute == null || attribute == null || attribute.IsDead) return;
 
-        RemoveBonus();
+        UnitAttribute p = pm.attribute;
+        UnitAttribute n = attribute;
+        if (p.IsNewUnit || n.IsNewUnit) return;
 
-        float diff = Mathf.Max(0f, dm.CurrentDifficulty);
+        float hpBefore = n.HP_Max;
+        Match(n, p, a => a.HP_Ampl, a => a.HP_Max);
+        float hpDiff = n.HP_Max - hpBefore;
+        if (hpDiff > 0f) n.Heal(hpDiff);
+        else if (n.HP_Current > n.HP_Max) n.HP_Current = n.HP_Max;
 
-        appliedHPBonus = hpGrowthPerDifficulty * diff;
-        appliedHPP = 0.1f * diff;
-        appliedATKBonus = atkGrowthPerDifficulty * diff;
-        appliedATKK = 0.1f * diff;
-        appliedDEFBonus = Mathf.Min(1000, defPerDifficulty * diff);
-        appliedSPEEDBonus = Mathf.Min(5, speedPerDif * diff);
+        Match(n, p, a => a.ATK_Ampl, a => a.ATK_Current);
+        Match(n, p, a => a.DEF_Ampl, a => a.DEF_Current);
+        Match(n, p, a => a.ASPD_Ampl, a => a.ASPD_Current);
+        Match(n, p, a => a.SIGHT_Ampl, a => a.SIGHT_Current);
+        Match(n, p, a => a.ArmourPenetration_Ampl, a => a.ArmourPenetration_Current);
+        Match(n, p, a => a.DamageReduction_Ampl, a => a.DamageReduction_Current);
+        Match(n, p, a => a.CooldownReduction_Ampl, a => a.CooldownReduction_Current);
+        Match(n, p, a => a.DealtDamage_Ampl, a => a.DealtDamage_Current);
 
-        attribute.HP_Ampl.FlatBonus += appliedHPBonus;
-        attribute.ATK_Ampl.FlatBonus += appliedATKBonus;
-        attribute.DEF_Ampl.FlatBonus += appliedDEFBonus;
-
-        attribute.HP_Ampl.PercBonus += appliedHPP;
-        attribute.ATK_Ampl.PercBonus += appliedATKK;
-        attribute.SPEED_Ampl.FlatBonus += appliedSPEEDBonus;
+        n.CritRate = p.CritRate;
+        n.CritDamage = p.CritDamage;
     }
 
-    private void RemoveBonus()
+    private static void Match(UnitAttribute n, UnitAttribute p,
+        Func<UnitAttribute, Amplification> amp, Func<UnitAttribute, float> val)
     {
-        if (attribute == null) return;
+        float target = val(p);
+        float cur = val(n);
+        float err = target - cur;
+        if (Mathf.Abs(err) < 0.001f) return;
 
-        attribute.HP_Ampl.FlatBonus -= appliedHPBonus;
-        attribute.ATK_Ampl.FlatBonus -= appliedATKBonus;
-        attribute.DEF_Ampl.FlatBonus -= appliedDEFBonus;
-        attribute.HP_Ampl.PercBonus -= appliedHPP;
-        attribute.ATK_Ampl.PercBonus -= appliedATKK;
-        attribute.SPEED_Ampl.FlatBonus -= appliedSPEEDBonus;
+        Amplification a = amp(n);
+        a.FlatBonus += err;
 
-        appliedHPBonus = appliedATKBonus = appliedDEFBonus = appliedHPP = appliedATKK = appliedSPEEDBonus = 0f;
+        float after = val(n);
+        float gain = (after - cur) / err; // how much 1 flat point really moves this stat
+        if (gain > 0.0001f && Mathf.Abs(target - after) > 0.001f)
+            a.FlatBonus += (target - after) / gain;
     }
     #endregion
 
@@ -618,6 +611,7 @@ public class NpcBrain : HurtBox, ITick
             FindThreats();
             EvaluateMode();
             SyncSpeedWithPlayer();
+            SyncStatsWithPlayer();
         }
 
         if (CurrentMode == Mode.Fleeing)

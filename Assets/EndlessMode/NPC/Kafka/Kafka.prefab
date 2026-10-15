@@ -199,10 +199,6 @@ MonoBehaviour:
   indicatorPrefab: {fileID: 7358377081612034780, guid: 1580f80df68d0ff40b939c9ec7909021, type: 3}
   indicatorPulseMultiplier: 0.4
   indicatorReturnSpeed: 1
-  hpGrowthPerDifficulty: 150
-  atkGrowthPerDifficulty: 15
-  defPerDifficulty: 50
-  speedPerDif: 1
   spawnLine: {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
   waveLines:
   - {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}
@@ -214,6 +210,16 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}
   speakChance: 1
   speakDelay: 0.4
+  useGrenade: 1
+  grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
+  grenadeRange: 20
+  grenadeCooldown: 10
+  grenadeDamageMultiplier: 3
+  grenadeRadius: 5
+  grenadeEdgeDamage: 0.4
+  grenadeFlightTime: 0.6
+  throwPoint: {fileID: 7416084440610428882}
+  grenadeThrowLine: {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
 --- !u!1 &1968811004170483111
 GameObject:
   m_ObjectHideFlags: 0
