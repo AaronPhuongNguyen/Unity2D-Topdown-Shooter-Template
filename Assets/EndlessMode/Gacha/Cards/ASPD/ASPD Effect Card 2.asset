@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 3cc751bb6852e764ea9b6958db0ebb4d, type: 3}
   Name: Attack Speed
-  Description: +16% Attack Speed
+  Description: +30% Attack Speed
   Category: 2
   Rarity: 0.01
   UniquePerRun: 1
   FlatIncrease: 0
   PercentIncrease: 0
-  TotalIncrease: 0.16
+  TotalIncrease: 0.3

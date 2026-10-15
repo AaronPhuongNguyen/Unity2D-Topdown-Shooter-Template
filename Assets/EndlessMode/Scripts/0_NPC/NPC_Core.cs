@@ -534,9 +534,9 @@ public class NpcBrain : HurtBox, ITick
     protected virtual void OnNewWave(int wave) { }
 
     /// <summary>
-    /// Makes this NPC's final stats equal the player's. The NPC may have a different template base,
-    /// so it adds a flat offset, measures how much the stat really moved, then corrects the rest
-    /// (works whatever Perc/Total multipliers sit on top). Speed is handled by SyncSpeedWithPlayer.
+    /// Makes this NPC's HP, ATK and DEF equal the player's. Everything else
+    /// (ASPD, SIGHT, crit, penetration, reduction, cooldown, dealt damage)
+    /// stays at the NPC's own template values. Speed is handled by SyncSpeedWithPlayer.
     /// </summary>
     private void SyncStatsWithPlayer()
     {
@@ -554,15 +554,6 @@ public class NpcBrain : HurtBox, ITick
 
         Match(n, p, a => a.ATK_Ampl, a => a.ATK_Current);
         Match(n, p, a => a.DEF_Ampl, a => a.DEF_Current);
-        Match(n, p, a => a.ASPD_Ampl, a => a.ASPD_Current);
-        Match(n, p, a => a.SIGHT_Ampl, a => a.SIGHT_Current);
-        Match(n, p, a => a.ArmourPenetration_Ampl, a => a.ArmourPenetration_Current);
-        Match(n, p, a => a.DamageReduction_Ampl, a => a.DamageReduction_Current);
-        Match(n, p, a => a.CooldownReduction_Ampl, a => a.CooldownReduction_Current);
-        Match(n, p, a => a.DealtDamage_Ampl, a => a.DealtDamage_Current);
-
-        n.CritRate = p.CritRate;
-        n.CritDamage = p.CritDamage;
     }
 
     private static void Match(UnitAttribute n, UnitAttribute p,
@@ -686,7 +677,7 @@ public class NpcBrain : HurtBox, ITick
         }
 
         // Keep the current target while it is alive and still within sight.
-        if (Target != null && targetUnit != null && !targetUnit.IsDead && Target.gameObject.activeInHierarchy)
+        if (Target != null && targetUnit != null && !targetUnit.IsDead && !targetUnit.IsUntargetable && Target.gameObject.activeInHierarchy)
         {
             float keep = sight * TargetKeepMargin;
             if (((Vector2)Target.position - pos).sqrMagnitude <= keep * keep) return;

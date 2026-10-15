@@ -162,24 +162,24 @@ public class Zombrain : HurtBox, ITick
     {
         float diff = dm.CurrentDifficulty;
 
-        float diffScale = diff * (1 + Mathf.Log(diff) * 0.75f);
+        float diffScale = Mathf.Max(1, Mathf.Pow(diff, 2f));
 
         bool isAlpha = RNG.GetPercent() < 0.1f;
 
-        lastHPBonus = RNG.GetInt(250, 750) * diffScale;
-        lastHPP = 0.6f * diffScale;
+        lastHPBonus = RNG.GetInt(50, 150) * diffScale;
+        lastHPP = 0.3f * diffScale;
 
-        lastATKBonus = RNG.GetInt(10, 30) * diffScale;
-        lastATKK = 0.20f * diffScale;
+        lastATKBonus = RNG.GetInt(5, 15) * diffScale;
+        lastATKK = 0.1f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetInt(150, 600) * Mathf.Clamp01(diffScale);
-        lastSPEEDBonus = RNG.GetInt(3, 6) * Mathf.Clamp01(diffScale);
+        lastDEFBonus = RNG.GetInt(100, 500) * Mathf.Clamp01(diffScale);
+        lastSPEEDBonus = RNG.GetInt(1, 5) * Mathf.Clamp01(diffScale);
         lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Clamp01(diffScale);
 
         if (isAlpha)
         {
-            float alphaMul = RNG.GetFloat(2f, 4f) * Mathf.Clamp01(diffScale);
+            float alphaMul = RNG.GetFloat(1.25f, 2.5f) * Mathf.Clamp01(diffScale);
             lastHPBonus *= alphaMul;
             lastATKBonus *= alphaMul;
             lastDEFBonus *= alphaMul;
@@ -200,6 +200,8 @@ public class Zombrain : HurtBox, ITick
 
         lastCachedScaled = transform.localScale;
         transform.localScale += lastScale;
+
+        attribute.HP_Current = attribute.HP_Max;//recover HP after getting buffs
     }
     protected virtual void RemoveBonus()
     {
@@ -470,7 +472,7 @@ public class Zombrain : HurtBox, ITick
         // Drop dead / destroyed / pooled-away targets immediately
         if (Target != null && !Target.gameObject.activeInHierarchy)
             ClearTarget();
-        if (targetNpc != null && (!targetNpc.IsActive || targetNpc.attribute == null || targetNpc.attribute.IsDead))
+        if (targetNpc != null && (!targetNpc.IsActive || targetNpc.attribute == null || targetNpc.attribute.IsDead || targetNpc.attribute.IsUntargetable))
             ClearTarget();
 
         if (_now < findPreyInterval) return;

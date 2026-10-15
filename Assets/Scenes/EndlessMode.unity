@@ -6044,7 +6044,7 @@ MonoBehaviour:
   canvas: {fileID: 917046461}
   card: {fileID: 7275773130241246951, guid: 17b526c50aba19e499c31a4a95820775, type: 3}
   cardDataBase: {fileID: 11400000, guid: 234f65c0f1df6e346b5b13e7eb460b33, type: 2}
-  runtimeHolder: {fileID: 0}
+  runtimeHolder: {fileID: 648903349}
   openButton: {fileID: 75962366}
   pendingCountText: {fileID: 2132564649}
   BasicColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
@@ -15808,11 +15808,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapCenter: {x: 0, y: 0}
-  mapSize: {x: 900, y: 900}
+  mapSize: {x: 500, y: 500}
   walkablePercent: 0.8
   borderPrefab: {fileID: 2891510971604309684, guid: 6058395fc955a2c4f821eeb3f0be8708, type: 3}
   borderContainer: {fileID: 126431505}
-  useRandomSeed: 0
+  useRandomSeed: 1
   seed: 20080601
   RemainingEnemy: 0
   Killed: 0

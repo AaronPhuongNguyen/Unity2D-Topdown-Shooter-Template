@@ -214,12 +214,12 @@ MonoBehaviour:
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
   grenadeRange: 20
   grenadeCooldown: 10
-  grenadeDamageMultiplier: 3
-  grenadeRadius: 5
+  grenadeDamageMultiplier: 5
+  grenadeRadius: 10
   grenadeEdgeDamage: 0.4
-  grenadeFlightTime: 0.6
+  grenadeFlightTime: 0.4
   throwPoint: {fileID: 7416084440610428882}
-  grenadeThrowLine: {fileID: 8300000, guid: a5b8e28e40519c74085c1c63e68cf4d0, type: 3}
+  grenadeThrowLine: {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}
 --- !u!1 &1968811004170483111
 GameObject:
   m_ObjectHideFlags: 0

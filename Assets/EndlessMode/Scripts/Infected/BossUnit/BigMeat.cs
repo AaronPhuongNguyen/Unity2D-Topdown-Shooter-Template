@@ -118,6 +118,7 @@ public class BigMeat : Zombrain
 
         ResetSkill();
         cooldownTimer = chargeCooldown;
+
         return true;
     }
 

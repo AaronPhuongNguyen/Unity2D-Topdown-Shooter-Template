@@ -85,6 +85,11 @@ public class Detector : MonoBehaviour, ITick
         {
             Collider2D col = targets[i];
             if (col == null) continue;
+            if (!col.gameObject.TryGetComponent<HurtBox>(out var t))
+                continue;
+            if(t==null) continue;
+            if (t.Access() == null || t.Access().attribute == null) continue;
+            if (t.Access().attribute.IsUntargetable) continue;
 
             Vector2 p = col.transform.position;
             float2 diff = new float2(p.x, p.y) - originPos;
