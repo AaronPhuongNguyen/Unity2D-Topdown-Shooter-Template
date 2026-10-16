@@ -225,15 +225,15 @@ MonoBehaviour:
   speakChance: 1
   speakDelay: 0.4
   useGrenade: 1
-  startGrenades: 1
+  startGrenades: 5
   maxGrenades: 5
-  grenadeRegenInterval: 15
-  throwCooldown: 0.5
+  grenadeRegenInterval: 12
+  throwCooldown: 1
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
-  grenadeRange: 15
-  grenadeDamageMultiplier: 2.5
-  grenadeRadius: 15
-  grenadeEdgeDamage: 0.25
+  grenadeRange: 20
+  grenadeDamageMultiplier: 3
+  grenadeRadius: 20
+  grenadeEdgeDamage: 0.5
   grenadeFlightTime: 0.2
   throwPoint: {fileID: 7416084440610428882}
   grenadeThrowLine: {fileID: 8300000, guid: 2bd045140d9f29a4eb3f142ff57829a8, type: 3}

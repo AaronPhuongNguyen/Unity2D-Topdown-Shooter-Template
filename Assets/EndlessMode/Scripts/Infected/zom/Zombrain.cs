@@ -174,7 +174,7 @@ public class Zombrain : HurtBox, ITick
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
         lastDEFBonus = RNG.GetInt(0, 400) * Mathf.Min(2, diffScale);
-        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Min(2, diffScale);
+        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Min(1.2f, diffScale);
         lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Min(2, diffScale);
 
         if (isAlpha)
@@ -213,7 +213,7 @@ public class Zombrain : HurtBox, ITick
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
 
-        transform.localScale -= lastScale;
+        transform.localScale = lastCachedScaled;
 
         if (appliedChaseBonus != 0f)
         {
