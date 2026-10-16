@@ -228,7 +228,7 @@ MonoBehaviour:
   startGrenades: 5
   maxGrenades: 5
   grenadeRegenInterval: 12
-  throwCooldown: 1
+  throwCooldown: 2
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
   grenadeRange: 20
   grenadeDamageMultiplier: 3

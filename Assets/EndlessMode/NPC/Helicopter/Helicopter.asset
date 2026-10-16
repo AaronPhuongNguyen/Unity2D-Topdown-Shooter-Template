@@ -20,7 +20,7 @@ MonoBehaviour:
     tag: 0
     HP_Current: 0
     IsInvincible: 0
-    IsUntargetable: 1
+    IsUntargetable: 0
     CritRate: 0.2
     CritDamage: 2
     HP_Ampl:

@@ -544,6 +544,7 @@ public class NpcBrain : HurtBox, ITick
 
         SyncStatsWithPlayer();
         attribute.HP_Current = attribute.HP_Max; // spawn at full HP
+        attribute.DEF_Ampl.FlatBonus = package.attribute.DEF_Current + pm.attribute.DEF_Current;
 
         OnSpawned();
         OnAmmoChanged?.Invoke(currentAmmo, maxMagazine);
@@ -775,7 +776,6 @@ public class NpcBrain : HurtBox, ITick
         else if (n.HP_Current > n.HP_Max) n.HP_Current = n.HP_Max;
 
         Match(n, p, a => a.ATK_Ampl, a => a.ATK_Current);
-        Match(n, p, a => a.DEF_Ampl, a => a.DEF_Current);
     }
 
     private static void Match(UnitAttribute n, UnitAttribute p,

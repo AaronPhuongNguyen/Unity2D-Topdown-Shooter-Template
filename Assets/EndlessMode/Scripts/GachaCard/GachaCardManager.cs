@@ -95,6 +95,7 @@ public class GachaCardManager : MonoBehaviour, ITick
         // Fallback in case PlayerManager wasn't ready during OnEnable.
         SubscribeToLevel();
         RefreshButton();
+        TestBasic(); // give one card at the begining
     }
 
     private void OnDestroy()
@@ -197,6 +198,8 @@ public class GachaCardManager : MonoBehaviour, ITick
         _pending.Clear();
         if (_isOpen) Close();
         RefreshButton();
+
+        TestBasic(); // give one card at the begining
     }
 
     // UnitLevel increments Level_Current BEFORE invoking OnLevelUp, so this is the level just reached.

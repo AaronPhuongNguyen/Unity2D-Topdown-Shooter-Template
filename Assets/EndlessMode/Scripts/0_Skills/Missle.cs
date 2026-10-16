@@ -143,7 +143,7 @@ public class Missile : MonoBehaviour, ITick
         }
 
         if (explosionSound != null && AudioManager.instance != null)
-            AudioManager.instance.PlayAudio(explosionSound, pos);
+            AudioManager.instance.PlayDirectAudio(explosionSound);
         if (cameraShake > 0f && CamManager.instance != null) CamManager.instance.Shake(cameraShake);
 
         Release();

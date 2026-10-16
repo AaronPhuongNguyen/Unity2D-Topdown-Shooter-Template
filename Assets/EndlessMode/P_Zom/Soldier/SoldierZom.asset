@@ -71,6 +71,6 @@ MonoBehaviour:
   CurrencyAtKill: 200
   EXPAtKill: 400
   AppearFromWave: 9
-  CountPerSpawner: 2
-  _rateToAppear: 0.75
+  CountPerSpawner: 1
+  _rateToAppear: 0.5
   _biteAccuracy: 0.5
