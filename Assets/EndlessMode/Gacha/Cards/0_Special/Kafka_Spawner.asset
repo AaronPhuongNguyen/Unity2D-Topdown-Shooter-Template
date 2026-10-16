@@ -16,7 +16,7 @@ MonoBehaviour:
   Name: Kafka
   Description: Kafka loves you and wanna fight with you until death
   Category: 0
-  Rarity: 0.4
-  UniquePerRun: 1
+  Rarity: 0.25
+  UniquePerRun: 0
   npc: {fileID: 11400000, guid: 9fe3dd6700fe7584886c7b485468536d, type: 2}
   count: 1

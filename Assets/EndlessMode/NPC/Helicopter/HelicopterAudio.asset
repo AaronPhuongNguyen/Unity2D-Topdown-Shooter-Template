@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ecefc1d5d6426a4ebf8081e385d4e02, type: 3}
+  m_Name: HelicopterAudio
+  m_EditorClassIdentifier: 
+  AttackSounds:
+  - {fileID: 8300000, guid: 9b5a170c6c76b6f47be4a42ece360cda, type: 3}
+  - {fileID: 8300000, guid: a01c839f509884c4db89dfb0a6af039e, type: 3}
+  HitTargetSounds: []
+  DeathSounds: []
+  MiscSounds:
+  - {fileID: 8300000, guid: a4378a4ee27f6564189ed814678cb267, type: 3}
+  - {fileID: 8300000, guid: ccd3ad5c5459e714ca60e34327498738, type: 3}
+  - {fileID: 8300000, guid: 15b9a405affd7e94b840ad04b15cad27, type: 3}
+  - {fileID: 8300000, guid: ec91d48e30305bd409d5bd665703f65f, type: 3}

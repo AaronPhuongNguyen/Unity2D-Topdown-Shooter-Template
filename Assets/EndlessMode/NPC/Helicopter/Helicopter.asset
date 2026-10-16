@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4faf6421f159d643b8bcf88355485a4, type: 3}
+  m_Name: Helicopter
+  m_EditorClassIdentifier: 
+  packName: Helicopter
+  packID: Heli_001
+  prefab: {fileID: 7782139311607163840, guid: c7657feca26dbff4ba82e501262573ea, type: 3}
+  attribute:
+    template: {fileID: 11400000, guid: 9b6b171481dd2b94aa9efbfc1ff67835, type: 2}
+    tag: 0
+    HP_Current: 0
+    IsInvincible: 1
+    IsUntargetable: 1
+    CritRate: 0.2
+    CritDamage: 2
+    HP_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ATK_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SPEED_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DEF_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ASPD_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0.4
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+  Media: {fileID: 11400000, guid: 575190e40bda356429e99bf31e7f1c30, type: 2}

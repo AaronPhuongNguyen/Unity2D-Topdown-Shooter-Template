@@ -16,6 +16,9 @@ public abstract class CardEffect : ScriptableObject
              "If false (default), it can come up again and stack.")]
     public bool UniquePerRun = false;
 
+    // Return false to hide this card from draws right now (e.g. NPC still alive).
+    public virtual bool IsAvailable() => true;
+
     public abstract void DrawCard(UnitAttribute attribute);
 
     // Cards that need ongoing logic override this one. Others don't need to change.

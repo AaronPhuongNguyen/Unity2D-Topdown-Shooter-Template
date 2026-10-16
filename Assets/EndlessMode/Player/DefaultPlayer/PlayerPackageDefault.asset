@@ -20,6 +20,7 @@ MonoBehaviour:
     tag: 0
     HP_Current: 0
     IsInvincible: 0
+    IsUntargetable: 0
     CritRate: 0.25
     CritDamage: 2
     HP_Ampl:
@@ -47,7 +48,7 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     ArmourPenetration_Ampl:
-      FlatBonus: 0.1
+      FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
     DamageReduction_Ampl:
@@ -59,6 +60,10 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    Lifesteal_Ampl:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1

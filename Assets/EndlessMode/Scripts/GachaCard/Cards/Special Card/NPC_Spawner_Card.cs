@@ -21,7 +21,12 @@ public class CardEffect_SpawnNpc : CardEffect
             return;
         }
 
+
         for (int i = 0; i < count; i++)
             NpcSpawner.SpawnAtPlayer(npc);
+    }
+    public override bool IsAvailable()
+    {
+        return npc == null || !NpcBrain.IsAlive(npc);
     }
 }

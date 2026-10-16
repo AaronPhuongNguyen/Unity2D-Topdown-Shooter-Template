@@ -88,6 +88,7 @@ public class AttackDemo : MonoBehaviour, ITick
 
     void Refresh()
     {
+        isExpired = true;
         CD = 0;
         buffDuration = 0f;
     }

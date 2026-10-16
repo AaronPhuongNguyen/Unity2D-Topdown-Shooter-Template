@@ -12049,7 +12049,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 6cd81bbdbe8b2cf47a11f87c7d260814, type: 3}
   - {fileID: 8300000, guid: 59f353e052cf963418b3bd9dc2b74983, type: 3}
   - {fileID: 8300000, guid: e99ccad6a2e14a342bcc66503cef43db, type: 3}
-  shuffle: 1
+  shuffle: 0
   autoPlayMusicOnStart: 1
   musicPriority: 16
   musicVolume: 1
@@ -15813,7 +15813,7 @@ MonoBehaviour:
   walkablePercent: 0.8
   borderPrefab: {fileID: 2891510971604309684, guid: 6058395fc955a2c4f821eeb3f0be8708, type: 3}
   borderContainer: {fileID: 126431505}
-  useRandomSeed: 1
+  useRandomSeed: 0
   seed: 20080601
   RemainingEnemy: 0
   Killed: 0

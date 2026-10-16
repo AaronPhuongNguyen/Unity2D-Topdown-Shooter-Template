@@ -211,7 +211,7 @@ public class DomainManager : MonoBehaviour, ITick
     public int CurrentWave = 0;
     public int MaxEnemyPerWave = 400;
     public float CurrentDifficulty = 0;
-    public const float WaveDuration = 60f;
+    public const float WaveDuration = 120f;
     public const float PreparingTimeDefault = 3f;
 
     [Header("Runtime debug")]

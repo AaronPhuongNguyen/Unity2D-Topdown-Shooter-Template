@@ -236,6 +236,7 @@ public class PlayerManager : MonoBehaviour, ITick
         // Unsubscribe first so this can never double-subscribe.
         UnbindAttributeEvents();
         attribute.OnTakeDamage += OnDamageTaken;
+        attribute.OnDealDamage += OnDamageDealt;
         attribute.OnDeath += PlayDeathSound;
         attribute.OnDeath += AfterDeath;
     }
@@ -245,6 +246,7 @@ public class PlayerManager : MonoBehaviour, ITick
         attribute.OnDeath -= AfterDeath;
         attribute.OnDeath -= PlayDeathSound;
         attribute.OnTakeDamage -= OnDamageTaken;
+        attribute.OnDealDamage -= OnDamageDealt;
     }
 
     private void SetRigidBody()
@@ -380,11 +382,19 @@ public class PlayerManager : MonoBehaviour, ITick
         CamManager.instance?.Shake(0.8f);
         PlayHitEffect();
 
+        AddEXP(5); //simulate player survived from this.
+
         if (RNG.GetPercent() <= StaggerChance)
             ApplyStagger();
 
         if (RNG.GetPercent() <= bleedChance)
             ApplyBleed();
+    }
+    public void OnDamageDealt(float dmg)
+    {
+        AddEXP(0.25f);
+        DomainManager.instance.AddCurrency(1);
+        CamManager.instance?.Shake(0.1f);
     }
     #endregion
 

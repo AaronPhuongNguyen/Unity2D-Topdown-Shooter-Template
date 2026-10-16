@@ -152,9 +152,18 @@ MonoBehaviour:
   Target: {fileID: 0}
   Follow: {fileID: 0}
   followPlayer: 1
+  infiniteAmmo: 0
+  maxMagazine: 60
+  ammoPerShot: 1
+  reloadTime: 2
+  autoReload: 1
+  tacticalReload: 1
+  tacticalReloadThreshold: 0.5
+  reloadSound: {fileID: 8300000, guid: ca1f684b56fd8754d8412d9975ef1922, type: 3}
+  reloadEffect: {fileID: 0}
   Energy:
     Max: 10
-    RegenPerSecond: 1
+    RegenPerSecond: 2
     RegenDelay: 0
     Current: 0
   canDodge: 1
@@ -167,6 +176,10 @@ MonoBehaviour:
   targetScanInterval: 0.2
   threatScanInterval: 0.2
   scanRadius: 14
+  huntEnabled: 1
+  huntSearchRadius: 20
+  huntLeash: 12
+  huntStopRatio: 0.8
   followStopDistance: 2.5
   safeRound: 7
   wanderRadius: 4
@@ -175,13 +188,13 @@ MonoBehaviour:
   wanderPauseMax: 2
   matchPlayerSpeed: 1
   catchUpDistance: 18
-  catchUpSpeedBonus: 3
+  catchUpSpeedBonus: 5
   dangerRadius: 3.5
   safeRadius: 5.5
   calmTime: 0.8
   fleeDirections: 16
   fleeLookAhead: 3.5
-  fleeSpeedBonus: 5
+  fleeSpeedBonus: 4
   continuityBonus: 0.3
   wallPenalty: 5
   edgeMargin: 3
@@ -212,10 +225,13 @@ MonoBehaviour:
   speakChance: 1
   speakDelay: 0.4
   useGrenade: 1
+  startGrenades: 1
+  maxGrenades: 5
+  grenadeRegenInterval: 15
+  throwCooldown: 0.5
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
   grenadeRange: 15
-  grenadeCooldown: 15
-  grenadeDamageMultiplier: 15
+  grenadeDamageMultiplier: 5
   grenadeRadius: 15
   grenadeEdgeDamage: 0.25
   grenadeFlightTime: 0.2

@@ -9,7 +9,7 @@ public class CardDataBase : ScriptableObject
 
     // Safety cap so a pool full of near-zero rarities can never hang the game.
     // After this many rejected rolls the last candidate is accepted anyway.
-    private const int MaxRerollsPerCard = 64;
+    private const int MaxRerollsPerCard = 128;
 
     private static readonly List<CardEffect> _pool = new List<CardEffect>(32);
 
@@ -33,6 +33,7 @@ public class CardDataBase : ScriptableObject
             if (c == null || c.Category != category) continue;
             if (exclude != null && exclude.Contains(c)) continue;
             if (_pool.Contains(c)) continue; // same asset listed twice in the database
+            if (!c.IsAvailable()) continue;
             _pool.Add(c);
         }
 

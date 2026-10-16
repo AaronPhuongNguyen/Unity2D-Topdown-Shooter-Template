@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89ac3800bb0716d43a1d02e0f8767c23, type: 3}
+  m_Name: Helicopter
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: 6652f217d70fd864a99c4432ff163c8e, type: 3}
+  Name: Air force
+  Description: Has a Helicopter assisting you
+  Category: 2
+  Rarity: 0.5
+  UniquePerRun: 0
+  npc: {fileID: 11400000, guid: c56c9c16bd3d03f458ac4415491d23f3, type: 2}
+  count: 1

@@ -9,53 +9,66 @@ using UnityEngine.Experimental.Rendering;
 ///   - FOLLOWS the player (Follow target). Once close, it WANDERS around the
 ///     player; if the player gets farther than safeRound it follows again.
 ///     Its move speed is kept equal to the player's,
+///   - HUNTS: actively walks toward the nearest zombie (within huntSearchRadius and
+///     within huntLeash of the player) until it is in shooting range. When no
+///     zombie is left it goes back to following / wandering around the player,
 ///   - ATTACKS the nearest zombie within its SIGHT (Target), using the same enemy
 ///     mask the player uses (PlayerManager.EnemyMask). Fire rate comes from ASPD.
 ///     Shots look like the player's weapon: muzzle flash, travelling Bullet,
 ///     hit effect and damage popup,
-///   - FLEES when a zombie gets too close. Threats are found separately from
-///     targets, with scanRadius (usually bigger than sight). It scores 16 escape
-///     directions (distance from every nearby zombie, map walls/edges, and its
-///     previous direction to avoid jitter) and runs the best one, abandoning the
-///     player. It only goes back to following once nothing has been near for calmTime,
+///   - HAS A MAGAZINE: each shot uses ammo. When empty it RELOADS (reloadTime seconds,
+///     reload sound) and cannot shoot meanwhile. When idle (no target) it also
+///     tops up the magazine if it is below tacticalReloadThreshold,
+///   - FLEES when a zombie gets too close (highest priority). Threats are found
+///     with scanRadius. It scores 16 escape directions and runs the best one.
+///     It only goes back to normal behaviour once nothing has been near for calmTime,
 ///   - DODGES: an attacker calls NotifyIncomingAttack() right before it strikes.
 ///     The NPC instantly dashes sideways and is invincible for the dash.
-///     Costs Energy (default 10 = a full bar), has its own cooldown (default 2s),
+///     Costs Energy, has its own cooldown,
 ///   - GETS STAGGERED (temporary slow) whenever it takes a hit,
-///   - MATCHES THE PLAYER'S STATS (HP, ATK, DEF, ASPD, SIGHT, ... and speed),
-///     so levels and cards carry over automatically,
+///   - MATCHES THE PLAYER'S STATS (HP, ATK, DEF and speed),
 ///   - is removed on game restart (EventBus.OnGameRestart) and on death.
 ///
-/// Two separate searches:
+/// Mode priority:  Fleeing  >  Hunting  >  Following (+ wander)
+///
+/// Searches:
 ///   FindTarget()  - radius = SIGHT_Current  -> who to shoot
-///   FindThreats() - radius = scanRadius     -> who to run from
+///   FindThreats() - radius = scanRadius     -> who to run from / who to hunt
 ///
 /// All active NPCs are listed in NpcBrain.Active so zombies can hunt them
 /// without any physics query.
 ///
 /// Inheritance: derive a character (e.g. Kafka) from this class. Override
-/// OnSpawned / OnRemoved / OnNewWave / OnDeath / OnDodged for character-specific
-/// behaviour (always call base where noted).
+/// OnSpawned / OnRemoved / OnNewWave / OnDeath / OnDodged / OnReloadStarted /
+/// OnReloadFinished for character-specific behaviour (always call base where noted).
 ///
 /// Prefab setup:
 ///   - Put it on a layer that Zombrain's hb.enemyMask includes (the player's layer),
 ///     with a Collider2D, otherwise zombies can't see or hit it.
 ///   - PlayerManager.EnemyMask must contain the zombie layer.
-///   - Assign a muzzle Transform and a Bullet prefab (the same Bullet prefabs the
-///     player's Weapon uses). ShootEffect is optional.
-///   - Animator (optional): bool IsWalking, trigger Attack.
+///   - Assign a muzzle Transform and a Bullet prefab. ShootEffect is optional.
+///   - Assign Reload Sound (optional).
+///   - Animator (optional): bool IsWalking, bool IsReloading, trigger Attack, trigger Reload.
 ///
 /// Spawn with NpcBrain.Spawn(prefab, package, position), or let NpcSpawner do it.
 /// </summary>
 public class NpcBrain : HurtBox, ITick
 {
-    public enum Mode { Following, Fleeing }
+    public enum Mode { Following, Hunting, Fleeing }
 
     /// <summary>Every NPC between Init() and removal. Zombies read this to hunt NPCs first.</summary>
     public static readonly List<NpcBrain> Active = new List<NpcBrain>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStatics() => Active.Clear();
+
+    /// <summary>True if any living NPC was spawned from this package asset.</summary>
+    public static bool IsAlive(NpcPackage source)
+    {
+        for (int i = 0; i < Active.Count; i++)
+            if (Active[i] != null && Active[i].SourcePackage == source) return true;
+        return false;
+    }
 
     protected PlayerManager pm => PlayerManager.instance;
     protected DomainManager dm => DomainManager.instance;
@@ -64,6 +77,9 @@ public class NpcBrain : HurtBox, ITick
     public NpcPackage package;
     public UnitAttribute attribute;
     public override UnitPackage Access() => package;
+
+    /// <summary>The original (asset) package this NPC was spawned from.</summary>
+    public NpcPackage SourcePackage { get; private set; }
 
     public Animator anim;
     public bool CanAttack = true;
@@ -83,6 +99,31 @@ public class NpcBrain : HurtBox, ITick
 
     /// <summary>True while the dodge dash is running (invincible).</summary>
     public bool IsDodging => isDashing;
+
+    /// <summary>The zombie the NPC is currently walking toward (null when not hunting).</summary>
+    public Transform HuntTarget => huntTarget;
+    #endregion
+
+    #region Inspector: Magazine / Reload
+    [Header("Magazine / Reload")]
+    [Tooltip("Turn the magazine system off: the NPC never runs out of ammo.")]
+    [SerializeField] private bool infiniteAmmo = false;
+    [Tooltip("Rounds in a full magazine.")]
+    [SerializeField, Min(1)] private int maxMagazine = 60;
+    [Tooltip("Rounds used by one shot.")]
+    [SerializeField, Min(1)] private int ammoPerShot = 1;
+    [Tooltip("Seconds a reload takes.")]
+    [SerializeField, Min(0.05f)] private float reloadTime = 2f;
+    [Tooltip("Reload automatically when the magazine is empty.")]
+    [SerializeField] private bool autoReload = true;
+    [Tooltip("Also reload while idle (no target, not fleeing) when the magazine is below the threshold.")]
+    [SerializeField] private bool tacticalReload = true;
+    [Tooltip("Idle reload starts when ammo is at or below this fraction of the magazine.")]
+    [SerializeField, Range(0f, 1f)] private float tacticalReloadThreshold = 0.5f;
+    [Tooltip("Played when a reload starts.")]
+    [SerializeField] private AudioClip reloadSound;
+    [Tooltip("Optional effect spawned at the muzzle when a reload starts.")]
+    [SerializeField] private GameObject reloadEffect;
     #endregion
 
     #region Inspector: Energy / Dodge
@@ -111,10 +152,19 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private float targetScanInterval = 0.2f;
 
     [Header("Sense - Threats (uses Scan Radius)")]
-    [Tooltip("How often the NPC looks for dangerous zombies to flee from.")]
+    [Tooltip("How often the NPC looks for dangerous zombies to flee from / hunt.")]
     [SerializeField] private float threatScanInterval = 0.2f;
     [Tooltip("Radius used to find threats. Independent from Sight.")]
     [SerializeField] private float scanRadius = 14f;
+
+    [Header("Hunt (actively search for zombies)")]
+    [SerializeField] private bool huntEnabled = true;
+    [Tooltip("Zombies farther than this from the NPC are ignored for hunting (capped by Scan Radius).")]
+    [SerializeField] private float huntSearchRadius = 14f;
+    [Tooltip("Max distance from the PLAYER the NPC may go while hunting. Only zombies within this of the player are hunted.")]
+    [SerializeField] private float huntLeash = 12f;
+    [Tooltip("The NPC stops walking and shoots at Sight x this distance from its prey.")]
+    [SerializeField, Range(0.3f, 1f)] private float huntStopRatio = 0.8f;
 
     [Header("Follow")]
     [Tooltip("Stops following and starts wandering once this close to the player.")]
@@ -187,11 +237,12 @@ public class NpcBrain : HurtBox, ITick
     #endregion
 
     #region Runtime
-    private static readonly int AttackHash = Animator.StringToHash("Attack");
-    private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
 
     // A current target is kept until it is farther than Sight * this (stops flicker at the edge).
     private const float TargetKeepMargin = 1.15f;
+
+    // The NPC counts as "too far from the player" at huntLeash * this.
+    private const float LeashBreakMargin = 1.15f;
 
     protected Transform _t;
     private bool isActive;
@@ -210,6 +261,15 @@ public class NpcBrain : HurtBox, ITick
     private float appliedSync;
     private float lastFollowDist;
     private Vector2 fleeDir;
+
+    // Hunt
+    private Transform huntTarget;
+    private bool returningToPlayer;
+
+    // Magazine
+    private int currentAmmo;
+    private bool isReloading;
+    private float reloadTimer;
 
     // Hit stagger
     private float hitStaggerTimer;
@@ -234,6 +294,144 @@ public class NpcBrain : HurtBox, ITick
     private Vector2[] threatPts = new Vector2[32];
     private int threatCount;
     private float nearestThreat = float.MaxValue;
+    #endregion
+
+    #region Magazine API
+    /// <summary>Fired whenever ammo changes: (current, max). Cleared when the NPC is removed.</summary>
+    public event Action<int, int> OnAmmoChanged;
+
+    /// <summary>Fired when a reload starts. Cleared when the NPC is removed.</summary>
+    public event Action OnReloadStartedEvent;
+
+    /// <summary>Fired when a reload completes. Cleared when the NPC is removed.</summary>
+    public event Action OnReloadFinishedEvent;
+
+    public int CurrentAmmo => currentAmmo;
+    public int MaxAmmo => maxMagazine;
+    public bool InfiniteAmmo { get => infiniteAmmo; set => infiniteAmmo = value; }
+    public bool IsReloading => isReloading;
+    public bool IsMagazineFull => infiniteAmmo || currentAmmo >= maxMagazine;
+    public bool IsMagazineEmpty => !infiniteAmmo && currentAmmo < ammoPerShot;
+
+    /// <summary>Reload progress 0..1 (0 when not reloading). Handy for a reload bar.</summary>
+    public float ReloadProgress => isReloading ? 1f - Mathf.Clamp01(reloadTimer / reloadTime) : 0f;
+
+    /// <summary>True if the magazine has enough rounds and no reload is running.</summary>
+    public bool CanShoot => !isReloading && (infiniteAmmo || currentAmmo >= ammoPerShot);
+
+    /// <summary>Starts a reload. Returns false if already reloading, full, or not allowed.</summary>
+    public bool StartReload()
+    {
+        if (!isActive || attribute == null || attribute.IsDead) return false;
+        if (infiniteAmmo || isReloading || currentAmmo >= maxMagazine) return false;
+
+        isReloading = true;
+        reloadTimer = reloadTime;
+
+        Play(reloadSound);
+        PlayReloadEffect();
+
+        OnReloadStarted();
+        OnReloadStartedEvent?.Invoke();
+        return true;
+    }
+
+    /// <summary>Stops a running reload without giving ammo.</summary>
+    public void CancelReload()
+    {
+        if (!isReloading) return;
+
+        isReloading = false;
+        reloadTimer = 0f;
+    }
+
+    /// <summary>Instantly fills the magazine (cancels any reload).</summary>
+    public void RefillAmmo()
+    {
+        CancelReload();
+        SetAmmo(maxMagazine);
+    }
+
+    /// <summary>Adds rounds (clamped to the magazine size). Returns how many were really added.</summary>
+    public int AddAmmo(int amount)
+    {
+        if (amount <= 0) return 0;
+        int before = currentAmmo;
+        SetAmmo(currentAmmo + amount);
+        return currentAmmo - before;
+    }
+
+    /// <summary>Changes the magazine size at runtime (e.g. from a card). Optionally refills.</summary>
+    public void SetMaxMagazine(int newMax, bool refill = false)
+    {
+        maxMagazine = Mathf.Max(1, newMax);
+        if (refill) RefillAmmo();
+        else SetAmmo(Mathf.Min(currentAmmo, maxMagazine));
+    }
+
+    /// <summary>Changes the reload time at runtime (does not affect a reload already running).</summary>
+    public void SetReloadTime(float seconds) => reloadTime = Mathf.Max(0.05f, seconds);
+
+    private void SetAmmo(int value)
+    {
+        value = Mathf.Clamp(value, 0, maxMagazine);
+        if (value == currentAmmo) return;
+
+        currentAmmo = value;
+        OnAmmoChanged?.Invoke(currentAmmo, maxMagazine);
+    }
+
+    private void FinishReload()
+    {
+        isReloading = false;
+        reloadTimer = 0f;
+
+        SetAmmo(maxMagazine);
+
+        OnReloadFinished();
+        OnReloadFinishedEvent?.Invoke();
+    }
+
+    private void TickReload(float dt)
+    {
+        if (infiniteAmmo) return;
+
+        if (isReloading)
+        {
+            reloadTimer -= dt;
+            if (reloadTimer <= 0f) FinishReload();
+            return;
+        }
+
+        // Empty: reload right away.
+        if (autoReload && IsMagazineEmpty)
+        {
+            StartReload();
+            return;
+        }
+
+        // Quiet moment: top up the magazine.
+        if (tacticalReload
+            && Target == null
+            && CurrentMode != Mode.Fleeing
+            && !isDashing
+            && currentAmmo < maxMagazine
+            && currentAmmo <= Mathf.CeilToInt(maxMagazine * tacticalReloadThreshold))
+        {
+            StartReload();
+        }
+    }
+
+    private void PlayReloadEffect()
+    {
+        if (reloadEffect == null || PoolingSystem.instance == null) return;
+
+        GameObject o = PoolingSystem.instance.GetFromPool(reloadEffect);
+        if (o == null) return;
+
+        o.transform.position = MuzzlePos;
+        o.transform.rotation = _t.rotation;
+    }
     #endregion
 
     #region Spawn / Lifecycle
@@ -291,6 +489,7 @@ public class NpcBrain : HurtBox, ITick
 
         SetRigidBody();
 
+        SourcePackage = pkg;
         package = Instantiate(pkg);
         attribute = package.attribute.Clone();
         attribute.Reset();
@@ -305,11 +504,14 @@ public class NpcBrain : HurtBox, ITick
         Target = null;
         targetUnit = null;
         Follow = null;
+        huntTarget = null;
+        returningToPlayer = false;
         CurrentMode = Mode.Following;
         followMoving = false;
         fleeDir = Vector2.zero;
         threatCount = 0;
         nearestThreat = float.MaxValue;
+        lastFollowDist = 0f;
 
         targetScanTimer = 0f;
         threatScanTimer = 0f;
@@ -333,12 +535,18 @@ public class NpcBrain : HurtBox, ITick
         dodgeCooldownTimer = 0f;
         dashInvincibleApplied = false;
 
+        // Full magazine, no reload running.
+        isReloading = false;
+        reloadTimer = 0f;
+        currentAmmo = maxMagazine;
+
         SpawnIndicator();
 
         SyncStatsWithPlayer();
         attribute.HP_Current = attribute.HP_Max; // spawn at full HP
 
         OnSpawned();
+        OnAmmoChanged?.Invoke(currentAmmo, maxMagazine);
         return true;
     }
 
@@ -350,6 +558,12 @@ public class NpcBrain : HurtBox, ITick
 
     /// <summary>Hook: called when the NPC starts a dodge (energy already spent).</summary>
     protected virtual void OnDodged() { }
+
+    /// <summary>Hook: called when a reload starts.</summary>
+    protected virtual void OnReloadStarted() { }
+
+    /// <summary>Hook: called when a reload completes (magazine already full).</summary>
+    protected virtual void OnReloadFinished() { }
 
     protected virtual void OnDeath()
     {
@@ -368,6 +582,7 @@ public class NpcBrain : HurtBox, ITick
         Active.Remove(this);
 
         EndDodge();
+        CancelReload();
 
         if (attribute != null)
         {
@@ -385,12 +600,20 @@ public class NpcBrain : HurtBox, ITick
         Target = null;
         targetUnit = null;
         Follow = null;
+        huntTarget = null;
+        returningToPlayer = false;
         attribute = null;
+
+        // Pooled object: don't keep old subscribers (UI bars etc.) between lives.
+        OnAmmoChanged = null;
+        OnReloadStartedEvent = null;
+        OnReloadFinishedEvent = null;
 
         DestroyIndicator();
 
         if (package != null) Destroy(package);
         package = null;
+        SourcePackage = null;
 
         if (PoolingSystem.instance != null) PoolingSystem.instance.RemoveToPool(gameObject);
         else Destroy(gameObject);
@@ -535,7 +758,6 @@ public class NpcBrain : HurtBox, ITick
 
     /// <summary>
     /// Makes this NPC's HP, ATK and DEF equal the player's. Everything else
-    /// (ASPD, SIGHT, crit, penetration, reduction, cooldown, dealt damage)
     /// stays at the NPC's own template values. Speed is handled by SyncSpeedWithPlayer.
     /// </summary>
     private void SyncStatsWithPlayer()
@@ -587,7 +809,7 @@ public class NpcBrain : HurtBox, ITick
         TickHitStagger(dt);
         ResolveFollow();
 
-        // Two independent searches: Sight for targets, scanRadius for threats.
+        // Two independent searches: Sight for targets, scanRadius for threats / hunting.
         targetScanTimer -= dt;
         if (targetScanTimer <= 0f)
         {
@@ -605,11 +827,17 @@ public class NpcBrain : HurtBox, ITick
             SyncStatsWithPlayer();
         }
 
+        // Prey died / despawned between scans: drop back to following right away.
+        if (CurrentMode == Mode.Hunting && !IsHuntTargetValid())
+            EnterFollowing();
+
         if (CurrentMode == Mode.Fleeing)
         {
             calmTimer -= dt;
             if (calmTimer <= 0f) EnterFollowing();
         }
+
+        TickReload(dt);
 
         bool hasAim = TickAttack(dt, out Vector2 aimDir);
         HandleIndicator(dt);
@@ -618,6 +846,8 @@ public class NpcBrain : HurtBox, ITick
         Vector2 move = Vector2.zero;
         if (isDashing) TickDodge(dt);
         else if (CanMove) move = GetMoveDirection(dt);
+
+        if (!isDashing) move = ShapeMovement(move, dt);
 
         if (move != Vector2.zero)
         {
@@ -632,18 +862,27 @@ public class NpcBrain : HurtBox, ITick
 
         // Face the enemy while shooting, otherwise face where we are going.
         Vector2 face = hasAim ? aimDir : (isDashing ? dashDir : move);
+
+        face = ShapeFacing(face, dt);
         if (face != Vector2.zero) UnitMotion.RotateThisObject(gameObject, face);
 
         UpdateSpeedBonus();
 
-        if (anim != null)
-            anim.SetBool(IsWalkingHash, move != Vector2.zero || isDashing);
     }
+    /// <summary>Hook: lets a subclass smooth the wanted move direction (inertia). Default: unchanged.</summary>
+    protected virtual Vector2 ShapeMovement(Vector2 desired, float dt) => desired;
+
+    /// <summary>Hook: lets a subclass limit how fast the facing changes. Default: unchanged.</summary>
+    protected virtual Vector2 ShapeFacing(Vector2 desired, float dt) => desired;
 
     private void ResolveFollow()
     {
-        if (!followPlayer) return;
-        Follow = pm.Controlling != null ? pm.Controlling.transform : null;
+        if (followPlayer)
+            Follow = pm.Controlling != null ? pm.Controlling.transform : null;
+
+        lastFollowDist = Follow != null
+            ? ((Vector2)Follow.position - (Vector2)_t.position).magnitude
+            : 0f;
     }
     #endregion
 
@@ -706,8 +945,9 @@ public class NpcBrain : HurtBox, ITick
     }
 
     /// <summary>
-    /// THREATS: every hostile within scanRadius, used only for fleeing.
-    /// Independent from the attack target and from Sight.
+    /// THREATS: every hostile within scanRadius (used for fleeing). While scanning it
+    /// also picks the nearest valid HUNT target: within huntSearchRadius of the NPC
+    /// and within huntLeash of the player.
     /// </summary>
     private void FindThreats()
     {
@@ -724,10 +964,18 @@ public class NpcBrain : HurtBox, ITick
         threatCount = 0;
         nearestThreat = float.MaxValue;
 
+        float searchR = Mathf.Min(huntSearchRadius, scanRadius);
+        float leashSqr = huntLeash * huntLeash;
+        bool hasPlayer = Follow != null;
+        Vector2 playerPos = hasPlayer ? (Vector2)Follow.position : Vector2.zero;
+
+        Transform bestHunt = null;
+        float bestHuntDist = float.MaxValue;
+
         for (int i = 0; i < count; i++)
         {
             Collider2D col = threatBuffer[i];
-            if (!TryGetHostile(col, out _)) continue;
+            if (!TryGetHostile(col, out UnitAttribute ua)) continue;
 
             // Surface distance, so a huge boss counts as "close" earlier than its centre says.
             Vector2 closest = col.ClosestPoint(pos);
@@ -735,22 +983,78 @@ public class NpcBrain : HurtBox, ITick
 
             if (threatCount < threatPts.Length) threatPts[threatCount++] = closest;
             if (d < nearestThreat) nearestThreat = d;
+
+            // Hunt candidate
+            if (!huntEnabled || ua.IsUntargetable) continue;
+            if (d > searchR || d >= bestHuntDist) continue;
+            if (hasPlayer && ((Vector2)col.transform.position - playerPos).sqrMagnitude > leashSqr) continue;
+
+            bestHuntDist = d;
+            bestHunt = col.transform;
         }
+
+        huntTarget = bestHunt;
+    }
+
+    private bool IsHuntTargetValid()
+    {
+        return huntTarget != null && huntTarget.gameObject.activeInHierarchy;
     }
     #endregion
 
-    #region Mode: Follow / Flee
+    #region Mode: Follow / Hunt / Flee
     private void EvaluateMode()
     {
-        if (CurrentMode == Mode.Following)
+        // Fleeing has priority and its own exit rules.
+        if (CurrentMode == Mode.Fleeing)
         {
-            if (nearestThreat <= dangerRadius) EnterFleeing();
+            // Any zombie still within safeRadius keeps the panic going.
+            if (nearestThreat <= safeRadius) calmTimer = calmTime;
+            ChooseFleeDirection();
             return;
         }
 
-        // Fleeing: any zombie still within safeRadius keeps the panic going.
-        if (nearestThreat <= safeRadius) calmTimer = calmTime;
-        ChooseFleeDirection();
+        if (nearestThreat <= dangerRadius)
+        {
+            EnterFleeing();
+            return;
+        }
+
+        UpdateHuntState();
+    }
+
+    /// <summary>Chooses between Hunting and Following (Fleeing is handled in EvaluateMode).</summary>
+    private void UpdateHuntState()
+    {
+        // Leash: if hunting took the NPC too far from the player, walk back first.
+        if (Follow != null)
+        {
+            float d = lastFollowDist;
+            if (d > huntLeash * LeashBreakMargin) returningToPlayer = true;
+            else if (returningToPlayer && d <= safeRound) returningToPlayer = false;
+        }
+        else
+        {
+            returningToPlayer = false;
+        }
+
+        bool wantHunt = huntEnabled && !returningToPlayer && IsHuntTargetValid();
+
+        if (wantHunt)
+        {
+            CurrentMode = Mode.Hunting;
+        }
+        else if (CurrentMode == Mode.Hunting)
+        {
+            EnterFollowing();
+        }
+
+        // Returning home: chase the player straight away, don't wander yet.
+        if (returningToPlayer && CurrentMode == Mode.Following)
+        {
+            followMoving = true;
+            hasWanderTarget = false;
+        }
     }
 
     private void EnterFleeing()
@@ -766,6 +1070,9 @@ public class NpcBrain : HurtBox, ITick
     {
         CurrentMode = Mode.Following;
         fleeDir = Vector2.zero;
+        hasWanderTarget = false;
+        wanderPause = 0f;
+        // followMoving is re-evaluated from the distance next frame (hysteresis).
     }
 
     /// <summary>
@@ -832,17 +1139,46 @@ public class NpcBrain : HurtBox, ITick
     #region Movement
     private Vector2 GetMoveDirection(float dt)
     {
-        if (CurrentMode == Mode.Fleeing) return fleeDir;
-
-        if (Follow == null)
+        switch (CurrentMode)
         {
-            lastFollowDist = 0f;
-            return Vector2.zero;
+            case Mode.Fleeing: return fleeDir;
+            case Mode.Hunting: return GetHuntDirection();
+            default: return GetFollowDirection(dt);
         }
+    }
+
+    /// <summary>
+    /// Walks toward the prey until it is in shooting range, then stands still and
+    /// lets TickAttack do the shooting. Never stops closer than the flee trigger.
+    /// </summary>
+    private Vector2 GetHuntDirection()
+    {
+        if (!IsHuntTargetValid()) return Vector2.zero;
+
+        Vector2 to = (Vector2)huntTarget.position - (Vector2)_t.position;
+        float d = to.magnitude;
+        if (d <= HuntStopDistance || d < 0.0001f) return Vector2.zero;
+
+        return to / d;
+    }
+
+    /// <summary>Distance at which a hunting NPC stops walking and just shoots.</summary>
+    private float HuntStopDistance
+    {
+        get
+        {
+            float sight = attribute.SIGHT_Current;
+            float stop = Mathf.Max(sight * huntStopRatio, dangerRadius + 0.5f);
+            return Mathf.Min(stop, sight * 0.95f); // must still be able to hit
+        }
+    }
+
+    private Vector2 GetFollowDirection(float dt)
+    {
+        if (Follow == null) return Vector2.zero;
 
         Vector2 to = (Vector2)Follow.position - (Vector2)_t.position;
         float d = to.magnitude;
-        lastFollowDist = d;
 
         // Hysteresis: chase the player until close, then wander around them
         // until the player gets farther than safeRound.
@@ -946,6 +1282,10 @@ public class NpcBrain : HurtBox, ITick
         }
     }
 
+    /// <summary>
+    /// Returns true while the NPC has a valid enemy in range (so it keeps facing it),
+    /// even if it can't fire right now because it is reloading.
+    /// </summary>
     private bool TickAttack(float dt, out Vector2 aimDir)
     {
         aimDir = Vector2.zero;
@@ -961,6 +1301,9 @@ public class NpcBrain : HurtBox, ITick
 
         aimDir = to.normalized;
 
+        // Reloading or empty: keep aiming, but no shot.
+        if (!CanShoot) return true;
+
         if (attackTimer <= 0f)
         {
             attackTimer = AttackCooldown;
@@ -969,10 +1312,11 @@ public class NpcBrain : HurtBox, ITick
         return true;
     }
 
-    /// <summary>One shot, presented like the player's weapon.</summary>
+    /// <summary>One shot, presented like the player's weapon. Uses ammo.</summary>
     private void Shoot(Vector2 aimDir, float range)
     {
-        if (anim != null) anim.SetTrigger(AttackHash);
+        if (!infiniteAmmo) SetAmmo(currentAmmo - ammoPerShot);
+
 
         PlayAttackSound();
         PlayMuzzleEffect();
