@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5356980739496724481}
   - component: {fileID: 8631447788766263582}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8757385047547288555}
   - component: {fileID: 8317012513413065309}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Gun
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -178,7 +178,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7661124722026798934}
   - component: {fileID: 1922129154939556402}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Rotors
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -262,7 +262,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2383146981549084711}
   - component: {fileID: 3172236529125592812}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Rotors_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -346,7 +346,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2196571654042571319}
   - component: {fileID: 4782444647129393513}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Rotors_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -430,7 +430,7 @@ GameObject:
   m_Component:
   - component: {fileID: 9019630940691353368}
   - component: {fileID: 5808261446372998302}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -486,7 +486,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6058118730438364515}
   - component: {fileID: 3892875731309167499}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Rotors_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -570,7 +570,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5558360474799774419}
   - component: {fileID: 2086902440942885101}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Helicopter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -587,7 +587,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9019630940691353368}
@@ -689,8 +689,8 @@ MonoBehaviour:
   threatScanInterval: 0.2
   scanRadius: 14
   huntEnabled: 1
-  huntSearchRadius: 14
-  huntLeash: 12
+  huntSearchRadius: 30
+  huntLeash: 30
   huntStopRatio: 0.8
   followStopDistance: 2.5
   safeRound: 7
@@ -723,7 +723,7 @@ MonoBehaviour:
   bulletSpeed: 125
   bulletLifetime: 1
   indicatorPrefab: {fileID: 7358377081612034780, guid: 80624c25640be034fabbdd85034ea59f, type: 3}
-  indicatorPulseMultiplier: 0.25
+  indicatorPulseMultiplier: 0.5
   indicatorReturnSpeed: 1
   useInertia: 1
   accelerationTime: 1.2
@@ -733,7 +733,7 @@ MonoBehaviour:
   maxMissiles: 8
   missilesPerLaunch: 2
   launchCooldown: 0.5
-  missileReloadTime: 5
+  missileReloadTime: 10
   missileAutoReload: 1
   missileTacticalReload: 1
   missileTacticalReloadThreshold: 0.5
@@ -741,8 +741,8 @@ MonoBehaviour:
   missileReloadEffect: {fileID: 0}
   missilePrefab: {fileID: 7281107525455611846, guid: a3c41c48dc812d943a4d89a4516eff5e, type: 3}
   missileRange: 25
-  missileDamageMultiplier: 10
-  missileRadius: 15
+  missileDamageMultiplier: 5
+  missileRadius: 25
   missileEdgeDamage: 0.5
   missilePoints: []
   fallbackPointOffset: 0.6
@@ -758,7 +758,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8415908044883257089}
   - component: {fileID: 871372467683828511}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Wings
   m_TagString: Untagged
   m_Icon: {fileID: 0}

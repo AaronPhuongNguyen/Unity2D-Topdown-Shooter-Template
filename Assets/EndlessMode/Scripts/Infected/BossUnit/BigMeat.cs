@@ -122,6 +122,15 @@ public class BigMeat : Zombrain
         return true;
     }
 
+    protected override void GetBonus()
+    {
+        base.GetBonus();
+
+        float bossBonus = RNG.GetInt(3, 6);
+        lastHPBonus *= bossBonus;
+        lastHPP *= bossBonus;
+    }
+
     public override void Tick(float dt)
     {
         UpdatePhase(dt);

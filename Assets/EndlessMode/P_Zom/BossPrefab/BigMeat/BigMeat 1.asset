@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: BigMeat 1
   m_EditorClassIdentifier: 
   HP_Base: 7500
-  ATK_Base: 25
+  ATK_Base: 40
   SPEED_Base: 18
-  DEF_Base: 100
+  DEF_Base: 200
   ASPD_Base: 1
   SIGHT_Base: 3

@@ -166,20 +166,20 @@ public class Zombrain : HurtBox, ITick
 
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetInt(40, 120) * diffScale;
-        lastHPP = 0.1f * diffScale;
+        lastHPBonus = RNG.GetInt(40, 160) * diffScale;
+        lastHPP = 0.24f * diffScale;
 
         lastATKBonus = RNG.GetInt(5, 15) * diffScale;
-        lastATKK = 0.05f * diffScale;
+        lastATKK = 0.1f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetInt(0, 250) * Mathf.Clamp01(diffScale);
-        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Clamp01(diffScale);
-        lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Clamp01(diffScale);
+        lastDEFBonus = RNG.GetInt(0, 250) * Mathf.Max(2, diffScale);
+        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Max(2, diffScale);
+        lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Max(2, diffScale);
 
         if (isAlpha)
         {
-            float alphaMul = RNG.GetFloat(1.25f, 2.5f) * Mathf.Clamp01(diffScale);
+            float alphaMul = RNG.GetFloat(1f, 2f) * Mathf.Max(2, diffScale);
             lastHPBonus *= alphaMul;
             lastATKBonus *= alphaMul;
             lastDEFBonus *= alphaMul;

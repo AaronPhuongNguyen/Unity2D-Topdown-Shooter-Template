@@ -16,7 +16,7 @@ MonoBehaviour:
   Name: Air force
   Description: Has a Helicopter assisting you
   Category: 2
-  Rarity: 0.5
+  Rarity: 0.1
   UniquePerRun: 0
   npc: {fileID: 11400000, guid: c56c9c16bd3d03f458ac4415491d23f3, type: 2}
   count: 1

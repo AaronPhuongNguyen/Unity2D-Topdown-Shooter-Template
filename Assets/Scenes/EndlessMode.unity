@@ -1260,7 +1260,19 @@ MonoBehaviour:
       m_Calls: []
   OnGameOver:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1881132709}
+        m_TargetAssemblyTypeName: TickSystem, Assembly-CSharp
+        m_MethodName: PauseGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &125385615
 GameObject:
   m_ObjectHideFlags: 0
@@ -4307,8 +4319,8 @@ MonoBehaviour:
     Level_Current: 1
     EXP_Current: 0
     EXP_Base: 100
-    EXP_Growth: 20
-    EXP_Exponent: 1.1
+    EXP_Growth: 50
+    EXP_Exponent: 1.5
   EnemyMask:
     serializedVersion: 2
     m_Bits: 64
@@ -5081,7 +5093,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -6831,6 +6843,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 1881132709}
+        m_TargetAssemblyTypeName: TickSystem, Assembly-CSharp
+        m_MethodName: ResetGameSpeed
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &742325332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7828,6 +7852,18 @@ MonoBehaviour:
       - m_Target: {fileID: 118959877}
         m_TargetAssemblyTypeName: EventLinkHelper, Assembly-CSharp
         m_MethodName: RestartTheGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1881132709}
+        m_TargetAssemblyTypeName: TickSystem, Assembly-CSharp
+        m_MethodName: ResetGameSpeed
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

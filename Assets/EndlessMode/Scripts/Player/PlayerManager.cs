@@ -392,9 +392,8 @@ public class PlayerManager : MonoBehaviour, ITick
     }
     public void OnDamageDealt(float dmg)
     {
-        AddEXP(0.25f);
+        AddEXP(1f);
         DomainManager.instance.AddCurrency(1);
-        CamManager.instance?.Shake(0.1f);
     }
     #endregion
 

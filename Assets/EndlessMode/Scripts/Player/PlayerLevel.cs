@@ -13,8 +13,8 @@ public class UnitLevel
     // Guarded: Log(0) is -Infinity, which made the old formula return -Infinity at level 1.
     [Header("EXP curve")]
     public float EXP_Base = 100f;       // cost of level 1 -> 2
-    public float EXP_Growth = 20f;     // how much each extra level adds
-    public float EXP_Exponent = 1.1f;  // >1 = gets steeper at high level
+    public float EXP_Growth = 50f;     // how much each extra level adds
+    public float EXP_Exponent = 1.5f;  // >1 = gets steeper at high level
 
     public float EXP_ToUpLevel =>
         EXP_Base + EXP_Growth * Mathf.Pow(Mathf.Max(0, Level_Current - 1), EXP_Exponent);

@@ -160,9 +160,9 @@ public class NpcBrain : HurtBox, ITick
     [Header("Hunt (actively search for zombies)")]
     [SerializeField] private bool huntEnabled = true;
     [Tooltip("Zombies farther than this from the NPC are ignored for hunting (capped by Scan Radius).")]
-    [SerializeField] private float huntSearchRadius = 14f;
+    [SerializeField] private float huntSearchRadius = 30f;
     [Tooltip("Max distance from the PLAYER the NPC may go while hunting. Only zombies within this of the player are hunted.")]
-    [SerializeField] private float huntLeash = 12f;
+    [SerializeField] private float huntLeash = 30f;
     [Tooltip("The NPC stops walking and shoots at Sight x this distance from its prey.")]
     [SerializeField, Range(0.3f, 1f)] private float huntStopRatio = 0.8f;
 

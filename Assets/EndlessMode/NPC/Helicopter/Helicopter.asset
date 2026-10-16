@@ -19,7 +19,7 @@ MonoBehaviour:
     template: {fileID: 11400000, guid: 9b6b171481dd2b94aa9efbfc1ff67835, type: 2}
     tag: 0
     HP_Current: 0
-    IsInvincible: 1
+    IsInvincible: 0
     IsUntargetable: 1
     CritRate: 0.2
     CritDamage: 2

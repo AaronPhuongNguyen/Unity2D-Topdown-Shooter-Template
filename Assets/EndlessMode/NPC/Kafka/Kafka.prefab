@@ -177,8 +177,8 @@ MonoBehaviour:
   threatScanInterval: 0.2
   scanRadius: 14
   huntEnabled: 1
-  huntSearchRadius: 20
-  huntLeash: 12
+  huntSearchRadius: 30
+  huntLeash: 30
   huntStopRatio: 0.8
   followStopDistance: 2.5
   safeRound: 7
@@ -186,7 +186,7 @@ MonoBehaviour:
   wanderArriveDistance: 0.4
   wanderPauseMin: 0.6
   wanderPauseMax: 2
-  matchPlayerSpeed: 1
+  matchPlayerSpeed: 0
   catchUpDistance: 18
   catchUpSpeedBonus: 5
   dangerRadius: 3.5
@@ -231,7 +231,7 @@ MonoBehaviour:
   throwCooldown: 0.5
   grenadePrefab: {fileID: 134507308927481920, guid: c3e82fcf2dd078849a5724b32914316b, type: 3}
   grenadeRange: 15
-  grenadeDamageMultiplier: 5
+  grenadeDamageMultiplier: 2.5
   grenadeRadius: 15
   grenadeEdgeDamage: 0.25
   grenadeFlightTime: 0.2
