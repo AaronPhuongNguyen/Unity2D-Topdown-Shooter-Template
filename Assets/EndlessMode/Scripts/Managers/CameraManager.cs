@@ -43,7 +43,7 @@ public class CamManager : MonoBehaviour, ILateTick
 
     private Camera cam;
     private PlayerManager pm => PlayerManager.instance;
-    private Vector2 ZoomLimit => new Vector2(5f, Mathf.Min(50,pm.attribute.SIGHT_Current / 3f));
+    private Vector2 ZoomLimit => new Vector2(5f, Mathf.Min(50,pm.attribute.SIGHT_Current / 1.5f));
 
     // Camera follow runs as a LateTick (after gameplay Tick) so it reads
     // the player's already-moved position this frame instead of lagging
