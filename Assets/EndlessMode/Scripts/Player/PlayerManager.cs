@@ -7,6 +7,8 @@ public class PlayerManager : MonoBehaviour, ITick
 {
     public bool DebugMode;
     public bool AutoAttack = false;
+    public GameObject ManualAttackButton;
+
     public PlayerPackage package;
     public UnitAttribute attribute => clonedPack?.attribute;
 
@@ -126,6 +128,7 @@ public class PlayerManager : MonoBehaviour, ITick
     #region Lifecycle
     public void Tick(float delta)
     {
+        if (ManualAttackButton != null) ManualAttackButton.SetActive(!AutoAttack);
         if (combatDuration > 0) combatDuration -= delta;
         if (Controlling == null || isDead) return; // a dead player stays in the scene (hidden) but must not tick
 

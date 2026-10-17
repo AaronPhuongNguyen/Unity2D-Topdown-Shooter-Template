@@ -397,7 +397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5465436ccab470c4c97209292b2d17fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 0
+  Type: 3
   muzzle: {fileID: 3401477344332366387}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
   TargetScale: {x: 0.4, y: 0.4, z: 0}
@@ -409,10 +409,10 @@ MonoBehaviour:
   rifleRangeBonus: 0
   rifleBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   rifleShootSound: {fileID: 8300000, guid: 2823bb6f055aef44ebe04a0899257bca, type: 3}
-  shotgunFireRate: 6
+  shotgunFireRate: 5
   shotgunPelletCount: 14
   shotgunSpread: 9
-  shotgunDamageBonus: -0.5
+  shotgunDamageBonus: -0.4
   shotgunRangeBonus: -0.3
   shotgunBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   shotgunShootSound: {fileID: 8300000, guid: da2250a7d0f72fe458f2dd972d66bdb3, type: 3}
@@ -424,6 +424,15 @@ MonoBehaviour:
   sniperPierceFalloff: 0.7
   sniperBulletPrefab: {fileID: 6157443172177927333, guid: 11dcf5ff6486497449891c8220e379c6, type: 3}
   sniperShootSound: {fileID: 8300000, guid: 90037283433a56b419bf817b11b80870, type: 3}
+  rpgFireRate: 40
+  rpgSpread: 0.1
+  rpgDamageBonus: 15
+  rpgRangeBonus: 0.1
+  rpgShake: 2
+  rpgBlastRadius: 15
+  rpgBlastMinDamageMul: 0.5
+  rpgBulletPrefab: {fileID: 8655944676498777511, guid: 2fde76b548511214e815da01c9895d35, type: 3}
+  rpgShootSound: {fileID: 8300000, guid: 47b3cf77617047847b029f8b5b3eeba0, type: 3}
 --- !u!114 &2440875546067092243
 MonoBehaviour:
   m_ObjectHideFlags: 0

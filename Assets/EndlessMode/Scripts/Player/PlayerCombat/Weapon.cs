@@ -5,7 +5,8 @@ public enum WeaponType
 {
     Rifle,
     Shotgun,
-    Sniper
+    Sniper,
+    RPG7
 }
 
 public class Weapon : MonoBehaviour, ITick
@@ -72,6 +73,23 @@ public class Weapon : MonoBehaviour, ITick
     [SerializeField] private AudioClip sniperShootSound;
     #endregion
 
+    #region RPG-7 Config
+    [Header("RPG-7 — Stats")]
+    [SerializeField] private float rpgFireRate = 5f;          // slowest weapon (reload time)
+    [SerializeField] private float rpgSpread = 0.1f;
+    [SerializeField] private float rpgDamageBonus = 15f;      // +1500% damage
+    [SerializeField] private float rpgRangeBonus = 1.5f;      // longer than Sniper (0.8)
+    [SerializeField] private float rpgShake = 3f;             // camera shake on every shot
+    [SerializeField] private float rpgBlastRadius = 2.5f;     // explosion radius at the impact point
+    [SerializeField] private float rpgBlastMinDamageMul = 0.5f; // damage multiplier at the very edge of the blast
+
+    [Header("RPG-7 — Bullet")]
+    [SerializeField] private Missile rpgBulletPrefab;
+
+    [Header("RPG-7 — Sound")]
+    [SerializeField] private AudioClip rpgShootSound;
+    #endregion
+
     #region Cache
     private PlayerManager pm => PlayerManager.instance;
 
@@ -115,6 +133,10 @@ public class Weapon : MonoBehaviour, ITick
             case WeaponType.Sniper:
                 dm = sniperDamageBonus;
                 rg = sniperRangeBonus;
+                break;
+            case WeaponType.RPG7:
+                dm = rpgDamageBonus;
+                rg = rpgRangeBonus;
                 break;
         }
 
@@ -183,6 +205,7 @@ public class Weapon : MonoBehaviour, ITick
             case WeaponType.Rifle: FireRifle(); break;
             case WeaponType.Shotgun: FireShotgun(); break;
             case WeaponType.Sniper: FireSniper(); break;
+            case WeaponType.RPG7: FireRPG7(); break;
         }
 
         // Hit/miss feedback sounds are no longer played here - each
@@ -266,6 +289,40 @@ public class Weapon : MonoBehaviour, ITick
     }
     #endregion
 
+    #region RPG-7 Logic
+    private void FireRPG7()
+    {
+        shootCooldown = (0.1f / pm.attribute.ASPD_Current) * rpgFireRate;
+
+        float range = pm.attribute.SIGHT_Current;
+        float maxSpread = ComputeMaxSpread(rpgSpread);
+
+        float angle = RNG.GetFloat(-maxSpread, maxSpread);
+        Vector2 dir = RotateDirection(pm.Direction, angle);
+
+        // The rocket is now a real homing Missile. It flies, explodes on proximity
+        // or when its lifetime ends, and deals the circle AoE itself through
+        // Attack.ShootCircle (crit rolled per target, popups, explosion fx/sound).
+        // The weapon only launches it, so nothing is damaged twice.
+        Vector2 from = muzzle != null ? (Vector2)muzzle.position : (Vector2)transform.position;
+
+        Missile.Launch(
+            rpgBulletPrefab != null ? rpgBulletPrefab.gameObject : null,
+            from,
+            dir,
+            pm.Target,
+            pm.attribute,
+            pm.attribute.ATK_Current,   // base damage; DealtDamage_Ampl (+1500%) is applied in Combat.DealDamage
+            rpgBlastRadius,
+            rpgBlastMinDamageMul,
+            pm.EnemyMask
+        );
+
+        // Heavy recoil on firing, regardless of crit.
+        CamManager.instance?.Shake(rpgShake);
+    }
+    #endregion
+
     #region Sound
     private void PlayShootSound()
     {
@@ -274,6 +331,7 @@ public class Weapon : MonoBehaviour, ITick
             WeaponType.Rifle => rifleShootSound,
             WeaponType.Shotgun => shotgunShootSound,
             WeaponType.Sniper => sniperShootSound,
+            WeaponType.RPG7 => rpgShootSound,
             _ => null
         };
 

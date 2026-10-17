@@ -15,8 +15,8 @@ MonoBehaviour:
   Icon: {fileID: 21300000, guid: 6652f217d70fd864a99c4432ff163c8e, type: 3}
   Name: Air force
   Description: Has a Helicopter assisting you
-  Category: 0
-  Rarity: 0.1
+  Category: 1
+  Rarity: 0.3
   UniquePerRun: 0
   npc: {fileID: 11400000, guid: c56c9c16bd3d03f458ac4415491d23f3, type: 2}
   count: 1

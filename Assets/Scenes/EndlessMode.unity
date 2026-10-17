@@ -4241,6 +4241,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DebugMode: 1
   AutoAttack: 1
+  ManualAttackButton: {fileID: 342385469}
   package: {fileID: 11400000, guid: 554ff44035f258e448c985470afd086d, type: 2}
   Energy:
     Max: 10
@@ -5887,7 +5888,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df92fb0c0f5f17a4cb0f89c3f788f706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DefaultWeapon: 0
 --- !u!1 &606810878
 GameObject:
   m_ObjectHideFlags: 0
@@ -12087,7 +12087,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: e99ccad6a2e14a342bcc66503cef43db, type: 3}
   shuffle: 0
   autoPlayMusicOnStart: 1
-  musicPriority: 16
+  musicPriority: 0
   musicVolume: 1
 --- !u!1 &1313200929
 GameObject:
@@ -15845,8 +15845,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mapCenter: {x: 0, y: 0}
-  mapSize: {x: 500, y: 500}
-  walkablePercent: 0.8
+  mapSize: {x: 1000, y: 1000}
+  walkablePercent: 0.65
   borderPrefab: {fileID: 2891510971604309684, guid: 6058395fc955a2c4f821eeb3f0be8708, type: 3}
   borderContainer: {fileID: 126431505}
   useRandomSeed: 0
@@ -15859,6 +15859,7 @@ MonoBehaviour:
   CurrentDifficulty: 0
   SecondBeforeNextWave: 0
   PreparingTime: 0
+  FreeRespawns: 3
   BaseRespawnPrice: 15000
   RespawnPriceMultiplier: 1.5
 --- !u!114 &1881132709

@@ -806,7 +806,7 @@ MonoBehaviour:
   missileReloadEffect: {fileID: 0}
   missilePrefab: {fileID: 7281107525455611846, guid: a3c41c48dc812d943a4d89a4516eff5e, type: 3}
   missileRange: 30
-  missileDamageMultiplier: 6
+  missileDamageMultiplier: 10
   missileRadius: 30
   missileEdgeDamage: 0.5
   missilePoints:

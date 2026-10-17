@@ -131,12 +131,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 90
-  turnSpeed: 180
+  turnSpeed: 360
   homingDelay: 0.5
   startSpeedRatio: 0.5
   accelTime: 0.5
   lifetime: 2
-  proximity: 0.8
+  proximity: 3
   spriteAngleOffset: 0
   explosionEffect: {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
   explosionSound: {fileID: 8300000, guid: 8c59fc9b579959a4da266c47fe497d44, type: 3}

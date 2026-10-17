@@ -209,7 +209,7 @@ public class DomainManager : MonoBehaviour, ITick
     public int Killed;
     public int Currency;
     public int CurrentWave = 0;
-    public int MaxEnemyPerWave = 400;
+    public int MaxEnemyPerWave = 1500;
     public float CurrentDifficulty = 0;
     public const float WaveDuration = 120f;
     public const float PreparingTimeDefault = 3f;
@@ -319,25 +319,40 @@ public class DomainManager : MonoBehaviour, ITick
 
     #region Respawn Price
     [Header("Respawn Price")]
-    [Tooltip("Currency cost of the first respawn.")]
+    [Tooltip("How many respawns per match cost nothing.")]
+    public int FreeRespawns = 3;
+    [Tooltip("Currency cost of the first PAID respawn (the one after the free ones).")]
     public int BaseRespawnPrice = 15000;
-    [Tooltip("Price multiplier applied after every respawn attempt.")]
+    [Tooltip("Price multiplier applied after every paid respawn.")]
     public float RespawnPriceMultiplier = 1.5f;
 
-    /// <summary>How many times the player has paid to respawn this match.</summary>
+    /// <summary>How many times the player has respawned this match (free + paid).</summary>
     public int RespawnAttempts { get; private set; }
 
-    /// <summary>Current price to respawn: 15K, 22.5K, 33.75K, ...</summary>
-    public int PriceToRespawn =>
-        Mathf.CeilToInt(BaseRespawnPrice * Mathf.Pow(RespawnPriceMultiplier, RespawnAttempts));
+    /// <summary>Free respawns still available this match.</summary>
+    public int FreeRespawnsLeft => Mathf.Max(0, FreeRespawns - RespawnAttempts);
+
+    /// <summary>True while the next respawn costs nothing.</summary>
+    public bool IsNextRespawnFree => RespawnAttempts < FreeRespawns;
+
+    // Price of the respawn made after `attempts` respawns: 0 for the free ones,
+    // then 15K, 22.5K, 33.75K, ...
+    private int PriceForAttempt(int attempts)
+    {
+        if (attempts < FreeRespawns) return 0;
+        int paidIndex = attempts - FreeRespawns;
+        return Mathf.CeilToInt(BaseRespawnPrice * Mathf.Pow(RespawnPriceMultiplier, paidIndex));
+    }
+
+    /// <summary>Current price to respawn (0 while free respawns remain).</summary>
+    public int PriceToRespawn => PriceForAttempt(RespawnAttempts);
 
     /// <summary>Price of the respawn that comes AFTER the current one (for UI previews).</summary>
-    public int NextPriceToRespawn =>
-        Mathf.CeilToInt(BaseRespawnPrice * Mathf.Pow(RespawnPriceMultiplier, RespawnAttempts + 1));
+    public int NextPriceToRespawn => PriceForAttempt(RespawnAttempts + 1);
 
     public bool CanAffordRespawn => Currency >= PriceToRespawn;
 
-    /// <summary>Raised whenever a respawn is paid for (UI can refresh on it).</summary>
+    /// <summary>Raised whenever a respawn is used (UI can refresh on it).</summary>
     public event Action OnRespawnPurchased;
 
     private void ResetRespawnAttempts() => RespawnAttempts = 0;
@@ -346,7 +361,8 @@ public class DomainManager : MonoBehaviour, ITick
     #region Respawn
     /// <summary>
     /// RESPAWN BUTTON (hook this to a UI Button's OnClick, or use the context menu).
-    /// Costs PriceToRespawn currency (x1.5 for every attempt already made).
+    /// The first FreeRespawns respawns of a match are free; after that it costs
+    /// PriceToRespawn currency (x1.5 for every paid attempt already made).
     /// Revives the dead player (no new game), clears every zombie, sets the wave back by one
     /// (never below wave 1), and resumes the match with a fresh preparing time.
     /// Does nothing if the player is not dead or can't afford it.
@@ -368,8 +384,8 @@ public class DomainManager : MonoBehaviour, ITick
             return;
         }
 
-        // 0. Pay, then raise the price for the next attempt.
-        CostCurrency(price);
+        // 0. Pay (nothing if it's a free respawn), then raise the attempt count.
+        if (price > 0) CostCurrency(price);
         RespawnAttempts++;
 
         // 1. Wipe the field.

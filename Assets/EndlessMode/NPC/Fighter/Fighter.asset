@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4faf6421f159d643b8bcf88355485a4, type: 3}
+  m_Name: Fighter
+  m_EditorClassIdentifier: 
+  packName: Fighter
+  packID: 0106ndp2008
+  prefab: {fileID: 4253248021882811136, guid: 75eb2db3d0a162b41814c8fc3ee320f4, type: 3}
+  attribute:
+    template: {fileID: 11400000, guid: e2468de81099ea148a42bc90487c58d1, type: 2}
+    tag: 0
+    HP_Current: 0
+    IsInvincible: 1
+    IsUntargetable: 1
+    CritRate: 0.2
+    CritDamage: 2
+    HP_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ATK_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SPEED_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DEF_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ASPD_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+  Media: {fileID: 11400000, guid: 575190e40bda356429e99bf31e7f1c30, type: 2}

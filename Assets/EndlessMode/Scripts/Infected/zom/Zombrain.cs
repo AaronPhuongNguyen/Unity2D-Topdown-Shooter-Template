@@ -17,6 +17,7 @@ public class Zombrain : HurtBox, ITick
 
     public bool CanAttack = true;
     public bool CanMove = true;
+    public bool IsBoss = false;
     public bool isAttacking => attackStagger > _now;
     public bool isMoving => Target != null && Direction != Vector2.zero;
 
@@ -61,10 +62,16 @@ public class Zombrain : HurtBox, ITick
 
     #region Hit Stagger
     [Header("Hit Stagger")]
-    private const float HitStaggerSlowPercent = -0.4f;
-    private const float HitStaggerDuration = 1.5f;
+    [Tooltip("Max number of stagger stacks.")]
+    [SerializeField] private int maxStaggerStacks = 20;
+    [Tooltip("Move speed reduced per stack (0.05 = 5%).")]
+    [SerializeField] private float slowPerStack = 0.05f;
+    [Tooltip("One stack falls off every this many seconds.")]
+    [SerializeField] private float stackDecayInterval = 1f;
 
-    private float hitStaggerTimer;
+    private int staggerStacks;
+    private float staggerDecayTimer;
+    private float appliedStaggerBonus; // what is currently added to SPEED_Ampl.TotalBonus (<= 0)
     #endregion
 
     #region Hit Target Sound
@@ -133,7 +140,10 @@ public class Zombrain : HurtBox, ITick
         appliedChaseBonus = 0f;
         SpeedHelper = 0f;
 
-        hitStaggerTimer = 0f;
+        // Fresh attribute clone: nothing of the old stagger is applied to it.
+        staggerStacks = 0;
+        staggerDecayTimer = 0f;
+        appliedStaggerBonus = 0f;
 
         if (dm != null) dm.HandleSpawn(package);
         if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
@@ -162,24 +172,24 @@ public class Zombrain : HurtBox, ITick
     {
         float diff = dm.CurrentDifficulty;
 
-        float diffScale = Mathf.Max(1, Mathf.Pow(diff, 2f));
+        float diffScale = Mathf.Max(1, Mathf.Pow(diff, 1.65f));
 
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetInt(40, 160) * diffScale;
+        lastHPBonus = RNG.GetFloat(0, 150) * diffScale;
         lastHPP = 0.24f * diffScale;
 
-        lastATKBonus = RNG.GetInt(5, 15) * diffScale;
+        lastATKBonus = RNG.GetFloat(0, 15) * diffScale;
         lastATKK = 0.1f * diffScale;
 
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetInt(0, 400) * Mathf.Min(2, diffScale);
-        lastSPEEDBonus = RNG.GetInt(2, 4) * Mathf.Min(1.2f, diffScale);
+        lastDEFBonus = RNG.GetFloat(0, 300) * Mathf.Min(2, diffScale);
+        lastSPEEDBonus = RNG.GetFloat(1, 3) * Mathf.Min(1.2f, diffScale);
         lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Min(2, diffScale);
 
         if (isAlpha)
         {
-            float alphaMul = RNG.GetFloat(1f, 2f) * Mathf.Min(2, diffScale);
+            float alphaMul = RNG.GetFloat(0.5f, 2f) * Mathf.Min(2, diffScale);
             lastHPBonus *= alphaMul;
             lastATKBonus *= alphaMul;
             lastDEFBonus *= alphaMul;
@@ -424,30 +434,54 @@ public class Zombrain : HurtBox, ITick
     }
     #endregion
 
-    #region Hit Stagger
-    bool staggerApplied = false;
+    #region Hit Stagger Logic
+    /// <summary>Every hit adds one stack (up to maxStaggerStacks). Each stack slows movement by slowPerStack.</summary>
     protected virtual void ApplyHitStagger()
     {
         if (attribute == null || attribute.IsDead) return;
-        hitStaggerTimer = HitStaggerDuration;
-        if (staggerApplied) return;
+        if (staggerStacks >= maxStaggerStacks) return;
 
-        attribute.SPEED_Ampl.TotalBonus += HitStaggerSlowPercent;
-        staggerApplied = true;
+        // First stack starts the decay clock; later hits don't reset it,
+        // so one stack always falls off every stackDecayInterval seconds.
+        if (staggerStacks == 0) staggerDecayTimer = stackDecayInterval;
+
+        staggerStacks++;
+        RefreshStaggerBonus();
     }
+
     private void TickHitStagger(float delta)
     {
-        if (hitStaggerTimer > 0) hitStaggerTimer -= delta;
-        else if (hitStaggerTimer <= 0 && staggerApplied) RemoveHitStagger();
+        if (staggerStacks <= 0) return;
+
+        staggerDecayTimer -= delta;
+        if (staggerDecayTimer > 0f) return;
+
+        staggerStacks--;
+        staggerDecayTimer += stackDecayInterval;
+        RefreshStaggerBonus();
+    }
+
+    // Keeps SPEED_Ampl.TotalBonus in sync with the current stack count.
+    private void RefreshStaggerBonus()
+    {
+        if (attribute == null) return;
+
+        float target = -slowPerStack * staggerStacks;
+        if (!Mathf.Approximately(target, appliedStaggerBonus))
+        {
+            attribute.SPEED_Ampl.TotalBonus += target - appliedStaggerBonus;
+            appliedStaggerBonus = target;
+        }
     }
 
     private void RemoveHitStagger()
     {
-        if (!staggerApplied) return;
-        if (attribute != null)
-            attribute.SPEED_Ampl.TotalBonus -= HitStaggerSlowPercent;
-        hitStaggerTimer = 0f;
-        staggerApplied = false;
+        if (attribute != null && appliedStaggerBonus != 0f)
+            attribute.SPEED_Ampl.TotalBonus -= appliedStaggerBonus;
+
+        appliedStaggerBonus = 0f;
+        staggerStacks = 0;
+        staggerDecayTimer = 0f;
     }
     #endregion
 
@@ -526,6 +560,7 @@ public class Zombrain : HurtBox, ITick
         {
             NpcBrain n = list[i];
             if (n == null || !n.IsActive) continue;
+            if (n is IZombieIgnored) continue; // e.g. the Fighter: flies, can't be chased
 
             UnitAttribute ua = n.attribute;
             if (ua == null || ua.IsDead) continue;

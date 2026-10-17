@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89ac3800bb0716d43a1d02e0f8767c23, type: 3}
+  m_Name: Fighter
+  m_EditorClassIdentifier: 
+  Icon: {fileID: 21300000, guid: 33aaf7af59a5d6241839c2f1085da7ea, type: 3}
+  Name: Fighter
+  Description: Every 20s, Fighter bomb the whole map
+  Category: 0
+  Rarity: 0.15
+  UniquePerRun: 1
+  npc: {fileID: 11400000, guid: 8d2b73a9b3812174baa531b27e811ef3, type: 2}
+  count: 1

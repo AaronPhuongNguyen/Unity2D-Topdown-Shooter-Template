@@ -11,9 +11,9 @@ using UnityEngine;
 public class Missile : MonoBehaviour, ITick
 {
     [Header("Flight")]
-    [SerializeField] private float speed = 22f;
+    [SerializeField] private float speed = 60f;
     [Tooltip("Degrees per second the missile can turn while homing.")]
-    [SerializeField] private float turnSpeed = 260f;
+    [SerializeField] private float turnSpeed = 360f;
     [Tooltip("Flies straight for this long before it starts homing.")]
     [SerializeField] private float homingDelay = 0.15f;
     [Tooltip("Speed grows from this fraction to full over accelTime.")]
