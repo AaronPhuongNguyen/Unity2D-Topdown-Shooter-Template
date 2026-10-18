@@ -210,7 +210,7 @@ public class Zombrain : HurtBox, ITick
 
         if (IsBoss)
         {
-            float bossMul = RNG.GetFloat(1f, 1f + diffScale);
+            float bossMul = 1 + diff;
             lastHPBonus *= bossMul;
             lastHPP *= bossMul;
 
