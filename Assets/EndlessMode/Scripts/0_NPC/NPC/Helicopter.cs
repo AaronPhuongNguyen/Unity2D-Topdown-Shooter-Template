@@ -26,7 +26,7 @@ using UnityEngine;
 /// inheritance chain, so a field named like a private serialized field in
 /// NpcBrain causes a "serialized multiple times" error.
 /// </summary>
-public class Helicopter : NpcBrain
+public class Helicopter : NpcBrain, IZombieIgnored
 {
     [Header("Heavy Movement (Inertia)")]
     [SerializeField] private bool useInertia = true;

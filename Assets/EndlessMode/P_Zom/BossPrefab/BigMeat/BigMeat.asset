@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: BigMeat
   m_EditorClassIdentifier: 
   packName: BigMeat
-  packID: BigMeat0011
   prefab: {fileID: 4593744226995595169, guid: a25b821e37ad74d448ee948cac90850b, type: 3}
   attribute:
     template: {fileID: 11400000, guid: e8a1a9fd972ad9e48b7ad448aec26cf7, type: 2}
@@ -48,7 +47,7 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     ArmourPenetration_Ampl:
-      FlatBonus: 0.1
+      FlatBonus: 0.25
       PercBonus: 1
       TotalBonus: 1
     DamageReduction_Ampl:

@@ -201,6 +201,7 @@ MonoBehaviour:
     tag: 0
     HP_Current: 0
     IsInvincible: 0
+    IsUntargetable: 0
     CritRate: 0.2
     CritDamage: 2
     HP_Ampl:
@@ -243,17 +244,25 @@ MonoBehaviour:
       FlatBonus: 0
       PercBonus: 1
       TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
   anim: {fileID: 4462841631476443865}
   Target: {fileID: 0}
   Direction: {x: 0, y: 0}
   CanAttack: 1
   CanMove: 1
+  IsBoss: 1
   DistanceToTarget: 0
   SpeedHelper: 0
   separationRadius: 1
   separationStrength: 1.5
-  hitTargetSound: {fileID: 0}
-  hitsBeforeSound: 3
+  maxStaggerStacks: 20
+  slowPerStack: 0.04
+  stackDecayInterval: 1
+  hitTargetSound: {fileID: 8300000, guid: a31316f6df597414db1e6c775d9d5000, type: 3}
+  hitsBeforeSound: 1
   preySearchRadius: 15
   retargetThreshold: 0.8
   npcChaseRadius: 0

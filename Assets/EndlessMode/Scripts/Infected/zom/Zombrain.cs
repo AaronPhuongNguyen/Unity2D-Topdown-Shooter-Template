@@ -100,6 +100,7 @@ public class Zombrain : HurtBox, ITick
         TryAttack();
         UpdateAnimator();
         TickHitStagger(dt);
+        UpdateDarkBoost();
     }
 
     public virtual bool SpawnObject(ZomPackage zp)
@@ -145,6 +146,9 @@ public class Zombrain : HurtBox, ITick
         staggerDecayTimer = 0f;
         appliedStaggerBonus = 0f;
 
+        appliedDarkBonus = 0f;
+        darkCheckAt = 0f;
+
         if (dm != null) dm.HandleSpawn(package);
         if (ce == null && gameObject.TryGetComponent(out CorpseEmitter cet))
         {
@@ -175,14 +179,14 @@ public class Zombrain : HurtBox, ITick
 
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetFloat(0, 250 * diffScale);
-        lastHPP = 0.15f * diffScale;
+        lastHPBonus = RNG.GetFloat(0, 300 * diffScale);
+        lastHPP = 0.25f * diffScale;
 
-        lastATKBonus = RNG.GetFloat(0, 5 * diffScale);
-        lastATKK = 0.075f * diffScale;
+        lastATKBonus = RNG.GetFloat(0, 7.5f * diffScale);
+        lastATKK = 0.125f * diffScale;
 
         lastDEFBonus = RNG.GetFloat(0, 50 * diffScale);
-        lastSPEEDBonus = RNG.GetFloat(0, 2 + diff);
+        lastSPEEDBonus = RNG.GetFloat(0, 1 + diff);
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
 
         lastDR = 0f; // normal zombie has no damage reduction
@@ -206,17 +210,17 @@ public class Zombrain : HurtBox, ITick
 
         if (IsBoss)
         {
-            float bossMul = RNG.GetFloat(1f, 1f + Mathf.Min(4f, diffScale));
+            float bossMul = RNG.GetFloat(1f, 1f + diffScale);
             lastHPBonus *= bossMul;
             lastHPP *= bossMul;
 
-            // Always between 10% and 40% damage reduction
-            lastDR = Mathf.Lerp(0.1f, 0.4f, RNG.GetPercent());
+            // Always between 10% and 80% damage reduction
+            lastDR = Mathf.Lerp(0.1f, 0.8f, RNG.GetPercent());
         }
 
         // Hard caps applied LAST so alpha/boss multipliers can't bypass them
         lastDEFBonus = Mathf.Min(1750f, lastDEFBonus);
-        lastSPEEDBonus = Mathf.Min(8f, lastSPEEDBonus);
+        lastSPEEDBonus = Mathf.Min(15f, lastSPEEDBonus);
         lastAPBonus = Mathf.Clamp01(lastAPBonus);
     }
     protected virtual void ApplyBonus()
@@ -252,6 +256,11 @@ public class Zombrain : HurtBox, ITick
         {
             attribute.SPEED_Ampl.FlatBonus -= appliedChaseBonus;
             appliedChaseBonus = 0f;
+        }
+        if (appliedDarkBonus != 0f)
+        {
+            attribute.SPEED_Ampl.TotalBonus -= appliedDarkBonus;
+            appliedDarkBonus = 0f;
         }
     }
 
@@ -508,6 +517,34 @@ public class Zombrain : HurtBox, ITick
     }
     #endregion
 
+    #region Darkness Boost
+    [Header("Darkness Boost")]
+    [Tooltip("Speed bonus while it is not bright (0.25 = 25% faster).")]
+    [SerializeField] protected float darkSpeedBonus = 0.25f;
+    [Tooltip("Below this WeatherManager.Brightness the zombie counts as 'in the dark'.")]
+    [SerializeField, Range(0f, 1f)] protected float darkBrightnessThreshold = 0.5f;
+
+    private float appliedDarkBonus;
+    private float darkCheckAt;
+
+    private void UpdateDarkBoost()
+    {
+        if (attribute == null || _now < darkCheckAt) return;
+        darkCheckAt = _now + RNG.GetFloat(0.4f, 0.6f); // cheap, and zombies don't all update on the same frame
+
+        WeatherManager wm = WeatherManager.instance;
+
+        // Small hysteresis, so it doesn't flicker on and off right at the threshold.
+        float limit = darkBrightnessThreshold + (appliedDarkBonus != 0f ? 0.05f : 0f);
+        float desired = (wm != null && wm.Brightness < limit) ? darkSpeedBonus : 0f;
+
+        if (Mathf.Approximately(desired, appliedDarkBonus)) return;
+
+        attribute.SPEED_Ampl.TotalBonus += desired - appliedDarkBonus;
+        appliedDarkBonus = desired;
+    }
+    #endregion
+
     #region Sense
     [Header("Prey Search")]
     [Tooltip("Radius used to look for friendlies (NPCs, player...) with physics.")]
@@ -529,7 +566,8 @@ public class Zombrain : HurtBox, ITick
         // Drop dead / destroyed / pooled-away targets immediately
         if (Target != null && !Target.gameObject.activeInHierarchy)
             ClearTarget();
-        if (targetNpc != null && (!targetNpc.IsActive || targetNpc.attribute == null || targetNpc.attribute.IsDead || targetNpc.attribute.IsUntargetable))
+        if (targetNpc != null && (!targetNpc.IsActive || targetNpc.attribute == null || targetNpc.attribute.IsDead
+    || targetNpc.attribute.IsUntargetable || targetNpc is IZombieIgnored))
             ClearTarget();
 
         if (_now < findPreyInterval) return;
@@ -617,10 +655,13 @@ public class Zombrain : HurtBox, ITick
 
             if (!col.TryGetComponent(out HurtBox hurtBox)) continue;
 
+            if (hurtBox is IZombieIgnored) continue;
+            if (col.TryGetComponent(out IZombieIgnored _)) continue;
+
             UnitPackage pkg = hurtBox.Access();
             if (pkg?.attribute == null) continue;
             if (pkg.attribute.tag != UnitTag.Friendly) continue;
-            if (pkg.attribute.IsDead) continue;
+            if (pkg.attribute.IsDead || pkg.attribute.IsUntargetable) continue;
 
             float sqr = ((Vector2)col.transform.position - pos).sqrMagnitude;
             if (sqr < bestSqr)

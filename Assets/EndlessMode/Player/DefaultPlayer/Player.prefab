@@ -295,7 +295,7 @@ GameObject:
   - component: {fileID: 7244348577406268404}
   - component: {fileID: 2042474348528131717}
   - component: {fileID: 967398478182381395}
-  - component: {fileID: 2440875546067092243}
+  - component: {fileID: 4774789475590613807}
   m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
@@ -426,14 +426,14 @@ MonoBehaviour:
   sniperShootSound: {fileID: 8300000, guid: 90037283433a56b419bf817b11b80870, type: 3}
   rpgFireRate: 40
   rpgSpread: 0.1
-  rpgDamageBonus: 15
+  rpgDamageBonus: 10
   rpgRangeBonus: 0.1
   rpgShake: 2
   rpgBlastRadius: 15
   rpgBlastMinDamageMul: 0.5
   rpgBulletPrefab: {fileID: 8655944676498777511, guid: 2fde76b548511214e815da01c9895d35, type: 3}
   rpgShootSound: {fileID: 8300000, guid: 47b3cf77617047847b029f8b5b3eeba0, type: 3}
---- !u!114 &2440875546067092243
+--- !u!114 &4774789475590613807
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -442,7 +442,44 @@ MonoBehaviour:
   m_GameObject: {fileID: 9179845207231992246}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 08cb54f452d34e045b7b90989ec19e70, type: 3}
+  m_Script: {fileID: 11500000, guid: 073797afb82c5a1438f328866b10b3f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  anim: {fileID: 7244348577406268404}
+  m_ComponentVersion: 1
+  m_LightType: 3
+  m_BlendStyleIndex: 0
+  m_FalloffIntensity: 0.5
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Intensity: 0.5
+  m_LightVolumeIntensity: 1
+  m_LightVolumeIntensityEnabled: 0
+  m_ApplyToSortingLayers: bdd754e67d7c3f3c
+  m_LightCookieSprite: {fileID: 0}
+  m_DeprecatedPointLightCookieSprite: {fileID: 0}
+  m_LightOrder: 1
+  m_AlphaBlendOnOverlap: 0
+  m_OverlapOperation: 0
+  m_NormalMapDistance: 3
+  m_NormalMapQuality: 0
+  m_UseNormalMap: 0
+  m_ShadowIntensityEnabled: 0
+  m_ShadowIntensity: 0.75
+  m_ShadowVolumeIntensityEnabled: 0
+  m_ShadowVolumeIntensity: 0.75
+  m_LocalBounds:
+    m_Center: {x: 0, y: -0.00000011920929, z: 0}
+    m_Extent: {x: 0.9985302, y: 0.99853027, z: 0}
+  m_PointLightInnerAngle: 360
+  m_PointLightOuterAngle: 360
+  m_PointLightInnerRadius: 1
+  m_PointLightOuterRadius: 2
+  m_ShapeLightParametricSides: 5
+  m_ShapeLightParametricAngleOffset: 0
+  m_ShapeLightParametricRadius: 1
+  m_ShapeLightFalloffSize: 0.5
+  m_ShapeLightFalloffOffset: {x: 0, y: 0}
+  m_ShapePath:
+  - {x: -0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: -0.5, z: 0}
+  - {x: 0.5, y: 0.5, z: 0}
+  - {x: -0.5, y: 0.5, z: 0}

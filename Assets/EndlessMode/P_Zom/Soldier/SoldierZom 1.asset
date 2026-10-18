@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: SoldierZom 1
   m_EditorClassIdentifier: 
   HP_Base: 100
-  ATK_Base: 5
+  ATK_Base: 10
   SPEED_Base: 10
   DEF_Base: 100
-  ASPD_Base: 0.75
-  SIGHT_Base: 70
+  ASPD_Base: 1
+  SIGHT_Base: 80

@@ -6,6 +6,8 @@ using UnityEngine;
 /// target's POSITION (a snapshot, it does not follow the target afterwards) and
 /// flies to that point. Explodes on arrival, or when its lifetime ends, and deals
 /// circle AoE damage through Attack.ShootCircle.
+/// If the target dies before the lock, it locks onto the target's LAST KNOWN position.
+/// If it passes the locked point without exploding, it explodes (no orbiting).
 /// Launch with Missile.Launch(...). Sprite should point RIGHT (+X); use
 /// spriteAngleOffset if it doesn't.
 /// </summary>
@@ -36,6 +38,12 @@ public class Missile : MonoBehaviour, ITick
     [Tooltip("A new random heading is picked every random time between X and Y seconds.")]
     [SerializeField] private Vector2 wanderRetargetInterval = new Vector2(0.15f, 0.35f);
 
+    [Header("Anti-Orbit")]
+    [Tooltip("After locking, if the missile has not exploded within this many seconds, it explodes anyway.")]
+    [SerializeField] private float maxAttackTime = 3f;
+    [Tooltip("If it passes the locked point (moving away) within this distance, it explodes.")]
+    [SerializeField] private float passedPointRadius = 3f;
+
     [Header("Explosion")]
     [SerializeField] private GameObject[] explosionEffect;
     [SerializeField] private AudioClip explosionSound;
@@ -56,9 +64,12 @@ public class Missile : MonoBehaviour, ITick
     private float wanderAngle;       // heading (degrees) the missile is steering toward while wandering
     private float nextWanderPick;
     private bool locked;
+    private float lockedAt;
     private Vector2 lockedPos;
+    private Vector2 lastTargetPos;   // last known target position, kept while the target is alive
+    private bool hasLastTargetPos;
 
-    private void Awake() => trail = GetComponentInChildren<TrailRenderer>();
+    private void Awake() => trail = GetComponent<TrailRenderer>();
 
     private void OnEnable()
     {
@@ -102,7 +113,12 @@ public class Missile : MonoBehaviour, ITick
 
         // Reset wander / lock state (pooled object, so nothing may carry over)
         locked = false;
+        lockedAt = 0f;
         lockedPos = Vector2.zero;
+        hasLastTargetPos = false;
+        lastTargetPos = Vector2.zero;
+        CacheTargetPos();
+
         wanderDuration = RNG.GetFloat(Mathf.Min(wanderTimeMin, wanderTimeMax),
                                       Mathf.Max(wanderTimeMin, wanderTimeMax));
         wanderAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
@@ -120,18 +136,36 @@ public class Missile : MonoBehaviour, ITick
         age += dt;
         Vector2 pos = transform.position;
 
-        // Wander time is over: snapshot the target position once.
-        // If there is no valid target yet, keep wandering and retry next tick.
+        // Remember where the target is while it is still alive.
+        if (!locked) CacheTargetPos();
+
+        // Wander time is over: lock a position (live target, or its last known position).
         if (!locked && age >= wanderDuration)
-            TryLockOn();
+            LockOn(pos);
 
         float cur = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
         if (locked)
         {
-            // Attack phase: fly to the fixed point
             Vector2 to = lockedPos - pos;
-            if (to.sqrMagnitude <= proximity * proximity)
+            float sqr = to.sqrMagnitude;
+
+            // Arrived.
+            if (sqr <= proximity * proximity)
+            {
+                Explode();
+                return;
+            }
+
+            // Passed the point and moving away (would start to orbit): explode now.
+            if (sqr <= passedPointRadius * passedPointRadius && Vector2.Dot(dir, to) <= 0f)
+            {
+                Explode();
+                return;
+            }
+
+            // Took too long to reach it: explode instead of circling.
+            if (age - lockedAt >= maxAttackTime)
             {
                 Explode();
                 return;
@@ -164,13 +198,31 @@ public class Missile : MonoBehaviour, ITick
         if (age >= lifetime) Explode();
     }
 
-    private bool TryLockOn()
-    {
-        if (target == null || !target.gameObject.activeInHierarchy) return false;
+    private bool TargetAlive()
+        => target != null && target.gameObject.activeInHierarchy;
 
-        lockedPos = target.position; // Vector2 snapshot, the missile never follows the target after this
+    private void CacheTargetPos()
+    {
+        if (!TargetAlive()) return;
+        lastTargetPos = target.position;
+        hasLastTargetPos = true;
+    }
+
+    /// <summary>
+    /// Always locks. Live target -> its position. Dead target -> its last known position.
+    /// No position known at all -> a point straight ahead, so it still ends in an explosion.
+    /// </summary>
+    private void LockOn(Vector2 pos)
+    {
+        if (TargetAlive())
+            lockedPos = target.position;
+        else if (hasLastTargetPos)
+            lockedPos = lastTargetPos;
+        else
+            lockedPos = pos + dir * (speed * 0.5f);
+
         locked = true;
-        return true;
+        lockedAt = age;
     }
 
     private void ApplyRotation()
@@ -181,6 +233,7 @@ public class Missile : MonoBehaviour, ITick
 
     private void Explode()
     {
+        if (!active) return;
         active = false;
         Vector2 pos = transform.position;
 
@@ -188,10 +241,11 @@ public class Missile : MonoBehaviour, ITick
         for (int i = 0; i < hits.Length; i++)
             DamagePopupManager.Show(hits[i].HitPoint, hits[i].Damage, hits[i].IsCrit);
 
-        if (explosionEffect.Length > 0 && PoolingSystem.instance != null)
+        if (explosionEffect != null && PoolingSystem.instance != null)
         {
-            for(int i = 0; i <= explosionEffect.Length-1; i++)
+            for (int i = 0; i < explosionEffect.Length; i++)
             {
+                if (explosionEffect[i] == null) continue;
                 GameObject fx = PoolingSystem.instance.GetFromPool(explosionEffect[i]);
                 if (fx != null) fx.transform.position = pos;
             }

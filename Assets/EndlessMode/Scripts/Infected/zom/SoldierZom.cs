@@ -21,7 +21,13 @@ public class SoldierZom : Zombrain
     [SerializeField] private float aimBreakMultiplier = 1.3f;
     [SerializeField] private Vector2 aimDuration = new Vector2(2f, 4f);
     [Tooltip("NPCs get warned this many seconds before the shot so they can dodge.")]
-    [SerializeField] private float npcWarnTime = 0.3f;
+    [SerializeField] private float npcWarnTime = 0.3f; [Header("Soldier - Muzzle Flash")]
+    [Tooltip("Where the flash appears. Falls back to the zombie's position.")]
+    [SerializeField] private Transform muzzle;
+    [Tooltip("Pooled effect prefab spawned on every shot (same kind you use in Rifle_Zom / NPCs).")]
+    [SerializeField] private GameObject muzzleFlash;
+    [Tooltip("Optional: start the shot line at the muzzle instead of the zombie's centre.")]
+    [SerializeField] private bool shotLineFromMuzzle = true;
     private float shootRange => attribute.SIGHT_Current;
 
     [Header("Soldier - Too Close (Retreat)")]
@@ -449,6 +455,7 @@ public class SoldierZom : Zombrain
         }
 
         PlayAttackSound();
+        SpawnMuzzleFlash(MuzzlePos, dir);
 
         AttackResult rs = default;
         if (len > 0.05f)
@@ -463,7 +470,7 @@ public class SoldierZom : Zombrain
         else if (wallHit) end = wallPoint;
         else end = from + dir * Mathf.Min(len, dist + missOvershoot);
 
-        DrawShotLine(from, end);
+        DrawShotLine(shotLineFromMuzzle ? MuzzlePos : from, end);
         shotLineHideAt = now + shotLineDuration;
 
         aimLine.enabled = false;
@@ -673,6 +680,18 @@ public class SoldierZom : Zombrain
         shotLine.SetPosition(1, new Vector3(to.x, to.y, 0f));
         shotLine.startColor = shotLine.endColor = shotColor;
         shotLine.enabled = true;
+    }
+    private Vector2 MuzzlePos => muzzle != null ? (Vector2)muzzle.position : (Vector2)_t.position;
+
+    private void SpawnMuzzleFlash(Vector2 pos, Vector2 dir)
+    {
+        if (muzzleFlash == null || PoolingSystem.instance == null) return;
+
+        GameObject o = PoolingSystem.instance.GetFromPool(muzzleFlash);
+        if (o == null) return;
+
+        o.transform.position = pos;
+        o.transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg);
     }
     #endregion
 

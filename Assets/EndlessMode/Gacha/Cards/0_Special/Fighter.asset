@@ -15,8 +15,8 @@ MonoBehaviour:
   Icon: {fileID: 21300000, guid: 33aaf7af59a5d6241839c2f1085da7ea, type: 3}
   Name: Airstrike
   Description: Every 20s, Fighter bombs the map
-  Category: 0
-  Rarity: 0.1
+  Category: 2
+  Rarity: 0.3
   UniquePerRun: 1
   npc: {fileID: 11400000, guid: 8d2b73a9b3812174baa531b27e811ef3, type: 2}
   count: 1

@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c39ff060531d69640a818fa6b2cce8ca, type: 3}
+  m_Name: RifleZom
+  m_EditorClassIdentifier: 
+  packName: RifleZOm
+  prefab: {fileID: 2886848218394724193, guid: 213880045bbe74243b4e156183aef48c, type: 3}
+  attribute:
+    template: {fileID: 11400000, guid: 01fde3e4a30016b43800f2da827198f4, type: 2}
+    tag: 2
+    HP_Current: 0
+    IsInvincible: 0
+    IsUntargetable: 0
+    CritRate: 0.1
+    CritDamage: 1.5
+    HP_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ATK_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SPEED_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DEF_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ASPD_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    SIGHT_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    ArmourPenetration_Ampl:
+      FlatBonus: 0.15
+      PercBonus: 1
+      TotalBonus: 1
+    DamageReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    CooldownReduction_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    DealtDamage_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+    Lifesteal_Ampl:
+      FlatBonus: 0
+      PercBonus: 1
+      TotalBonus: 1
+  Media: {fileID: 11400000, guid: 66929ed888f49cf49a842ce4635aa542, type: 2}
+  CurrencyAtKill: 100
+  EXPAtKill: 200
+  AppearFromWave: 17
+  CountPerSpawner: 2
+  _rateToAppear: 0.75
+  _biteAccuracy: 0.5

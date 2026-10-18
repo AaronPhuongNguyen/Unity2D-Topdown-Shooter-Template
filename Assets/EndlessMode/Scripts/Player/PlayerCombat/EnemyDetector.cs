@@ -35,9 +35,21 @@ public class Detector : MonoBehaviour, ITick
 
         PerformSearch(delta);
     }
+    private void OnDisable()
+    {
+        RemoveSightPenalty();
+    }
     #endregion
 
     #region Functions
+    [Header("Weather Sight Penalty")]
+    [Tooltip("Added to the player's SIGHT TotalBonus while it rains, is night, or lightning flashes. -0.5 = 50% less sight.")]
+    [SerializeField] private float weatherSightPenalty = -0.5f;
+
+    private WeatherManager wm => WeatherManager.instance;   // property, so it is never stale/null
+    private float appliedSightPenalty;                      // exactly what we added to the attribute
+    private UnitAttribute penaltyOwner;                     // the attribute we added it to
+
     private void PerformSearch(float delta)
     {
         if (searchInterval > 0f)
@@ -49,6 +61,38 @@ public class Detector : MonoBehaviour, ITick
         SearchTarget();
         pm.Target = FindNearestTarget();
         searchTimer = searchInterval;
+
+        UpdateSightPenalty();
+    }
+
+    private void UpdateSightPenalty()
+    {
+        UnitAttribute attr = pm != null ? pm.attribute : null;
+
+        // The player was recreated (new game): the old clone is gone, nothing to subtract from the new one.
+        if (attr != penaltyOwner)
+        {
+            penaltyOwner = attr;
+            appliedSightPenalty = 0f;
+        }
+        if (attr == null) return;
+
+        bool bad = wm != null && (wm.IsRaining || wm.IsNight || wm.IsLightningFlashing);
+        float desired = bad ? weatherSightPenalty : 0f;
+
+        if (Mathf.Approximately(desired, appliedSightPenalty)) return;
+
+        attr.SIGHT_Ampl.TotalBonus += desired - appliedSightPenalty;
+        appliedSightPenalty = desired;
+    }
+
+    private void RemoveSightPenalty()
+    {
+        if (penaltyOwner != null && appliedSightPenalty != 0f)
+            penaltyOwner.SIGHT_Ampl.TotalBonus -= appliedSightPenalty;
+
+        appliedSightPenalty = 0f;
+        penaltyOwner = null;
     }
 
     private void SearchTarget()
