@@ -58,9 +58,11 @@ public class BillyBrain : NpcBrain
     [SerializeField] private float heavyCameraShake = 2f;
     [SerializeField] private Bullet heavyBullet;
     [SerializeField] private float heavyBulletSpeed = 160f;
+    [Tooltip("Heavy shot range = Billy's SIGHT x this.")]
+    [SerializeField, Min(0.1f)] private float heavyRangeMultiplier = 2f;
     [SerializeField] private AudioClip chargeSound;
     [SerializeField] private AudioClip heavySound;
-    [SerializeField] private GameObject chargeEffect;
+    [SerializeField] private GameObject[] chargeEffects;
 
     [Header("Ultimate - Spin Barrage")]
     [SerializeField] private float ultCooldown = 20f;
@@ -454,7 +456,12 @@ public class BillyBrain : NpcBrain
         CanMove = false;
 
         PlaySound(chargeSound);
-        SpawnFx(chargeEffect, _t.position, chargeDir);
+
+        if (chargeEffects.Length <= 0) return;
+        for (int i = 0; i <= chargeEffects.Length-1; i++)
+        {
+            SpawnFx(chargeEffects[i], _t.position, chargeDir);
+        }
     }
 
     private void TickCharge(float dt)
@@ -475,22 +482,37 @@ public class BillyBrain : NpcBrain
 
     private void FireHeavy()
     {
-        float range = attribute.SIGHT_Current;
+        float range = attribute.SIGHT_Current * heavyRangeMultiplier;
         float damage = heavyFlatDamage + heavyAtkPercent * attribute.ATK_Current;
 
-        // Piercing shot: hits every enemy on the line.
-        AttackResult[] hits = Attack.ShootPierce(gameObject, damage, attribute, range, chargeDir, pm.EnemyMask);
+        // Piercing: hits EVERY enemy on the line (maxTargets 0 = unlimited, falloff 1 = no damage loss).
+        AttackResult[] hits = Attack.ShootPierce(gameObject, damage, attribute, range, chargeDir,
+            pm.EnemyMask, 0, 1f);
 
+        for (int i = 0; i < hits.Length; i++)
+            ShowHit(hits[i]);
+
+        // The bullet flies the FULL range, since it does not stop at the first enemy.
         Vector2 from = MuzzleR.position;
         Vector2 end = (Vector2)_t.position + chargeDir * range;
-        for (int i = 0; i < hits.Length; i++)
+
+        // Make sure the visual lives long enough to cover the longer distance.
+        float travel = Vector2.Distance(from, end) / Mathf.Max(1f, heavyBulletSpeed);
+        float life = Mathf.Max(bulletLifetime, travel + 0.1f);
+
+        Bullet prefab = heavyBullet != null ? heavyBullet : bulletPrefab;
+        if (prefab != null && PoolingSystem.instance != null)
         {
-            ShowHit(hits[i]);
-            if (i == hits.Length - 1) end = hits[i].HitPoint;
+            GameObject o = PoolingSystem.instance.GetFromPool(prefab.gameObject);
+            if (o != null)
+            {
+                o.transform.position = from;
+                o.transform.rotation = Quaternion.Euler(0f, 0f, DirAngle(chargeDir));
+                if (o.TryGetComponent(out Bullet b))
+                    b.Launch(end, heavyBulletSpeed, life, false); // false: do not stop at an impact
+            }
         }
 
-        SpawnBullet(heavyBullet != null ? heavyBullet : bulletPrefab, from, chargeDir, end,
-            heavyBulletSpeed, hits.Length > 0);
         SpawnFx(shootEffect, from, chargeDir);
         PlaySound(heavySound);
 

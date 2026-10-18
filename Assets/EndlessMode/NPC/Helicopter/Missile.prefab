@@ -142,7 +142,10 @@ MonoBehaviour:
   wanderTurnSpeed: 270
   wanderAngleRange: 120
   wanderRetargetInterval: {x: 0.15, y: 0.35}
-  explosionEffect: {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
+  explosionEffect:
+  - {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
+  - {fileID: 5850672283217775981, guid: 6b225c82372c7804a81515368cb82533, type: 3}
+  - {fileID: 5850672283217775981, guid: fb5f6a54dfd98cf40afe9ac3d6210c47, type: 3}
   explosionSound: {fileID: 0}
   cameraShake: 1.5
 --- !u!96 &3101759976559064296

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Helicopter
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 6652f217d70fd864a99c4432ff163c8e, type: 3}
-  Name: Air force
-  Description: Has a Helicopter assisting you
+  Name: Helicopter
+  Description: Helicopter help you to combat
   Category: 0
   Rarity: 0.3
   UniquePerRun: 0

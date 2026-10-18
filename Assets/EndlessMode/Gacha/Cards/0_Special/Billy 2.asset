@@ -16,7 +16,7 @@ MonoBehaviour:
   Name: Billy
   Description: Billy does not like playing with a gay person, but you're exceptional.
   Category: 0
-  Rarity: 1
+  Rarity: 0.3
   UniquePerRun: 0
   npc: {fileID: 11400000, guid: 21b53163ee6d6bb4d8333b7dd7a76fa3, type: 2}
   count: 1

@@ -47,7 +47,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fallTime: 0.6
   startScaleMultiplier: 1.5
-  explosionEffect: {fileID: 310520452785643933, guid: 3085ba41bd8961b478572be0c7313fd2, type: 3}
+  explosionEffect:
+  - {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
+  - {fileID: 5850672283217775981, guid: 6b225c82372c7804a81515368cb82533, type: 3}
+  - {fileID: 5850672283217775981, guid: fb5f6a54dfd98cf40afe9ac3d6210c47, type: 3}
   explosionSound: {fileID: 8300000, guid: ecf3356e965e00a40b33503269981fda, type: 3}
   cameraShake: 1.5
 --- !u!1 &8454258660057197598

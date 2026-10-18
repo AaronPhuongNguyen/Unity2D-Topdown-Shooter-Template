@@ -27,7 +27,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1866270349689522543}
@@ -137,14 +137,16 @@ MonoBehaviour:
   lifetime: 6
   proximity: 0.8
   spriteAngleOffset: 0
-  wanderTimeMin: 0.5
-  wanderTimeMax: 1.5
+  wanderTimeMin: 0.1
+  wanderTimeMax: 0.5
   wanderTurnSpeed: 270
   wanderAngleRange: 120
   wanderRetargetInterval: {x: 0.15, y: 0.35}
-  explosionEffect: {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
+  explosionEffect:
+  - {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
+  - {fileID: 5850672283217775981, guid: 6b225c82372c7804a81515368cb82533, type: 3}
   explosionSound: {fileID: 8300000, guid: ecf3356e965e00a40b33503269981fda, type: 3}
-  cameraShake: 1.5
+  cameraShake: 1
 --- !u!96 &3101759976559064296
 TrailRenderer:
   serializedVersion: 3

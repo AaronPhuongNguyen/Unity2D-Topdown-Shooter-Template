@@ -16,7 +16,7 @@ public class Bomb : MonoBehaviour, ITick
     [SerializeField] private float startScaleMultiplier = 2.5f;
 
     [Header("Explosion")]
-    [SerializeField] private GameObject explosionEffect;
+    [SerializeField] private GameObject[] explosionEffect;
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private float cameraShake = 0.8f;
 
@@ -113,9 +113,9 @@ public class Bomb : MonoBehaviour, ITick
         for (int i = 0; i < hits.Length; i++)
             DamagePopupManager.Show(hits[i].HitPoint, hits[i].Damage, hits[i].IsCrit);
 
-        if (explosionEffect != null && PoolingSystem.instance != null)
+        for (int i = 0; i <= explosionEffect.Length - 1; i++)
         {
-            GameObject fx = PoolingSystem.instance.GetFromPool(explosionEffect);
+            GameObject fx = PoolingSystem.instance.GetFromPool(explosionEffect[i]);
             if (fx != null) fx.transform.position = pos;
         }
 

@@ -37,7 +37,7 @@ public class Missile : MonoBehaviour, ITick
     [SerializeField] private Vector2 wanderRetargetInterval = new Vector2(0.15f, 0.35f);
 
     [Header("Explosion")]
-    [SerializeField] private GameObject explosionEffect;
+    [SerializeField] private GameObject[] explosionEffect;
     [SerializeField] private AudioClip explosionSound;
     [SerializeField] private float cameraShake = 1.5f;
 
@@ -188,10 +188,13 @@ public class Missile : MonoBehaviour, ITick
         for (int i = 0; i < hits.Length; i++)
             DamagePopupManager.Show(hits[i].HitPoint, hits[i].Damage, hits[i].IsCrit);
 
-        if (explosionEffect != null && PoolingSystem.instance != null)
+        if (explosionEffect.Length > 0 && PoolingSystem.instance != null)
         {
-            GameObject fx = PoolingSystem.instance.GetFromPool(explosionEffect);
-            if (fx != null) fx.transform.position = pos;
+            for(int i = 0; i <= explosionEffect.Length-1; i++)
+            {
+                GameObject fx = PoolingSystem.instance.GetFromPool(explosionEffect[i]);
+                if (fx != null) fx.transform.position = pos;
+            }
         }
 
         if (explosionSound != null && AudioManager.instance != null)
