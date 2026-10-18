@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 37dfc42e9fbd733499f079acc91f5f87, type: 3}
   Name: Holy Flesh
-  Description: Every 15 seconds, increase 5% Max HP and ATK
+  Description: Every 15 seconds, increase 8% Max HP and ATK
   Category: 2
   Rarity: 0.1
   UniquePerRun: 1
   EverySeconds: 15
-  Percent: 0.05
+  Percent: 0.08
   MaxStacks: 0

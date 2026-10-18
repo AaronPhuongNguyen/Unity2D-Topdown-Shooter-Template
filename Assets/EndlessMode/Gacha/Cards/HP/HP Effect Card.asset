@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: de4d8250e0eb0574aae3bc8818d39679, type: 3}
   Name: HP
-  Description: +30 HP
+  Description: +40 HP
   Category: 0
-  Rarity: 1
-  FlatIncrease: 30
+  Rarity: 0.8
+  UniquePerRun: 0
+  FlatIncrease: 40
   PercentIncrease: 0
   TotalIncrease: 0

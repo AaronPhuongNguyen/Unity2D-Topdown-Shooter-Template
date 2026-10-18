@@ -1840,7 +1840,7 @@ MonoBehaviour:
   popupPrefab: {fileID: 4156791558043456627, guid: 89271fa3f1a563e44a8f1a71af0636a1, type: 3}
   worldCamera: {fileID: 519420031}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
-  critColor: {r: 1, g: 0.60784316, b: 0, a: 1}
+  critColor: {r: 1, g: 0.7254902, b: 0, a: 1}
   healColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   prewarm: 32
   maxActive: 80
@@ -4245,8 +4245,8 @@ MonoBehaviour:
   package: {fileID: 11400000, guid: 554ff44035f258e448c985470afd086d, type: 2}
   Energy:
     Max: 10
-    RegenPerSecond: 1
-    RegenDelay: 0
+    RegenPerSecond: 2
+    RegenDelay: 1
     Current: 0
   Level:
     attribute:
@@ -4302,17 +4302,17 @@ MonoBehaviour:
         PercBonus: 1
         TotalBonus: 1
     SBPL:
-      Growth_HP: 10
+      Growth_HP: 25
       Growth_ATK: 1
-      Growth_DEF: 10
-      Growth_SPEED: 0.1
-      Growth_SIGHT: 0.1
-      Growth_CDR: 0.01
+      Growth_DEF: 20
+      Growth_SPEED: 0.2
+      Growth_SIGHT: 0.2
+      Growth_CDR: 0.02
       Growth_HP_Pct: 0.01
       Growth_ATK_Pct: 0.005
-      MilestoneEvery: 10
-      Milestone_HP_Flat: 25
-      Milestone_ATK_Flat: 2
+      MilestoneEvery: 5
+      Milestone_HP_Flat: 100
+      Milestone_ATK_Flat: 10
       Max_DEF: 1000
       Max_CDR: 0.5
       Max_SPEED: 8
@@ -4320,8 +4320,8 @@ MonoBehaviour:
     Level_Current: 1
     EXP_Current: 0
     EXP_Base: 100
-    EXP_Growth: 50
-    EXP_Exponent: 1.5
+    EXP_Growth: 40
+    EXP_Exponent: 1.4
   EnemyMask:
     serializedVersion: 2
     m_Bits: 64
@@ -4341,7 +4341,7 @@ MonoBehaviour:
   rot: {fileID: 0}
   mot: {fileID: 0}
   combatDuration: 0
-  StaggerChance: 0.25
+  StaggerChance: 0.2
   bleedChance: 0.75
 --- !u!1 &432608217
 GameObject:
@@ -10321,8 +10321,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossWaveInterval: 8
-  bossWaveDuration: 300
-  spawnSuppressionDuration: 300
+  bossWaveDuration: 240
+  spawnSuppressionDuration: 240
 --- !u!1 &1113999071
 GameObject:
   m_ObjectHideFlags: 0

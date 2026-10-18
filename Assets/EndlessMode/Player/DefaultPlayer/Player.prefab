@@ -397,7 +397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5465436ccab470c4c97209292b2d17fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 3
+  Type: 0
   muzzle: {fileID: 3401477344332366387}
   ShootEffect: {fileID: 1175602125132769390, guid: 948895f34eea5ff4baa907b091b0317c, type: 3}
   TargetScale: {x: 0.4, y: 0.4, z: 0}

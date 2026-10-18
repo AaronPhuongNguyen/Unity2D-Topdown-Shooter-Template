@@ -44,8 +44,8 @@ public class GachaCardManager : MonoBehaviour, ITick
     // Reward cycle, keyed to the level the player JUST reached.
     // Highest tier wins on overlap.
     private const int BasicEvery = 1;
-    private const int NormalEvery = 5;
-    private const int StrongEvery = 15;
+    private const int NormalEvery = 3;
+    private const int StrongEvery = 9;
 
     private readonly Queue<Category> _pending = new Queue<Category>(8);
     private readonly List<CardEffect> _drawn = new List<CardEffect>(3);

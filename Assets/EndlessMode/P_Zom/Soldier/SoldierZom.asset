@@ -48,7 +48,7 @@ MonoBehaviour:
       PercBonus: 1
       TotalBonus: 1
     ArmourPenetration_Ampl:
-      FlatBonus: 0.6
+      FlatBonus: 0.4
       PercBonus: 1
       TotalBonus: 1
     DamageReduction_Ampl:

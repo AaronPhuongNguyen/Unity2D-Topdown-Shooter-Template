@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d178bf8db034ef43a5c1a8c8cd145a4, type: 3}
   m_Name: SoldierZom 1
   m_EditorClassIdentifier: 
-  HP_Base: 200
+  HP_Base: 100
   ATK_Base: 5
-  SPEED_Base: 5
+  SPEED_Base: 10
   DEF_Base: 100
   ASPD_Base: 0.75
-  SIGHT_Base: 100
+  SIGHT_Base: 70

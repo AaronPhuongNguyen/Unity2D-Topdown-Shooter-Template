@@ -130,17 +130,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ae21d2db00d0aa4db1a2b90827092d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 120
-  turnSpeed: 300
-  homingDelay: 0
-  startSpeedRatio: 0.5
+  speed: 60
+  turnSpeed: 540
+  startSpeedRatio: 0.4
   accelTime: 0.3
-  lifetime: 1
-  proximity: 3
+  lifetime: 6
+  proximity: 0.8
   spriteAngleOffset: 0
-  explosionEffect: {fileID: 310520452785643933, guid: 3085ba41bd8961b478572be0c7313fd2, type: 3}
+  wanderTimeMin: 0.5
+  wanderTimeMax: 1.5
+  wanderTurnSpeed: 270
+  wanderAngleRange: 120
+  wanderRetargetInterval: {x: 0.15, y: 0.35}
+  explosionEffect: {fileID: 5850672283217775981, guid: 47fa6db8240344046a0d236f9790a571, type: 3}
   explosionSound: {fileID: 8300000, guid: ecf3356e965e00a40b33503269981fda, type: 3}
-  cameraShake: 0
+  cameraShake: 1.5
 --- !u!96 &3101759976559064296
 TrailRenderer:
   serializedVersion: 3

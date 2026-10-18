@@ -108,8 +108,8 @@ MonoBehaviour:
   maxMagazine: 60
   ammoPerShot: 1
   reloadTime: 2
-  autoReload: 1
-  tacticalReload: 1
+  autoReload: 0
+  tacticalReload: 0
   tacticalReloadThreshold: 0.5
   reloadSound: {fileID: 0}
   reloadEffect: {fileID: 0}
@@ -118,7 +118,7 @@ MonoBehaviour:
     RegenPerSecond: 1
     RegenDelay: 0
     Current: 0
-  canDodge: 1
+  canDodge: 0
   dodgeEnergyCost: 10
   dodgeCooldown: 2
   dodgeDuration: 0.25
@@ -128,9 +128,9 @@ MonoBehaviour:
   targetScanInterval: 0.2
   threatScanInterval: 0.2
   scanRadius: 14
-  huntEnabled: 1
-  huntSearchRadius: 30
-  huntLeash: 30
+  huntEnabled: 0
+  huntScanInterval: 0.5
+  huntRetargetThreshold: 0.8
   huntStopRatio: 0.8
   followStopDistance: 2.5
   safeRound: 7
@@ -167,19 +167,19 @@ MonoBehaviour:
   indicatorReturnSpeed: 1
   castCooldown: 20
   firstCastDelay: 1
-  lineLength: 200
+  lineLength: 300
   telegraphTime: 1.5
-  passSpeed: 70
+  passSpeed: 100
   bombPrefab: {fileID: 878669301167969096, guid: 6cad458e4b584144581e043dc698642b, type: 3}
-  baseBombCount: 20
-  maxBombCount: 40
-  wavesPerExtraBomb: 4
+  baseBombCount: 15
+  maxBombCount: 60
+  wavesPerExtraBomb: 5
   bombRadius: 10
-  bombMinDamageMul: 0.75
-  baseBombDamage: 1000
-  atkMultiplier: 15
-  denseMinCount: 6
-  clusterRadius: 10
+  bombMinDamageMul: 0.5
+  baseBombDamage: 750
+  atkMultiplier: 20
+  denseMinCount: 10
+  clusterRadius: 15
   maxClusterCandidates: 64
   angleSamples: 12
   snapRange: 6
@@ -190,12 +190,12 @@ MonoBehaviour:
   lineIndicatorPrefab: {fileID: 2477097422589879504, guid: c898648b9b343f940ab5345ce6b51f5e, type: 3}
   markerPrefab: {fileID: 1891359436782396052, guid: 39543025a2a5dfe4da2ecd121e28174b, type: 3}
   lineStartWidth: 2
-  lineEndWidth: 0.5
+  lineEndWidth: 0.02
   mapMargin: 10
   maxApproach: 300
   warningSound: {fileID: 8300000, guid: 8ef2d1cf5732b614b92b5070c8ccf236, type: 3}
   flybySound: {fileID: 8300000, guid: 0d54ef49eef87aa4496bea0d05f41ef4, type: 3}
-  flybyShake: 1
+  flybyShake: 1.5
 --- !u!1 &6380601283069959986
 GameObject:
   m_ObjectHideFlags: 0

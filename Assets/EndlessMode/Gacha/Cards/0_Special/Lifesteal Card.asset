@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 7f41bd1d618184b46a7ef457d3fe4f9f, type: 3}
   Name: Perfect Lifesteal
-  Description: Acquire 15% Lifesteal, each dealing damage attempt recovers 0.1% Max
+  Description: Acquire 15% Lifesteal, each dealing damage attempt recovers 0.5% Max
     HP
   Category: 1
   Rarity: 0.1
   UniquePerRun: 1
   Lifesteal: 0.15
-  HealMaxHPPerHit: 0.001
+  HealMaxHPPerHit: 0.005

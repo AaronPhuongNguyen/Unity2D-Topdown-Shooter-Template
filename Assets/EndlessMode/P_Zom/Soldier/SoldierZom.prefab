@@ -105,10 +105,14 @@ MonoBehaviour:
   Direction: {x: 0, y: 0}
   CanAttack: 1
   CanMove: 1
+  IsBoss: 0
   DistanceToTarget: 0
   SpeedHelper: 0
   separationRadius: 1
   separationStrength: 1.5
+  maxStaggerStacks: 20
+  slowPerStack: 0.04
+  stackDecayInterval: 1
   hitTargetSound: {fileID: 8300000, guid: a31316f6df597414db1e6c775d9d5000, type: 3}
   hitsBeforeSound: 3
   preySearchRadius: 15
@@ -120,9 +124,9 @@ MonoBehaviour:
   npcWarnTime: 1
   minRangeFraction: 0.15
   retreatCooldown: 4
-  retreatSpeedBonus: 15
+  retreatSpeedBonus: 10
   repositionDuration: {x: 1, y: 3}
-  repositionSpeedBonus: 30
+  repositionSpeedBonus: 10
   repositionEdgeFraction: {x: 0.8, y: 0.95}
   repositionHalfAngle: 120
   arriveDistance: 2

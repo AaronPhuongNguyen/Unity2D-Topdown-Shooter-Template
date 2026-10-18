@@ -121,8 +121,9 @@ namespace Server
 
         public static int GetInt(int min, int max) => _state.NextInt(min, max);
         public static float GetFloat(float min, float max) => _state.NextFloat(min, max);
-        public static float GetPercent() => GetFloat(0, 4096f) / 4096f;
-        public static Vector2 GetVector2(float min, float max)
+        public static float GetPercent() => GetInt(0, 4097) / 4096f; // [0, 1);
+        public static Vector2 GetVector2(float min, float max) => _state.NextFloat2(min, max);
+        public static Vector2 GetUniformVector2(float min, float max)
         {
             float v = GetFloat(min, max);
             return new Vector2(v, v);

@@ -16,7 +16,7 @@ MonoBehaviour:
   Name: Attack Speed
   Description: +30% Attack Speed
   Category: 2
-  Rarity: 0.01
+  Rarity: 0.1
   UniquePerRun: 1
   FlatIncrease: 0
   PercentIncrease: 0

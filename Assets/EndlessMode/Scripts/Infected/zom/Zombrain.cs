@@ -49,7 +49,7 @@ public class Zombrain : HurtBox, ITick
     private static readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
 
     protected float lastHPBonus, lastATKBonus, lastDEFBonus, lastAPBonus, lastSPEEDBonus;
-    protected float lastHPP, lastATKK;
+    protected float lastHPP, lastATKK,lastDR;
     protected Vector3 lastScale, lastCachedScaled;
 
     private float appliedChaseBonus;
@@ -171,32 +171,53 @@ public class Zombrain : HurtBox, ITick
     protected virtual void GetBonus()
     {
         float diff = dm.CurrentDifficulty;
-
-        float diffScale = Mathf.Max(1, Mathf.Pow(diff, 1.65f));
+        float diffScale = diff * diff;
 
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetFloat(0, 150) * diffScale;
-        lastHPP = 0.24f * diffScale;
+        lastHPBonus = RNG.GetFloat(0, 250 * diffScale);
+        lastHPP = 0.15f * diffScale;
 
-        lastATKBonus = RNG.GetFloat(0, 15) * diffScale;
-        lastATKK = 0.1f * diffScale;
+        lastATKBonus = RNG.GetFloat(0, 5 * diffScale);
+        lastATKK = 0.075f * diffScale;
 
+        lastDEFBonus = RNG.GetFloat(0, 50 * diffScale);
+        lastSPEEDBonus = RNG.GetFloat(0, 2 + diff);
         lastAPBonus = RNG.GetPercent() * Mathf.Clamp01(diffScale);
-        lastDEFBonus = RNG.GetFloat(0, 300) * Mathf.Min(2, diffScale);
-        lastSPEEDBonus = RNG.GetFloat(1, 3) * Mathf.Min(1.2f, diffScale);
-        lastScale = RNG.GetVector2(0, 0.5f) * Mathf.Min(2, diffScale);
+
+        lastDR = 0f; // normal zombie has no damage reduction
+
+        // Same value on both axes -> uniform growth, no stretched sprites
+        Vector2 s2 = RNG.GetUniformVector2(0f, Mathf.Min(0.5f, diffScale));
+        lastScale = new Vector3(s2.x, s2.y, 0f);
 
         if (isAlpha)
         {
-            float alphaMul = RNG.GetFloat(0.5f, 2f) * Mathf.Min(2, diffScale);
+            float alphaMul = RNG.GetFloat(1f, 1f + Mathf.Min(1.5f, diffScale));
             lastHPBonus *= alphaMul;
+            lastHPP *= alphaMul;
             lastATKBonus *= alphaMul;
+            lastATKK *= alphaMul;
             lastDEFBonus *= alphaMul;
             lastSPEEDBonus *= alphaMul;
             lastAPBonus *= alphaMul;
             lastScale *= alphaMul;
         }
+
+        if (IsBoss)
+        {
+            float bossMul = RNG.GetFloat(1f, 1f + Mathf.Min(4f, diffScale));
+            lastHPBonus *= bossMul;
+            lastHPP *= bossMul;
+
+            // Always between 10% and 40% damage reduction
+            lastDR = Mathf.Lerp(0.1f, 0.4f, RNG.GetPercent());
+        }
+
+        // Hard caps applied LAST so alpha/boss multipliers can't bypass them
+        lastDEFBonus = Mathf.Min(1750f, lastDEFBonus);
+        lastSPEEDBonus = Mathf.Min(8f, lastSPEEDBonus);
+        lastAPBonus = Mathf.Clamp01(lastAPBonus);
     }
     protected virtual void ApplyBonus()
     {
@@ -207,6 +228,7 @@ public class Zombrain : HurtBox, ITick
         attribute.DEF_Ampl.FlatBonus += lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus += lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus += lastAPBonus;
+        attribute.DamageReduction_Ampl.FlatBonus += lastDR;
 
         lastCachedScaled = transform.localScale;
         transform.localScale += lastScale;
@@ -222,6 +244,7 @@ public class Zombrain : HurtBox, ITick
         attribute.DEF_Ampl.FlatBonus -= lastDEFBonus;
         attribute.SPEED_Ampl.FlatBonus -= lastSPEEDBonus;
         attribute.ArmourPenetration_Ampl.FlatBonus -= lastAPBonus;
+        attribute.DamageReduction_Ampl.FlatBonus -= lastDR;
 
         transform.localScale = lastCachedScaled;
 

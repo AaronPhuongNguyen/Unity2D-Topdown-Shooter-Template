@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: d76955a54a8b17648969a428d77b2f05, type: 3}
   Name: Dealt Damage
-  Description: +4% Dealt Damage
+  Description: +10% Dealt Damage
   Category: 0
   Rarity: 0.3
   UniquePerRun: 1

@@ -16,7 +16,8 @@ MonoBehaviour:
   Name: ATK
   Description: +4 ATK
   Category: 1
-  Rarity: 0.75
+  Rarity: 0.6
+  UniquePerRun: 0
   FlatIncrease: 4
   PercentIncrease: 0
   TotalIncrease: 0

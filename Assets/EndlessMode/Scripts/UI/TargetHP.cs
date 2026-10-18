@@ -11,7 +11,7 @@ public class TargetHP : MonoBehaviour, ITick
     [SerializeField] private TMP_Text barCountText;    // "x7"
 
     [Header("Settings")]
-    [SerializeField] private float hpPerBar = 50f;
+    [SerializeField] private float hpPerBar = 200f;
     [SerializeField] private float slerpDelay = 0.1f;  // wait before the trail starts catching up
     [SerializeField] private float slerpSpeed = 5f;    // trail catch-up speed
     [SerializeField] private float frontSpeed = 14f;   // front bar speed (also used when switching targets)
@@ -133,7 +133,7 @@ public class TargetHP : MonoBehaviour, ITick
         return Mathf.Clamp01(bars - (topBarCount - 1));
     }
 
-    private float Bars(float hp) => hp / hpPerBar * (1+DomainManager.instance.CurrentDifficulty);
+    private float Bars(float hp) => hp / hpPerBar * (1 + DomainManager.instance.CurrentDifficulty * 4);
 
     private void SetVisible(bool v)
     {

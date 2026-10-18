@@ -46,10 +46,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallTime: 0.6
-  startScaleMultiplier: 2
+  startScaleMultiplier: 1.5
   explosionEffect: {fileID: 310520452785643933, guid: 3085ba41bd8961b478572be0c7313fd2, type: 3}
   explosionSound: {fileID: 8300000, guid: ecf3356e965e00a40b33503269981fda, type: 3}
-  cameraShake: 0.8
+  cameraShake: 1.5
 --- !u!1 &8454258660057197598
 GameObject:
   m_ObjectHideFlags: 0

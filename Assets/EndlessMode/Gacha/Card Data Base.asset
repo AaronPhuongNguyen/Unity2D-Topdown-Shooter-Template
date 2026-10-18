@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Card Data Base
   m_EditorClassIdentifier: 
   cards:
+  - {fileID: 11400000, guid: c027c3863ffd7a947843c16aa96bf1e6, type: 2}
+  - {fileID: 11400000, guid: cd642a7763bbf794b9f54ca2c00cc36e, type: 2}
   - {fileID: 11400000, guid: 9da0cbef179cb784095d739241ff1f6a, type: 2}
   - {fileID: 11400000, guid: 2cbdd6961a04e8d4cbbd967cea69fd32, type: 2}
   - {fileID: 11400000, guid: bafa57cfb46442a4fa1204bfcc429ffc, type: 2}
@@ -26,11 +28,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 762f2e9cf930c024a86a2ff3c0d452b2, type: 2}
   - {fileID: 11400000, guid: eb960bc8eee013d4aae10c9b355e919d, type: 2}
   - {fileID: 11400000, guid: 3c99d8db2d908ea4ca9f7c75ae6af443, type: 2}
+  - {fileID: 11400000, guid: 04591857f96c0ef4ebd78ee9feeaeabb, type: 2}
   - {fileID: 11400000, guid: 3c81175cd40d48c4896f073362755c9a, type: 2}
   - {fileID: 11400000, guid: 8ea4d13a9681b86469af4c4774004638, type: 2}
   - {fileID: 11400000, guid: cf7ef3369fe7d634b888a50a733f89ea, type: 2}
   - {fileID: 11400000, guid: 4b9d7de49d016dc458fd47c47411f8b8, type: 2}
   - {fileID: 11400000, guid: aaabe76d9ddc5e34fae1f7a059aa10e0, type: 2}
+  - {fileID: 11400000, guid: 6c9b272ff01083e438499cef200cc67b, type: 2}
   - {fileID: 11400000, guid: 3a2ce958dd662dd4e8c78031b8e18f19, type: 2}
   - {fileID: 11400000, guid: 0e878398a7f98c5449b935633a64bf99, type: 2}
   - {fileID: 11400000, guid: d4d01617efa9d1f4e9e6c4b4578f7f47, type: 2}
@@ -39,6 +43,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f143fca980b44d04fa16184f0d071f59, type: 2}
   - {fileID: 11400000, guid: f2f4a60ca37df0b478d7fb1cc598c7ba, type: 2}
   - {fileID: 11400000, guid: 7c4ad665dbfb4b6439fc53fbced782e7, type: 2}
+  - {fileID: 11400000, guid: 1a91c1cc26c6d644e9f21e7ccfa12bec, type: 2}
+  - {fileID: 11400000, guid: 144ca696981608043bcf09e2a39450d1, type: 2}
   - {fileID: 11400000, guid: 8e11f130bf764ab44a56cba92001ead4, type: 2}
   - {fileID: 11400000, guid: 604d8dabc655b9e4ab9acd7aa73a76d8, type: 2}
   - {fileID: 11400000, guid: 65bac8b37f6dc7048b5da3e60da5bc68, type: 2}
@@ -55,6 +61,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 19957c2efee3a4f40b314558d04be929, type: 2}
   - {fileID: 11400000, guid: b01286921f9fc004fbae6486661769c1, type: 2}
   - {fileID: 11400000, guid: af17ea98799e79a48b4ba30868214a40, type: 2}
+  - {fileID: 11400000, guid: 40524b66d06d73b4ebc9c2e3b6d74bb6, type: 2}
   - {fileID: 11400000, guid: edc3b2a0358a8ab4e975049804dc7a8a, type: 2}
   - {fileID: 11400000, guid: f9c2aca3bf735f941826d9aebb88b1eb, type: 2}
   - {fileID: 11400000, guid: 76c164620344ac2429cb027428eb2a1e, type: 2}
@@ -73,6 +80,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9ad306b4b360f654eb7a300b22b4cd5b, type: 2}
   - {fileID: 11400000, guid: 9ece543ab81668f44a80f65473792d8a, type: 2}
   - {fileID: 11400000, guid: 4f7b59b421d1f7e40a9d45dc62bc17b4, type: 2}
+  - {fileID: 11400000, guid: 73d29de419998ab4caf07fa2fb7efa27, type: 2}
+  - {fileID: 11400000, guid: 8638885341e84bd419b56a181e94736e, type: 2}
   - {fileID: 11400000, guid: c23d43dbe7614844880a1332215be59f, type: 2}
   - {fileID: 11400000, guid: ee823db558f6c9048a204e45dfa1044f, type: 2}
   - {fileID: 11400000, guid: 085544364137cd04a8b143e8bb68934c, type: 2}
@@ -85,10 +94,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3a2b1447c70ccbc479aa49a8f593e6e2, type: 2}
   - {fileID: 11400000, guid: e0545526befc7b241bace21e1836bc79, type: 2}
   - {fileID: 11400000, guid: f10b0817fe93e214694af5fe10ab90fc, type: 2}
+  - {fileID: 11400000, guid: 618ba8077a57b254e997cee2898f1515, type: 2}
   - {fileID: 11400000, guid: e64a94d2f503d4d4c8e6e5e8aa3d967a, type: 2}
   - {fileID: 11400000, guid: bf17eb5ae3c10e745b88685eb1f54b34, type: 2}
   - {fileID: 11400000, guid: 55fc2bf6366c70d4bbe460da98284e62, type: 2}
   - {fileID: 11400000, guid: 5605cb750416c4d4e8ed6c712996eb20, type: 2}
   - {fileID: 11400000, guid: f6af907dfbcec67439f3e54d1020bd77, type: 2}
   - {fileID: 11400000, guid: 6fbb3e602193b7042b466cd3ab70b71b, type: 2}
+  - {fileID: 11400000, guid: d7fd330731e852647bb1937a92e94022, type: 2}
   - {fileID: 11400000, guid: da8389621603fe94da188a2e9ce8f089, type: 2}

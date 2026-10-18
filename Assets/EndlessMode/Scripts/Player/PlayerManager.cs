@@ -348,7 +348,7 @@ public class PlayerManager : MonoBehaviour, ITick
         healingTimer = 10f;
 
         if (combatDuration > 0) return;
-        attribute.Heal(attribute.HP_Max * 0.025f);
+        attribute.Heal(attribute.HP_Max * 0.05f);
     }
 
     public void PlayAttackSound() => PlaySound(package?.Media?.Audio?.GetAttackSound());

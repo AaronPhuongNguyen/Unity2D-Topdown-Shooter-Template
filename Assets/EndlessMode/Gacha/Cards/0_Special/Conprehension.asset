@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 697932b2c5ba56a4f8f711f90284a5ea, type: 3}
   Name: Comprehension
-  Description: Each ATK point increases 1 Defense
+  Description: Each ATK point increases 5 Defense
   Category: 1
   Rarity: 0.1
   UniquePerRun: 1

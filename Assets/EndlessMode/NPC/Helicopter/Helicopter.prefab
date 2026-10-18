@@ -754,8 +754,8 @@ MonoBehaviour:
   threatScanInterval: 0.2
   scanRadius: 14
   huntEnabled: 1
-  huntSearchRadius: 30
-  huntLeash: 30
+  huntScanInterval: 0.5
+  huntRetargetThreshold: 0.8
   huntStopRatio: 0.8
   followStopDistance: 2.5
   safeRound: 7
@@ -766,9 +766,9 @@ MonoBehaviour:
   matchPlayerSpeed: 0
   catchUpDistance: 18
   catchUpSpeedBonus: 6
-  dangerRadius: 0
-  safeRadius: 0
-  calmTime: 0
+  dangerRadius: 10
+  safeRadius: 4
+  calmTime: 0.5
   fleeDirections: 16
   fleeLookAhead: 3.5
   fleeSpeedBonus: 3
@@ -798,16 +798,16 @@ MonoBehaviour:
   maxMissiles: 8
   missilesPerLaunch: 2
   launchCooldown: 2
-  missileReloadTime: 10
+  missileReloadTime: 12
   missileAutoReload: 1
   missileTacticalReload: 1
   missileTacticalReloadThreshold: 0.5
   missileReloadSound: {fileID: 8300000, guid: 38fe7b3bef7a49d409fdd233d78c6f79, type: 3}
   missileReloadEffect: {fileID: 0}
   missilePrefab: {fileID: 7281107525455611846, guid: a3c41c48dc812d943a4d89a4516eff5e, type: 3}
-  missileRange: 30
+  missileRange: 60
   missileDamageMultiplier: 10
-  missileRadius: 30
+  missileRadius: 25
   missileEdgeDamage: 0.5
   missilePoints:
   - {fileID: 5499133544995162660}

@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 68b0900fdb717db4180b577b642eeeef, type: 3}
   Name: Eternal Saint
-  Description: Every 1% Lost HP increases 1% Dealt Damage and Move Speed, with a
-    bonus of 0.1% Lifesteal increase.
+  Description: Every 1% Lost HP increases 3% Dealt Damage and Move Speed, with a
+    bonus of 0.5% Lifesteal increase.
   Category: 1
   Rarity: 0.1
   UniquePerRun: 1
-  DealtDamagePerPercent: 0.01
-  MoveSpeedPerPercent: 0.01
-  LifestealPerPercent: 0.001
+  DealtDamagePerPercent: 0.03
+  MoveSpeedPerPercent: 0.03
+  LifestealPerPercent: 0.005

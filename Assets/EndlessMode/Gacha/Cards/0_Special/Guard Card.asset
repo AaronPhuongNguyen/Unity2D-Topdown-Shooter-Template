@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 55f89c6fbb6ec8640bab2b5ccfcd2703, type: 3}
   Name: Metal Skin
-  Description: Take less 15% Damage and increase 5% Move Speed.
+  Description: Take less 20% Damage and Move more 10% Faster
   Category: 1
   Rarity: 0.1
   UniquePerRun: 1
-  DamageReduction: 0.15
-  MoveSpeedPercent: 0.05
+  DamageReduction: 0.2
+  MoveSpeedPercent: 0.1

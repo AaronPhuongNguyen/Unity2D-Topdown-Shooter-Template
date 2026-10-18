@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Icon: {fileID: 21300000, guid: 33aaf7af59a5d6241839c2f1085da7ea, type: 3}
   Name: Fighter
-  Description: Every 20s, Fighter bomb the whole map
+  Description: Every 20s, Fighter bombs the whole map
   Category: 0
   Rarity: 0.15
   UniquePerRun: 1

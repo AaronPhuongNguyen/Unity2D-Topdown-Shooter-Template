@@ -6,12 +6,12 @@ using UnityEngine.Experimental.Rendering;
 
 /// <summary>
 /// NPC ally core. Friendly unit that:
-///   - FOLLOWS the player (Follow target). Once close, it WANDERS around the
-///     player; if the player gets farther than safeRound it follows again.
-///     Its move speed is kept equal to the player's,
-///   - HUNTS: actively walks toward the nearest zombie (within huntSearchRadius and
-///     within huntLeash of the player) until it is in shooting range. When no
-///     zombie is left it goes back to following / wandering around the player,
+///   - HUNTS (HIGH PRIORITY): if there is at least one zombie anywhere on the map,
+///     the NPC forgets the player and walks toward the nearest one until it is in
+///     shooting range. There is no distance limit and no leash to the player,
+///   - FOLLOWS the player (LOWEST PRIORITY): only when there is no zombie on the map.
+///     Once close, it WANDERS around the player; if the player gets farther than
+///     safeRound it follows again. Its move speed is kept equal to the player's,
 ///   - ATTACKS the nearest zombie within its SIGHT (Target), using the same enemy
 ///     mask the player uses (PlayerManager.EnemyMask). Fire rate comes from ASPD.
 ///     Shots look like the player's weapon: muzzle flash, travelling Bullet,
@@ -25,15 +25,18 @@ using UnityEngine.Experimental.Rendering;
 ///   - DODGES: an attacker calls NotifyIncomingAttack() right before it strikes.
 ///     The NPC instantly dashes sideways and is invincible for the dash.
 ///     Costs Energy, has its own cooldown,
+///   - HEALS NATURALLY: once out of combat for a while (no damage taken, no enemy
+///     in sight, not shooting) it recovers HP every second and shows a heal popup,
 ///   - GETS STAGGERED (temporary slow) whenever it takes a hit,
 ///   - MATCHES THE PLAYER'S STATS (HP, ATK, DEF and speed),
 ///   - is removed on game restart (EventBus.OnGameRestart) and on death.
 ///
-/// Mode priority:  Fleeing  >  Hunting  >  Following (+ wander)
+/// Mode priority:  Fleeing  >  Hunting (whole map)  >  Following (+ wander)
 ///
 /// Searches:
-///   FindTarget()  - radius = SIGHT_Current  -> who to shoot
-///   FindThreats() - radius = scanRadius     -> who to run from / who to hunt
+///   FindTarget()     - radius = SIGHT_Current       -> who to shoot
+///   FindThreats()    - radius = scanRadius          -> who to run from
+///   FindHuntTarget() - radius = whole walkable map  -> who to walk toward
 ///
 /// All active NPCs are listed in NpcBrain.Active so zombies can hunt them
 /// without any physics query.
@@ -41,6 +44,8 @@ using UnityEngine.Experimental.Rendering;
 /// Inheritance: derive a character (e.g. Kafka) from this class. Override
 /// OnSpawned / OnRemoved / OnNewWave / OnDeath / OnDodged / OnReloadStarted /
 /// OnReloadFinished for character-specific behaviour (always call base where noted).
+/// Call MarkInCombat() from a subclass when it does something that should count
+/// as combat (e.g. a skill that fires without setting Target).
 ///
 /// Prefab setup:
 ///   - Put it on a layer that Zombrain's hb.enemyMask includes (the player's layer),
@@ -102,6 +107,9 @@ public class NpcBrain : HurtBox, ITick
 
     /// <summary>The zombie the NPC is currently walking toward (null when not hunting).</summary>
     public Transform HuntTarget => huntTarget;
+
+    /// <summary>True while the NPC is recovering HP (out of combat long enough).</summary>
+    public bool IsRegenerating => regenActive;
     #endregion
 
     #region Inspector: Magazine / Reload
@@ -146,27 +154,47 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private GameObject dodgeEffect;
     #endregion
 
+    #region Inspector: Natural Regen
+    [Header("Natural Regen (out of combat)")]
+    [SerializeField] private bool regenEnabled = true;
+    [Tooltip("Seconds without taking damage, shooting or seeing an enemy before regen starts.")]
+    [SerializeField, Min(0f)] private float regenDelay = 1f;
+    [Tooltip("HP healed every tick, as a fraction of max HP (0.03 = 3%).")]
+    [SerializeField, Range(0f, 1f)] private float regenPercentPerTick = 0.03f;
+    [Tooltip("Extra flat HP healed every tick.")]
+    [SerializeField, Min(0f)] private float regenFlatPerTick = 0f;
+    [Tooltip("Seconds between heals. 1 = every second.")]
+    [SerializeField, Min(0.1f)] private float regenInterval = 1f;
+    [Tooltip("Show a green heal popup on every regen tick.")]
+    [SerializeField] private bool regenShowPopup = true;
+    [Tooltip("Do not heal while fleeing (fleeing means a zombie is right there).")]
+    [SerializeField] private bool noRegenWhileFleeing = true;
+    #endregion
+
     #region Inspector: Sense
     [Header("Sense - Attack Target (uses Sight)")]
     [Tooltip("How often the NPC looks for a target within its Sight (SIGHT_Current).")]
     [SerializeField] private float targetScanInterval = 0.2f;
 
     [Header("Sense - Threats (uses Scan Radius)")]
-    [Tooltip("How often the NPC looks for dangerous zombies to flee from / hunt.")]
+    [Tooltip("How often the NPC looks for dangerous zombies to flee from.")]
     [SerializeField] private float threatScanInterval = 0.2f;
-    [Tooltip("Radius used to find threats. Independent from Sight.")]
+    [Tooltip("Radius used to find threats to flee from. Independent from Sight.")]
     [SerializeField] private float scanRadius = 14f;
 
-    [Header("Hunt (actively search for zombies)")]
+    [Header("Hunt (whole map, higher priority than following the player)")]
+    [Tooltip("If on, the NPC walks toward the nearest zombie ANYWHERE on the map and ignores the player.")]
     [SerializeField] private bool huntEnabled = true;
-    [Tooltip("Zombies farther than this from the NPC are ignored for hunting (capped by Scan Radius).")]
-    [SerializeField] private float huntSearchRadius = 30f;
-    [Tooltip("Max distance from the PLAYER the NPC may go while hunting. Only zombies within this of the player are hunted.")]
-    [SerializeField] private float huntLeash = 30f;
+    [Tooltip("How often the NPC looks for the nearest zombie on the whole map. Bigger = cheaper.")]
+    [SerializeField] private float huntScanInterval = 0.5f;
+    [Tooltip("Switch hunt target only if the new one is at least this much closer (0.8 = 20% closer). Prevents flip-flopping.")]
+    [SerializeField, Range(0.1f, 1f)] private float huntRetargetThreshold = 0.8f;
     [Tooltip("The NPC stops walking and shoots at Sight x this distance from its prey.")]
     [SerializeField, Range(0.3f, 1f)] private float huntStopRatio = 0.8f;
+    [Tooltip("Hunt range = the PLAYER's Sight x this. The NPC only hunts zombies inside it.")]
+    [SerializeField, Min(0.1f)] private float huntRangeMultiplier = 1.5f;
 
-    [Header("Follow")]
+    [Header("Follow (lowest priority, only when no zombie is on the map)")]
     [Tooltip("Stops following and starts wandering once this close to the player.")]
     [SerializeField] private float followStopDistance = 2.5f;
     [Tooltip("Safe Round: while within this distance of the player the NPC wanders. Beyond it, the NPC follows again.")]
@@ -186,7 +214,7 @@ public class NpcBrain : HurtBox, ITick
     [SerializeField] private bool matchPlayerSpeed = true;
 
     [Header("Follow - Catch Up")]
-    [Tooltip("Gets a speed boost when farther than this (catching up).")]
+    [Tooltip("Gets a speed boost when farther than this from the player (catching up).")]
     [SerializeField] private float catchUpDistance = 18f;
     [SerializeField] private float catchUpSpeedBonus = 3f;
 
@@ -220,12 +248,12 @@ public class NpcBrain : HurtBox, ITick
 
     [Header("Attack - Visual (same as the Player's Weapon)")]
     [Tooltip("Where shots and the muzzle flash come from. Falls back to the NPC's position.")]
-    [SerializeField] private Transform muzzle;
-    [SerializeField] private GameObject shootEffect;
+    [SerializeField] protected Transform muzzle;
+    [SerializeField] protected GameObject shootEffect;
     [Tooltip("Same Bullet prefabs the player's Weapon uses.")]
-    [SerializeField] private Bullet bulletPrefab;
-    [SerializeField] private float bulletSpeed = 125f;
-    [SerializeField] private float bulletLifetime = 1f;
+    [SerializeField] protected Bullet bulletPrefab;
+    [SerializeField] protected float bulletSpeed = 125f;
+    [SerializeField] protected float bulletLifetime = 1f;
 
     [Header("Aim Indicator (same as the Player's)")]
     [Tooltip("Marker shown on the current attack target. Leave empty for no indicator.")]
@@ -241,14 +269,12 @@ public class NpcBrain : HurtBox, ITick
     // A current target is kept until it is farther than Sight * this (stops flicker at the edge).
     private const float TargetKeepMargin = 1.15f;
 
-    // The NPC counts as "too far from the player" at huntLeash * this.
-    private const float LeashBreakMargin = 1.15f;
-
     protected Transform _t;
     private bool isActive;
 
     private float targetScanTimer;
     private float threatScanTimer;
+    private float huntScanTimer;
     private float calmTimer;
     private float attackTimer;
     private float appliedSpeed;
@@ -262,9 +288,15 @@ public class NpcBrain : HurtBox, ITick
     private float lastFollowDist;
     private Vector2 fleeDir;
 
+    // Natural regen
+    private float combatTimer;     // seconds since the last combat event
+    private float regenTickTimer;  // countdown to the next heal
+    private bool regenActive;
+
     // Hunt
     private Transform huntTarget;
-    private bool returningToPlayer;
+    private UnitAttribute huntUnit;
+    private Collider2D[] huntBuffer = new Collider2D[64];
 
     // Magazine
     private int currentAmmo;
@@ -279,7 +311,7 @@ public class NpcBrain : HurtBox, ITick
     // Dodge
     private bool isDashing;
     private float dashTimeLeft;
-    private float dodgeCooldownTimer;
+    protected float dodgeCooldownTimer;
     private Vector2 dashDir;
     private bool dashInvincibleApplied;
 
@@ -505,7 +537,7 @@ public class NpcBrain : HurtBox, ITick
         targetUnit = null;
         Follow = null;
         huntTarget = null;
-        returningToPlayer = false;
+        huntUnit = null;
         CurrentMode = Mode.Following;
         followMoving = false;
         fleeDir = Vector2.zero;
@@ -515,6 +547,7 @@ public class NpcBrain : HurtBox, ITick
 
         targetScanTimer = 0f;
         threatScanTimer = 0f;
+        huntScanTimer = 0f;
         calmTimer = 0f;
         attackTimer = 0f;
         appliedSpeed = 0f;
@@ -522,6 +555,11 @@ public class NpcBrain : HurtBox, ITick
         hasWanderTarget = false;
         wanderPause = 0f;
         appliedSync = 0f;
+
+        // Regen: a fresh NPC starts "in combat" so it does not heal the moment it spawns.
+        combatTimer = 0f;
+        regenTickTimer = 0f;
+        regenActive = false;
 
         // Fresh clone: no stagger applied to it.
         hitStaggerTimer = 0f;
@@ -598,11 +636,15 @@ public class NpcBrain : HurtBox, ITick
         staggerApplied = false;
         appliedStaggerPercent = 0f;
 
+        combatTimer = 0f;
+        regenTickTimer = 0f;
+        regenActive = false;
+
         Target = null;
         targetUnit = null;
         Follow = null;
         huntTarget = null;
-        returningToPlayer = false;
+        huntUnit = null;
         attribute = null;
 
         // Pooled object: don't keep old subscribers (UI bars etc.) between lives.
@@ -632,13 +674,88 @@ public class NpcBrain : HurtBox, ITick
     }
     #endregion
 
+    #region Natural Regen
+    /// <summary>
+    /// Resets the out-of-combat timer and stops regen. Called automatically on damage,
+    /// shooting, and while an enemy is in sight. Subclasses can call it for their own skills.
+    /// </summary>
+    protected void MarkInCombat()
+    {
+        combatTimer = 0f;
+        regenTickTimer = 0f;
+        regenActive = false;
+    }
+
+    /// <summary>
+    /// Out of combat = no damage taken, no shot fired, no enemy within Sight, for regenDelay seconds.
+    /// Then heals every regenInterval seconds and shows a heal popup.
+    /// </summary>
+    private void TickRegen(float dt)
+    {
+        if (!regenEnabled) { regenActive = false; return; }
+
+        bool fighting = Target != null
+                        || (noRegenWhileFleeing && CurrentMode == Mode.Fleeing);
+        if (fighting)
+        {
+            MarkInCombat();
+            return;
+        }
+
+        combatTimer += dt;
+        if (combatTimer < regenDelay)
+        {
+            regenActive = false;
+            return;
+        }
+
+        // Full HP: nothing to heal. Keep the tick clock ready so the first heal is not delayed.
+        if (attribute.HP_Current >= attribute.HP_Max)
+        {
+            regenActive = false;
+            regenTickTimer = regenInterval;
+            return;
+        }
+
+        if (!regenActive)
+        {
+            regenActive = true;
+            regenTickTimer = regenInterval; // first heal one interval after regen starts
+        }
+
+        regenTickTimer -= dt;
+        int guard = 0;
+        while (regenTickTimer <= 0f && guard++ < 5)
+        {
+            regenTickTimer += regenInterval;
+            DoRegenTick();
+        }
+    }
+
+    private void DoRegenTick()
+    {
+        float amount = attribute.HP_Max * regenPercentPerTick + regenFlatPerTick;
+        if (amount <= 0f) return;
+
+        float before = attribute.HP_Current;
+        attribute.Heal(amount);
+
+        // Measure what was really healed (Heal may clamp to max HP).
+        float healed = attribute.HP_Current - before;
+        if (healed <= 0.001f) return;
+
+        if (regenShowPopup)
+            DamagePopupManager.ShowHeal(_t.position, healed);
+    }
+    #endregion
+
     #region Dodge
     /// <summary>
     /// Called by an attacker right BEFORE its strike resolves (e.g. Zombrain.PerformAttack).
     /// If the NPC can afford it, it dashes away and turns invincible instantly,
     /// so the incoming hit is wasted. Returns true if a dodge started.
     /// </summary>
-    public bool NotifyIncomingAttack(Vector2 attackerPos)
+    public virtual bool NotifyIncomingAttack(Vector2 attackerPos)
     {
         if (!canDodge || !isActive || attribute == null || attribute.IsDead) return false;
         if (isDashing || dodgeCooldownTimer > 0f) return false;
@@ -650,6 +767,9 @@ public class NpcBrain : HurtBox, ITick
 
     private void StartDodge(Vector2 attackerPos)
     {
+        // Being attacked (even if the hit is dodged) counts as combat.
+        MarkInCombat();
+
         Vector2 pos = _t.position;
         Vector2 away = pos - attackerPos;
         if (away.sqrMagnitude < 0.0001f)
@@ -717,6 +837,7 @@ public class NpcBrain : HurtBox, ITick
     #region Hit Stagger
     private void OnHit(float damage)
     {
+        MarkInCombat(); // taking damage interrupts natural regen
         ApplyHitStagger();
     }
 
@@ -809,12 +930,19 @@ public class NpcBrain : HurtBox, ITick
         TickHitStagger(dt);
         ResolveFollow();
 
-        // Two independent searches: Sight for targets, scanRadius for threats / hunting.
+        // Independent searches: Sight for targets, scanRadius for threats, whole map for hunting.
         targetScanTimer -= dt;
         if (targetScanTimer <= 0f)
         {
             targetScanTimer = targetScanInterval;
             FindTarget();
+        }
+
+        huntScanTimer -= dt;
+        if (huntScanTimer <= 0f)
+        {
+            huntScanTimer = huntScanInterval;
+            FindHuntTarget();
         }
 
         threatScanTimer -= dt;
@@ -827,9 +955,21 @@ public class NpcBrain : HurtBox, ITick
             SyncStatsWithPlayer();
         }
 
-        // Prey died / despawned between scans: drop back to following right away.
+        // Prey died / despawned between scans: look for the next zombie right away,
+        // and only fall back to following if the whole map is empty.
         if (CurrentMode == Mode.Hunting && !IsHuntTargetValid())
-            EnterFollowing();
+        {
+            FindHuntTarget();
+            huntScanTimer = huntScanInterval;
+            if (!IsHuntTargetValid()) EnterFollowing();
+        }
+        // Following but a zombie just showed up somewhere: go hunt without waiting for the next evaluation.
+        else if (CurrentMode == Mode.Following && huntEnabled && IsHuntTargetValid())
+        {
+            CurrentMode = Mode.Hunting;
+            followMoving = false;
+            hasWanderTarget = false;
+        }
 
         if (CurrentMode == Mode.Fleeing)
         {
@@ -841,6 +981,8 @@ public class NpcBrain : HurtBox, ITick
 
         bool hasAim = TickAttack(dt, out Vector2 aimDir);
         HandleIndicator(dt);
+
+        TickRegen(dt);
 
         // While dashing, the dash IS the movement.
         Vector2 move = Vector2.zero;
@@ -945,9 +1087,7 @@ public class NpcBrain : HurtBox, ITick
     }
 
     /// <summary>
-    /// THREATS: every hostile within scanRadius (used for fleeing). While scanning it
-    /// also picks the nearest valid HUNT target: within huntSearchRadius of the NPC
-    /// and within huntLeash of the player.
+    /// THREATS: every hostile within scanRadius (used only for fleeing).
     /// </summary>
     private void FindThreats()
     {
@@ -964,14 +1104,6 @@ public class NpcBrain : HurtBox, ITick
         threatCount = 0;
         nearestThreat = float.MaxValue;
 
-        float searchR = Mathf.Min(huntSearchRadius, scanRadius);
-        float leashSqr = huntLeash * huntLeash;
-        bool hasPlayer = Follow != null;
-        Vector2 playerPos = hasPlayer ? (Vector2)Follow.position : Vector2.zero;
-
-        Transform bestHunt = null;
-        float bestHuntDist = float.MaxValue;
-
         for (int i = 0; i < count; i++)
         {
             Collider2D col = threatBuffer[i];
@@ -983,22 +1115,86 @@ public class NpcBrain : HurtBox, ITick
 
             if (threatCount < threatPts.Length) threatPts[threatCount++] = closest;
             if (d < nearestThreat) nearestThreat = d;
+        }
+    }
 
-            // Hunt candidate
-            if (!huntEnabled || ua.IsUntargetable) continue;
-            if (d > searchR || d >= bestHuntDist) continue;
-            if (hasPlayer && ((Vector2)col.transform.position - playerPos).sqrMagnitude > leashSqr) continue;
+    /// <summary>Radius that covers the whole walkable map from anywhere inside it.</summary>
+    /// <summary>Hunt range = the player's Sight x huntRangeMultiplier, measured from the NPC.</summary>
+    private float HuntSearchRadius
+    {
+        get
+        {
+            if (pm != null && pm.attribute != null)
+                return pm.attribute.SIGHT_Current * huntRangeMultiplier;
 
-            bestHuntDist = d;
-            bestHunt = col.transform;
+            // Fallback if the player's attribute is not available yet.
+            return attribute != null ? attribute.SIGHT_Current * huntRangeMultiplier : 0f;
+        }
+    }
+
+    /// <summary>
+    /// HUNT TARGET: the nearest living, targetable zombie ANYWHERE on the map.
+    /// No leash to the player. The current prey is kept unless a new one is
+    /// clearly closer (huntRetargetThreshold).
+    /// </summary>
+    private void FindHuntTarget()
+    {
+        if (!huntEnabled)
+        {
+            huntTarget = null;
+            huntUnit = null;
+            return;
         }
 
-        huntTarget = bestHunt;
+        Vector2 pos = _t.position;
+        float radius = HuntSearchRadius;
+
+        int count = Physics2D.OverlapCircleNonAlloc(pos, radius, huntBuffer, pm.EnemyMask);
+        // Buffer full means results may be incomplete (and not the nearest): grow and retry.
+        while (count >= huntBuffer.Length)
+        {
+            huntBuffer = new Collider2D[huntBuffer.Length * 2];
+            count = Physics2D.OverlapCircleNonAlloc(pos, radius, huntBuffer, pm.EnemyMask);
+        }
+
+        Transform best = null;
+        UnitAttribute bestUnit = null;
+        float bestSqr = float.MaxValue;
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider2D col = huntBuffer[i];
+            if (!TryGetHostile(col, out UnitAttribute ua)) continue;
+            if (ua.IsUntargetable) continue;
+            if (!col.gameObject.activeInHierarchy) continue;
+
+            float sqr = ((Vector2)col.transform.position - pos).sqrMagnitude;
+            if (sqr < bestSqr)
+            {
+                bestSqr = sqr;
+                best = col.transform;
+                bestUnit = ua;
+            }
+        }
+
+        // Keep the current prey unless the new one is clearly closer.
+        if (best != null && IsHuntTargetValid() && best != huntTarget)
+        {
+            float curSqr = ((Vector2)huntTarget.position - pos).sqrMagnitude;
+            if (bestSqr > curSqr * huntRetargetThreshold * huntRetargetThreshold) return;
+        }
+
+        huntTarget = best;
+        huntUnit = bestUnit;
     }
 
     private bool IsHuntTargetValid()
     {
-        return huntTarget != null && huntTarget.gameObject.activeInHierarchy;
+        return huntTarget != null
+               && huntTarget.gameObject.activeInHierarchy
+               && huntUnit != null
+               && !huntUnit.IsDead
+               && !huntUnit.IsUntargetable;
     }
     #endregion
 
@@ -1023,37 +1219,26 @@ public class NpcBrain : HurtBox, ITick
         UpdateHuntState();
     }
 
-    /// <summary>Chooses between Hunting and Following (Fleeing is handled in EvaluateMode).</summary>
+    /// <summary>
+    /// Chooses between Hunting and Following (Fleeing is handled in EvaluateMode).
+    /// Any zombie on the map = hunt. Following is the fallback when none is left.
+    /// </summary>
     private void UpdateHuntState()
     {
-        // Leash: if hunting took the NPC too far from the player, walk back first.
-        if (Follow != null)
-        {
-            float d = lastFollowDist;
-            if (d > huntLeash * LeashBreakMargin) returningToPlayer = true;
-            else if (returningToPlayer && d <= safeRound) returningToPlayer = false;
-        }
-        else
-        {
-            returningToPlayer = false;
-        }
-
-        bool wantHunt = huntEnabled && !returningToPlayer && IsHuntTargetValid();
+        bool wantHunt = huntEnabled && IsHuntTargetValid();
 
         if (wantHunt)
         {
-            CurrentMode = Mode.Hunting;
+            if (CurrentMode != Mode.Hunting)
+            {
+                CurrentMode = Mode.Hunting;
+                followMoving = false;
+                hasWanderTarget = false;
+            }
         }
         else if (CurrentMode == Mode.Hunting)
         {
             EnterFollowing();
-        }
-
-        // Returning home: chase the player straight away, don't wander yet.
-        if (returningToPlayer && CurrentMode == Mode.Following)
-        {
-            followMoving = true;
-            hasWanderTarget = false;
         }
     }
 
@@ -1063,6 +1248,7 @@ public class NpcBrain : HurtBox, ITick
         calmTimer = calmTime;
         hasWanderTarget = false;
         followMoving = false;
+        MarkInCombat();
         ChooseFleeDirection();
     }
 
@@ -1263,7 +1449,9 @@ public class NpcBrain : HurtBox, ITick
     {
         float desired = 0f;
         if (CurrentMode == Mode.Fleeing) desired = fleeSpeedBonus;
-        else if (Follow != null && lastFollowDist > catchUpDistance) desired = catchUpSpeedBonus;
+        // Catch-up is only for following the player; a hunting NPC ignores the player entirely.
+        else if (CurrentMode == Mode.Following && Follow != null && lastFollowDist > catchUpDistance)
+            desired = catchUpSpeedBonus;
 
         if (Mathf.Approximately(desired, appliedSpeed)) return;
         attribute.SPEED_Ampl.FlatBonus += desired - appliedSpeed;
@@ -1315,6 +1503,8 @@ public class NpcBrain : HurtBox, ITick
     /// <summary>One shot, presented like the player's weapon. Uses ammo.</summary>
     private void Shoot(Vector2 aimDir, float range)
     {
+        MarkInCombat();
+
         if (!infiniteAmmo) SetAmmo(currentAmmo - ammoPerShot);
 
 
