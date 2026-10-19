@@ -179,11 +179,11 @@ public class Zombrain : HurtBox, ITick
 
         bool isAlpha = RNG.GetPercent() < 0.05f;
 
-        lastHPBonus = RNG.GetFloat(0, 300 * diffScale);
-        lastHPP = 0.25f * diffScale;
+        lastHPBonus = RNG.GetFloat(0, 1000 * diffScale);
+        lastHPP = 0.4f * diff; //prevent too Overpowered
 
-        lastATKBonus = RNG.GetFloat(0, 7.5f * diffScale);
-        lastATKK = 0.125f * diffScale;
+        lastATKBonus = RNG.GetFloat(0, 10 * diffScale);
+        lastATKK = 0.2f * diff; //prevent too Overpowered
 
         lastDEFBonus = RNG.GetFloat(0, 50 * diffScale);
         lastSPEEDBonus = RNG.GetFloat(0, 1 + diff);
@@ -210,12 +210,9 @@ public class Zombrain : HurtBox, ITick
 
         if (IsBoss)
         {
-            float bossMul = 1 + diff;
-            lastHPBonus *= bossMul;
-            lastHPP *= bossMul;
-
-            // Always between 10% and 80% damage reduction
-            lastDR = Mathf.Lerp(0.1f, 0.8f, RNG.GetPercent());
+            lastHPP += diffScale;
+            // Always between 10% and 40% damage reduction
+            lastDR = Mathf.Lerp(0.1f, 0.4f, RNG.GetPercent());
         }
 
         // Hard caps applied LAST so alpha/boss multipliers can't bypass them

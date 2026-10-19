@@ -37,20 +37,20 @@ public class UnitAttribute
     public float CritRate = 0.2f;
     public float CritDamage = 2.0f;
 
-    public float HP_Max => Server.Calculation.FinalValue(template.HP_Base, HP_Ampl);
-    public float ATK_Current => Server.Calculation.FinalValue(template.ATK_Base, ATK_Ampl);
-    public float SPEED_Current => Server.Calculation.FinalValue(template.SPEED_Base, SPEED_Ampl);
-    public float DEF_Current => Server.Calculation.FinalValue(template.DEF_Base, DEF_Ampl);
-    public float ASPD_Current => Server.Calculation.FinalValue(template.ASPD_Base, ASPD_Ampl);
-    public float SIGHT_Current => Server.Calculation.FinalValue(template.SIGHT_Base, SIGHT_Ampl);
+    public float HP_Max => FinalValue(template.HP_Base, HP_Ampl);
+    public float ATK_Current => FinalValue(template.ATK_Base, ATK_Ampl);
+    public float SPEED_Current => FinalValue(template.SPEED_Base, SPEED_Ampl);
+    public float DEF_Current => FinalValue(template.DEF_Base, DEF_Ampl);
+    public float ASPD_Current => FinalValue(template.ASPD_Base, ASPD_Ampl);
+    public float SIGHT_Current => FinalValue(template.SIGHT_Base, SIGHT_Ampl);
     #endregion
 
     #region Misc Status
-    public float ArmourPenetration_Current => Server.Calculation.FinalValue(0f, ArmourPenetration_Ampl);
-    public float DamageReduction_Current => Server.Calculation.FinalValue(0f, DamageReduction_Ampl);
-    public float CooldownReduction_Current => Server.Calculation.FinalValue(0f, CooldownReduction_Ampl);
-    public float DealtDamage_Current => Server.Calculation.FinalValue(1f, DealtDamage_Ampl);
-    public float Lifesteal_Current => Server.Calculation.FinalValue(0f, Lifesteal_Ampl);
+    public float ArmourPenetration_Current => FinalValue(0f, ArmourPenetration_Ampl);
+    public float DamageReduction_Current => FinalValue(0f, DamageReduction_Ampl);
+    public float CooldownReduction_Current => FinalValue(0f, CooldownReduction_Ampl);
+    public float DealtDamage_Current => FinalValue(1f, DealtDamage_Ampl);
+    public float Lifesteal_Current => FinalValue(0f, Lifesteal_Ampl);
     #endregion
 
     #region Amplifier
@@ -107,6 +107,11 @@ public class UnitAttribute
         Lifesteal_Ampl ??= new Amplification();
     }
 
+    public float FinalValue(float Base, Amplification ampl)
+    {
+        return ampl.TotalBonus * (Base + ampl.FlatBonus * ampl.PercBonus);
+    }
+
     public void Respawn()
     {
         HP_Current = HP_Max;
@@ -157,6 +162,7 @@ public class UnitAttribute
     }
     #endregion
 }
+
 public enum UnitTag
 {
     Friendly,

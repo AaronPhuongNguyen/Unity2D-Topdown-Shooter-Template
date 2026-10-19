@@ -29,6 +29,7 @@ public class TargetHP : MonoBehaviour, ITick
         SetupSlider(hpBar);
         SetupSlider(slerpBar);
     }
+
     void Start() => TickSystem.RegisterAll(this);
 
     private static void SetupSlider(Slider s)
@@ -133,7 +134,8 @@ public class TargetHP : MonoBehaviour, ITick
         return Mathf.Clamp01(bars - (topBarCount - 1));
     }
 
-    private float Bars(float hp) => hp / hpPerBar * (1 + DomainManager.instance.CurrentDifficulty * DomainManager.instance.CurrentDifficulty);
+    private float Bars(float hp)
+        => hp / hpPerBar * (1 + DomainManager.instance.CurrentDifficulty * DomainManager.instance.CurrentDifficulty);
 
     private void SetVisible(bool v)
     {

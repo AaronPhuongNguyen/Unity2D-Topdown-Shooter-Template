@@ -38,7 +38,7 @@ public class ConversionBehaviour : CardBehaviour
         scratch.FlatBonus = s.FlatBonus;
         scratch.PercBonus = s.PercBonus;
         scratch.TotalBonus = 1f;
-        return Calculation.FinalValue(A.template.SPEED_Base, scratch);
+        return PlayerManager.instance.attribute.FinalValue(A.template.SPEED_Base, scratch);
     }
 
     public override void Tick(float dt)

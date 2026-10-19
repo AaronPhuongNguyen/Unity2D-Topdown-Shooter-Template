@@ -1,10 +1,13 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 /// <summary>
 /// Static entry point: DamagePopupManager.Show(...) from anywhere.
 /// Owns its pool and updates every popup in ONE Update (no per-popup scripts ticking).
 /// Rapid calls fan out in a fixed rhythm (up, right, left, wider right, wider left...).
+/// Numbers are shown in short form: 1.5K, 2.3M, 4.1B, 1.2T...
 /// </summary>
 public class DamagePopupManager : MonoBehaviour
 {
@@ -172,15 +175,15 @@ public class DamagePopupManager : MonoBehaviour
         float side = (i % 2 == 0) ? 1f : -1f;
         float step = (i + 1) / 2;                 // 0,1,1,2,2,3,3...
         float angle = Mathf.Clamp(side * step * angleStep, -maxAngle, maxAngle);
-        angle += Random.Range(-angleNoise, angleNoise);
+        angle += UnityEngine.Random.Range(-angleNoise, angleNoise);
 
         float rad = angle * Mathf.Deg2Rad;
         Vector2 dir = new Vector2(Mathf.Sin(rad), Mathf.Cos(rad)); // 0 deg = straight up
-        float speed = jumpSpeed * (1f + Random.Range(-speedNoise, speedNoise));
+        float speed = jumpSpeed * (1f + UnityEngine.Random.Range(-speedNoise, speedNoise));
 
         Vector2 start = local + new Vector2(
-            Random.Range(-startJitter, startJitter),
-            Random.Range(-startJitter, startJitter));
+            UnityEngine.Random.Range(-startJitter, startJitter),
+            UnityEngine.Random.Range(-startJitter, startJitter));
 
         DamagePopup p = Rent();
         p.Setup(start, dir * speed, text, color, startScale * scaleMul, endScale * scaleMul, lifetime);
@@ -215,5 +218,42 @@ public class DamagePopupManager : MonoBehaviour
     }
     #endregion
 
-    private static string FormatNumber(float value) => Mathf.RoundToInt(value).ToString();
+    #region Number Formatting
+    private static readonly string[] Suffixes =
+        { "", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp" };
+
+    /// <summary>
+    /// 999 -> "999", 1500 -> "1.5K", 2300000 -> "2.3M", 4.1e9 -> "4.1B".
+    /// Up to 2 decimals, trailing zeros trimmed.
+    /// </summary>
+    public static string FormatNumber(float value)
+    {
+        if (float.IsNaN(value)) return "0";
+        if (float.IsInfinity(value)) return value > 0f ? "∞" : "-∞";
+
+        bool negative = value < 0f;
+        float abs = Mathf.Abs(value);
+
+        if (abs < 1000f)
+            return (negative ? "-" : "") + Mathf.RoundToInt(abs).ToString(CultureInfo.InvariantCulture);
+
+        int tier = 0;
+        while (abs >= 1000f && tier < Suffixes.Length - 1)
+        {
+            abs /= 1000f;
+            tier++;
+        }
+
+        // Rounding can push 999.999K to "1000K": bump it up to the next tier.
+        abs = (float)Math.Round(abs, 2);
+        if (abs >= 1000f && tier < Suffixes.Length - 1)
+        {
+            abs /= 1000f;
+            tier++;
+        }
+
+        string num = abs.ToString("0.##", CultureInfo.InvariantCulture);
+        return (negative ? "-" : "") + num + Suffixes[tier];
+    }
+    #endregion
 }

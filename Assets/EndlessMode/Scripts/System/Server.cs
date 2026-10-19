@@ -61,13 +61,6 @@ namespace Server
             //fix later
         }
     }
-    public static class Calculation
-    {
-        public static float FinalValue(float Base, Amplification ampl)
-        {
-            return ampl.TotalBonus * (Base + ampl.FlatBonus * ampl.PercBonus);
-        }
-    }
 
     public static class Combat
     {
