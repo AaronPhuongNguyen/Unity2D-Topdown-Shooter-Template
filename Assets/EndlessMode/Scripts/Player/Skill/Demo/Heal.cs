@@ -10,6 +10,7 @@ public class HealDemo : MonoBehaviour, ITick
     public const float HealDuration = 8f;
     public const float Recovery = 0.1f;
     public Image UI;
+    public GameObject[] effects;
 
     private float CD;
     private float healDuration;
@@ -19,6 +20,16 @@ public class HealDemo : MonoBehaviour, ITick
     {
         if (pm == null) return;
         if (CD > 0) return;
+
+        for (int i = 0; i < effects.Length ; i++)
+        {
+            if (effects[i] == null) continue;
+            GameObject fx = PoolingSystem.instance.GetFromPool(effects[i]);
+
+            if (fx == null) continue;
+            fx.transform.SetParent(pm.Controlling.transform);
+            fx.transform.position = Vector3.zero;
+        }
 
         CD = SkillCooldown * (1 - pm.attribute.CooldownReduction_Current);
         healDuration = HealDuration;

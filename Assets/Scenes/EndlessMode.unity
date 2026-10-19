@@ -213,6 +213,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UI: {fileID: 1499199866}
+  effects:
+  - {fileID: 7356134342183232485, guid: 3e901e5cb33f937449141717e0ddcaef, type: 3}
+  - {fileID: 5351732807222995009, guid: de24cb463a026ec41bd966cac24e464a, type: 3}
 --- !u!114 &5561933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2468,7 +2471,7 @@ GameObject:
   - component: {fileID: 283607745}
   - component: {fileID: 283607746}
   m_Layer: 0
-  m_Name: WheatherManager
+  m_Name: WeatherManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2501,7 +2504,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d87424b1301a9734f89e2ca23e1ddee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dayLengthSeconds: 240
+  dayLengthSeconds: 360
   startHour: 12
   FreezeTime: 0
   globalLight: {fileID: 619394801}
@@ -2511,7 +2514,7 @@ MonoBehaviour:
   dayIntensity: 1
   nightIntensity: 0.075
   AutoWeather: 1
-  startWeather: 0
+  startWeather: 1
   transitionTime: 8
   presets:
   - type: 0
@@ -13159,7 +13162,7 @@ MonoBehaviour:
         m_MethodName: PlayClip
         m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 8300000, guid: 61574c8d89cca604f92c1c7dd19ccb65, type: 3}
+          m_ObjectArgument: {fileID: 8300000, guid: ccd3ad5c5459e714ca60e34327498738, type: 3}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.AudioClip, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
@@ -14442,17 +14445,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrain: {fileID: 1603287764}
   entries:
-  - name: Forest
-    allowedLevelNames:
-    - Grass
-    - Moss
-    prefabs:
-    - {fileID: 7345994766129446155, guid: 368bf54a2468b9842bfcc4b9d40e0ed6, type: 3}
-    density: 0.3
-    scaleRange: {x: 2.5, y: 5}
-    randomRotation: 0
-    parent: {fileID: 1708795763}
-    minSpacingCells: 4
   - name: Grass
     allowedLevelNames:
     - Grass
@@ -14465,6 +14457,17 @@ MonoBehaviour:
     randomRotation: 0
     parent: {fileID: 1708795763}
     minSpacingCells: 0
+  - name: Forest
+    allowedLevelNames:
+    - Grass
+    - Moss
+    prefabs:
+    - {fileID: 7345994766129446155, guid: 368bf54a2468b9842bfcc4b9d40e0ed6, type: 3}
+    density: 0.1
+    scaleRange: {x: 2, y: 4}
+    randomRotation: 0
+    parent: {fileID: 1708795763}
+    minSpacingCells: 4
 --- !u!1 &1606790338
 GameObject:
   m_ObjectHideFlags: 0
@@ -14669,6 +14672,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UI: {fileID: 1169013529}
+  effects:
+  - {fileID: 7356134342183232485, guid: f6be0996b7cae7143850bc2279483708, type: 3}
+  - {fileID: 5351732807222995009, guid: 63e47400e6305c14caed0deff4983073, type: 3}
 --- !u!114 &1654036486
 MonoBehaviour:
   m_ObjectHideFlags: 0
